@@ -22,6 +22,8 @@ public partial class SuperconPlugin : EditorPlugin
 		this.AddCustomType(nameof(HorizontalMovementController), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(HorizontalMovementController)}.cs"), null);
 		this.AddCustomType(nameof(GravityController), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(GravityController)}.cs"), null);
 		this.AddCustomType(nameof(JumpController), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(JumpController)}.cs"), null);
+		this.AddCustomType(nameof(WallClimbController), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(WallClimbController)}.cs"), null);
+		this.AddCustomType(nameof(WallSlideController), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(WallSlideController)}.cs"), null);
 
 		// State Transitions
 		this.AddCustomType(nameof(InputActionTransition), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateTransitions)}/{nameof(InputActionTransition)}.cs"), null);
@@ -38,6 +40,8 @@ public partial class SuperconPlugin : EditorPlugin
 		this.RemoveCustomType(nameof(HorizontalMovementController));
 		this.RemoveCustomType(nameof(GravityController));
 		this.RemoveCustomType(nameof(JumpController));
+		this.RemoveCustomType(nameof(WallClimbController));
+		this.RemoveCustomType(nameof(WallSlideController));
 
 		this.RemoveCustomType(nameof(InputActionTransition));
 		this.RemoveCustomType(nameof(ConditionalStateTransition));
