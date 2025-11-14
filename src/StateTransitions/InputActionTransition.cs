@@ -4,7 +4,7 @@ using Raele.Supercon2D.StateControllers;
 
 namespace Raele.Supercon2D.StateTransitions;
 
-public partial class InputActionTransition : StateController
+public partial class InputActionTransition : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES

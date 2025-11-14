@@ -3,7 +3,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateControllers;
 
-public partial class JumpController : StateController
+public partial class JumpComponent : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

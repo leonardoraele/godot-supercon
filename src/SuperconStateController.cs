@@ -3,7 +3,7 @@ using Raele.GodotUtils;
 
 namespace Raele.Supercon2D.StateControllers;
 
-public partial class StateController : Node
+public partial class SuperconStateController : Node
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

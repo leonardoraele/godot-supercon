@@ -3,7 +3,7 @@ using Raele.Supercon2D.StateControllers;
 
 namespace Raele.Supercon2D.StateTransitions;
 
-public partial class ConditionalStateTransition : StateController
+public partial class ConditionalStateTransition : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

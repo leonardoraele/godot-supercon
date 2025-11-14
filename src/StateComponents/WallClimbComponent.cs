@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateControllers;
 
-public partial class WallClimbController : StateController
+public partial class WallClimbComponent : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
