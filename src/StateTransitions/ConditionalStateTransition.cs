@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Raele.Supercon2D.StateComponents;
 
@@ -26,7 +27,7 @@ public partial class ConditionalStateTransition : SuperconStateController
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private float ConditionSatisfiedTimestamp = float.PositiveInfinity;
+	private float ConditionSatisfiedMoment = float.PositiveInfinity;
 	private Expression CompiledExpression = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -46,14 +47,26 @@ public partial class ConditionalStateTransition : SuperconStateController
 		{
 			this.CompileExpression();
 		}
-		this.ConditionSatisfiedTimestamp = float.PositiveInfinity;
+		this.ConditionSatisfiedMoment = float.PositiveInfinity;
 	}
 
 	public override void _ProcessActive(double delta)
 	{
-		if (this.TransitionOnTrue != null && this.TestExpression())
+		if (this.TransitionOnTrue == null)
 		{
-			this.StateMachine.QueueTransition(this.TransitionOnTrue);
+			return;
+		}
+		if (this.TestExpression())
+		{
+			this.ConditionSatisfiedMoment = Math.Min(this.ConditionSatisfiedMoment, Time.GetTicksMsec());
+			if (this.ConditionSatisfiedMoment + this.MinDurationMs <= Time.GetTicksMsec())
+			{
+				this.StateMachine.QueueTransition(this.TransitionOnTrue);
+			}
+		}
+		else
+		{
+			this.ConditionSatisfiedMoment = float.PositiveInfinity;
 		}
 	}
 
