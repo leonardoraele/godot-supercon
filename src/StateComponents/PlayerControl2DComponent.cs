@@ -1,8 +1,8 @@
 using Godot;
 
-namespace Raele.Supercon2D.StateControllers;
+namespace Raele.Supercon2D.StateComponents;
 
-public partial class MultidirectionalComponent : SuperconStateController
+public partial class PlayerControl2DComponent : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -10,9 +10,7 @@ public partial class MultidirectionalComponent : SuperconStateController
 
 	[Export] public float MaxSpeedPxPSec = 200f;
 	[Export] public float AccelerationPxPSecSqr = 400f;
-	[Export] public float SoftDecelerationPxPSecSqr = 400f;
-	// [Export] public float HardDecelerationPxPSecSqr = 800f; // TODO Implement this once we have multidirectional facing direction
-	// [Export] public float TurnSpeedPiRadPSec = float.PositiveInfinity; // TODO Implement this once we have multidirectional facing direction
+	[Export] public float DecelerationPxPSecSqr = 800f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// LIFECYCLE METHODS
@@ -20,12 +18,14 @@ public partial class MultidirectionalComponent : SuperconStateController
 
 	public override void _PhysicsProcessActive(double delta)
 	{
+		base._PhysicsProcessActive(delta);
 		float currentVelocityPxPSec = this.Character.Velocity.Length();
 		float targetVelocityPxPSec = this.InputManager.MovementInput.Length() * this.MaxSpeedPxPSec;
-		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec ? this.AccelerationPxPSecSqr
-			: this.SoftDecelerationPxPSecSqr;
+		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec
+			? this.AccelerationPxPSecSqr
+			: this.DecelerationPxPSecSqr;
 		float newVelocity = Mathf.MoveToward(
-			this.Character.Velocity.Length(),
+			currentVelocityPxPSec,
 			targetVelocityPxPSec,
 			accelerationPxPSecSqr * (float) delta
 		);

@@ -1,6 +1,6 @@
 #if TOOLS
 using Godot;
-using Raele.Supercon2D.StateControllers;
+using Raele.Supercon2D.StateComponents;
 using Raele.Supercon2D.StateTransitions;
 
 namespace Raele.Supercon2D;
@@ -19,12 +19,12 @@ public partial class SuperconPlugin : EditorPlugin
 		this.AddCustomType(nameof(SuperconState), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconState)}.cs"), null);
 
 		// State Controllers
-		this.AddCustomType(nameof(GravityComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(GravityComponent)}.cs"), null);
-		this.AddCustomType(nameof(HorizontalComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(HorizontalComponent)}.cs"), null);
-		this.AddCustomType(nameof(JumpComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(JumpComponent)}.cs"), null);
-		this.AddCustomType(nameof(MultidirectionalComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(MultidirectionalComponent)}.cs"), null);
-		this.AddCustomType(nameof(WallClimbComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(WallClimbComponent)}.cs"), null);
-		this.AddCustomType(nameof(WallSlideComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateControllers)}/{nameof(WallSlideComponent)}.cs"), null);
+		this.AddCustomType(nameof(ForceComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ForceComponent)}.cs"), null);
+		this.AddCustomType(nameof(ImpulseComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ImpulseComponent)}.cs"), null);
+		this.AddCustomType(nameof(StraightMoveComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(StraightMoveComponent)}.cs"), null);
+		this.AddCustomType(nameof(PlayerControl1DComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(PlayerControl1DComponent)}.cs"), null);
+		this.AddCustomType(nameof(PlayerControl2DComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(PlayerControl2DComponent)}.cs"), null);
+		this.AddCustomType(nameof(SlopeBehaviorComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(SlopeBehaviorComponent)}.cs"), null);
 
 		// State Transitions
 		this.AddCustomType(nameof(InputActionTransition), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateTransitions)}/{nameof(InputActionTransition)}.cs"), null);
@@ -38,12 +38,12 @@ public partial class SuperconPlugin : EditorPlugin
 		this.RemoveCustomType(nameof(SuperconStateMachine));
 		this.RemoveCustomType(nameof(SuperconState));
 
-		this.RemoveCustomType(nameof(GravityComponent));
-		this.RemoveCustomType(nameof(HorizontalComponent));
-		this.RemoveCustomType(nameof(JumpComponent));
-		this.RemoveCustomType(nameof(MultidirectionalComponent));
-		this.RemoveCustomType(nameof(WallClimbComponent));
-		this.RemoveCustomType(nameof(WallSlideComponent));
+		this.RemoveCustomType(nameof(ForceComponent));
+		this.RemoveCustomType(nameof(ImpulseComponent));
+		this.RemoveCustomType(nameof(StraightMoveComponent));
+		this.RemoveCustomType(nameof(PlayerControl1DComponent));
+		this.RemoveCustomType(nameof(PlayerControl2DComponent));
+		this.RemoveCustomType(nameof(SlopeBehaviorComponent));
 
 		this.RemoveCustomType(nameof(InputActionTransition));
 		this.RemoveCustomType(nameof(ConditionalStateTransition));

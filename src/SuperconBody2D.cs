@@ -16,6 +16,11 @@ public partial class SuperconBody2D : CharacterBody2D
 	[Obsolete][Export] public Platformer2DDashSettings? DashSettings; // TODO
 	[Obsolete][Export] public Platformer2DWallMotionSettings? WallMotionSettings; // TODO
 
+	// /// <summary>
+	// /// If true, the character will rotate to face the direction of movement.
+	// /// </summary>
+	// [Export] public bool Rotate;
+
 	// [ExportGroup("Systemic Behavior")]
 	// /// Speed applied when the character jumps from a wall if they are pressing the Dash action.
 	// /// The sign/direction of each axis is be ignored; only the module is used.
@@ -187,6 +192,9 @@ public partial class SuperconBody2D : CharacterBody2D
 
 	public void Accelerate(Vector2 targetVelocity, Vector2 acceleration)
 		=> this.Velocity = GeneralUtil.MoveToward(this.Velocity, targetVelocity, acceleration);
+
+	public void Accelerate(Vector2 targetVelocity, float acceleration)
+		=> this.Velocity = GeneralUtil.MoveToward(this.Velocity, targetVelocity, new Vector2(acceleration, acceleration));
 
 	/// <summary>
 	/// Accelerates the character toward the given target velocity. The acceleration is applied to each axis.

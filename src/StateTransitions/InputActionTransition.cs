@@ -1,6 +1,6 @@
 using System;
 using Godot;
-using Raele.Supercon2D.StateControllers;
+using Raele.Supercon2D.StateComponents;
 
 namespace Raele.Supercon2D.StateTransitions;
 

@@ -1,25 +1,32 @@
 using System;
 using Godot;
 
-namespace Raele.Supercon2D.StateControllers;
+namespace Raele.Supercon2D.StateComponents;
 
-public partial class JumpComponent : SuperconStateController
+public partial class StraightMoveComponent : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	[Export] public Vector2 Direction = Vector2.Zero;
+
+	/// <summary>
+	/// If true, the direction is mirrored horizontally when the character is facing left.
+	/// </summary>
+	[Export] public bool UseFacing = false;
+
 	/// <summary>
 	/// Determines the upmost height the character is able to reach, in pixels.
 	/// </summary>
-	[Export] public float JumpApexHeightPx = 200f;
+	[Export] public float DistancePx = 200f;
 
 	/// <summary>
 	/// Determines the time it takes for the character to reach the jump's apex, in miliseconds. If IsCancelable is
 	/// true, the player can cancel the jump earlier by releasing the jump button. In this case, the character might not
 	/// reach this height.
 	/// </summary>
-	[Export] public float AscentDurationMs = 400f;
+	[Export] public float DurationMs = 400f;
 
 	/// <summary>
 	/// By default, the controller uses a simple sine-based easing function to calculate the character's jump height
@@ -28,26 +35,19 @@ public partial class JumpComponent : SuperconStateController
 	/// values are relative to the JumpHeightPx property, while the curve's X axis values are relative to the
 	/// JumpDurationMs property.
 	/// </summary>
-	[Export] public Curve? AscentCurve;
+	[Export] public Curve? Curve;
 
-	[ExportGroup("Jump End Options")]
 	/// <summary>
 	/// If set, the controller will transition to the specified state when the jump ends (i.e., when the character
 	/// reaches the apex or finishes the ascent).
 	/// </summary>
-	[Export] public SuperconState? TransitionAtJumpEnd;
-	/// <summary>
-	/// The jump will end early if the character collides with a ceiling and remains colliding for at least this many
-	/// miliseconds. If set to 0, the jump will end immediately upon colliding with a ceiling.
-	/// </summary>
-	[Export] public float EndJumpOnCeilingThresholdMs = 150f;
+	[Export] public SuperconState? TransitionOnEnd;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public TimeSpan AscentDuration => TimeSpan.FromMilliseconds(this.AscentDurationMs);
-	public TimeSpan EndJumpOnCeilingThreshold => TimeSpan.FromMilliseconds(this.EndJumpOnCeilingThresholdMs);
+	public TimeSpan Duration => TimeSpan.FromMilliseconds(this.DurationMs);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
@@ -56,14 +56,11 @@ public partial class JumpComponent : SuperconStateController
 	public override void _ProcessActive(double delta)
 	{
 		base._ProcessActive(delta);
-		if (
-			this.State.ActiveDuration >= this.AscentDuration
-			|| this.Character.TimeOnCeiling > this.EndJumpOnCeilingThreshold
-		)
+		if (this.State.ActiveDuration >= this.Duration)
 		{
-			if (this.TransitionAtJumpEnd != null)
+			if (this.TransitionOnEnd != null)
 			{
-				this.StateMachine.QueueTransition(this.TransitionAtJumpEnd);
+				this.StateMachine.QueueTransition(this.TransitionOnEnd);
 			}
 			else
 			{
@@ -76,13 +73,14 @@ public partial class JumpComponent : SuperconStateController
 	{
 		base._PhysicsProcessActive(delta);
 		// TODO We could precalculate the jump height curve so that we don't need to read the curve twice every frame.
-		double currentAscentDurationProgress = this.State.ActiveDuration.TotalMilliseconds / this.AscentDurationMs;
-		double currentApexHeightProgress = this.AscentCurve?.Sample((float)currentAscentDurationProgress)
-			?? Math.Sin(currentAscentDurationProgress * Math.PI / 2);
-		double previousAscentDurationProgress = Math.Max(0, (this.State.ActiveDuration.TotalMilliseconds - delta * 1000) / this.AscentDurationMs);
-		double previousApexHeightProgress = this.AscentCurve?.Sample((float)previousAscentDurationProgress)
-			?? Math.Sin(previousAscentDurationProgress * Math.PI / 2);
-		double heightDiffPx = this.JumpApexHeightPx * (currentApexHeightProgress - previousApexHeightProgress);
-		this.Character.VelocityY = (float)(heightDiffPx / delta * Vector2.Up.Y);
+		double thisFrameDurationProgress = this.State.ActiveDuration.TotalMilliseconds / this.DurationMs;
+		double thisFrameDistanceProgress = this.Curve?.Sample((float) thisFrameDurationProgress)
+			?? Math.Sin(thisFrameDurationProgress * Math.PI / 2);
+		double prevFrameDurationProgress = Math.Max(0, (this.State.ActiveDuration.TotalMilliseconds - delta * 1000) / this.DurationMs);
+		double prevFrameDistanceProgress = this.Curve?.Sample((float) prevFrameDurationProgress)
+			?? Math.Sin(prevFrameDurationProgress * Math.PI / 2);
+		double distanceDiffPx = this.DistancePx * (thisFrameDistanceProgress - prevFrameDistanceProgress);
+		this.Character.Velocity = this.Direction * (float) (distanceDiffPx / delta)
+			+ this.Character.Velocity * this.Direction.Rotated(-0.5f);
 	}
 }

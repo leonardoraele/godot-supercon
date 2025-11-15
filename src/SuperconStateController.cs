@@ -1,7 +1,7 @@
 using Godot;
 using Raele.GodotUtils;
 
-namespace Raele.Supercon2D.StateControllers;
+namespace Raele.Supercon2D.StateComponents;
 
 public partial class SuperconStateController : Node
 {
