@@ -7,33 +7,18 @@ namespace Raele.Supercon2D.StateTransitions;
 public partial class ConditionalStateTransition : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
-	// LOCAL TYPES
-	// -----------------------------------------------------------------------------------------------------------------
-
-	public enum SelfOption
-	{
-		Character,
-		StateMachine,
-		State,
-		ThisNode,
-		TreeRoot,
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Export(PropertyHint.MultilineText)] public string Expression = "";
+	[Export] public Node? Self;
+	[Export] public string Expression = "";
 	[Export] public SuperconState? TransitionOnTrue;
 
-	[ExportGroup("Evaluation Options")]
-	[Export] public SelfOption Self = SelfOption.Character;
+	[ExportGroup("Options")]
 	/// <summary>
 	/// This value will be available in the expression's context as the 'context' variable.
 	/// </summary>
 	[Export] public Variant ContextVar = new Variant();
-
-	[ExportGroup("More Options")]
 	/// <summary>
 	/// Minimum duration, in milliseconds, that the condition must be true before the transition is triggered.
 	/// </summary>
@@ -45,15 +30,6 @@ public partial class ConditionalStateTransition : SuperconStateController
 
 	private float ConditionSatisfiedMoment = float.PositiveInfinity;
 	private Expression CompiledExpression = new();
-	private GodotObject ResolvedSelf => this.Self switch
-	{
-		SelfOption.Character => this.Character,
-		SelfOption.StateMachine => this.StateMachine,
-		SelfOption.State => this.State,
-		SelfOption.ThisNode => this,
-		SelfOption.TreeRoot => this.GetTree().Root,
-		_ => this,
-	};
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// OVERRIDES
@@ -113,7 +89,7 @@ public partial class ConditionalStateTransition : SuperconStateController
 		Variant result;
 		try
 		{
-			result = this.CompiledExpression.Execute([this.ContextVar], this.ResolvedSelf);
+			result = this.CompiledExpression.Execute([this.ContextVar], this.Self ?? this);
 		} catch
 		{
 			result = new Variant();
