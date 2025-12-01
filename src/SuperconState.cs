@@ -3,7 +3,8 @@ using Raele.GodotUtils;
 
 namespace Raele.Supercon2D;
 
-public partial class SuperconState : Raele.GodotUtils.StateMachine.BaseState
+[Tool]
+public partial class SuperconState : GodotUtils.StateMachine.BaseState
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -43,6 +44,10 @@ public partial class SuperconState : Raele.GodotUtils.StateMachine.BaseState
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Engine.IsEditorHint())
+		{
+			return;
+		}
 		base._PhysicsProcess(delta);
 		Callable.From(this.Character.MoveAndSlide).CallDeferred();
 	}

@@ -3,6 +3,7 @@ using Raele.GodotUtils;
 
 namespace Raele.Supercon2D.StateComponents;
 
+[Tool]
 public partial class SuperconStateController : Node
 {
 	// -----------------------------------------------------------------------------------------------------------------
@@ -15,7 +16,7 @@ public partial class SuperconStateController : Node
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public SuperconState State => field != null ? field : field = this.RequireAncestor<SuperconState>();
+	public SuperconState State => field ??= this.RequireAncestor<SuperconState>();
 	public SuperconBody2D Character => this.State.Character;
 	public SuperconInputManager InputManager => this.Character.InputManager;
 	public SuperconStateMachine StateMachine => this.Character.StateMachine;
@@ -26,6 +27,10 @@ public partial class SuperconStateController : Node
 
 	public override void _EnterTree()
 	{
+		if (Engine.IsEditorHint())
+		{
+			return;
+		}
 		base._EnterTree();
 		this.State.StateEntered += this._EnterState;
 		this.State.StateExited += this._ExitState;
@@ -33,6 +38,10 @@ public partial class SuperconStateController : Node
 
 	public override void _Process(double delta)
 	{
+		if (Engine.IsEditorHint())
+		{
+			return;
+		}
 		base._Process(delta);
 		if (this.State.IsActive && this.Enabled)
 		{
@@ -42,6 +51,10 @@ public partial class SuperconStateController : Node
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Engine.IsEditorHint())
+		{
+			return;
+		}
 		base._PhysicsProcess(delta);
 		if (this.State.IsActive && this.Enabled)
 		{

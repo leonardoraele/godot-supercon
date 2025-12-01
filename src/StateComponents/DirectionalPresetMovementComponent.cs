@@ -3,25 +3,13 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class PresetMove1DComponent : SuperconStateController
+public partial class DirectionalPresetMovementComponent : SuperconStateController
 {
-	/// -----------------------------------------------------------------------------------------------------------------
-	/// LOCAL TYPES
-	/// -----------------------------------------------------------------------------------------------------------------
-
-	public enum DirectionOptions
-	{
-		Down,
-		Up,
-		Left,
-		Right,
-	}
-
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Export] public DirectionOptions Direction = DirectionOptions.Down;
+	[Export] public Vector2 Direction = Vector2.Down;
 
 	/// <summary>
 	/// If true, the direction is mirrored horizontally when the character is facing left.
@@ -60,20 +48,7 @@ public partial class PresetMove1DComponent : SuperconStateController
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public TimeSpan Duration => TimeSpan.FromMilliseconds(this.DurationMs);
-	public Vector2 ResolvedDirection => this.Direction switch
-	{
-		DirectionOptions.Down => Vector2.Down,
-		DirectionOptions.Up => Vector2.Up,
-		DirectionOptions.Left => Vector2.Left * (this.UseFacing ? this.Character.FacingDirection : 1),
-		DirectionOptions.Right => Vector2.Right * (this.UseFacing ? this.Character.FacingDirection : 1),
-		_ => Vector2.Zero,
-	};
-	public Vector2 ResolvedCrossDirection => this.Direction switch
-	{
-		DirectionOptions.Down or DirectionOptions.Up => Vector2.Right,
-		DirectionOptions.Left or DirectionOptions.Right => Vector2.Up,
-		_ => Vector2.Zero,
-	};
+	public Vector2 ResolvedDirection => this.Direction * (this.UseFacing ? new Vector2(this.Character.FacingDirection, 1) : Vector2.One);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
@@ -106,7 +81,6 @@ public partial class PresetMove1DComponent : SuperconStateController
 		double prevFrameDistanceProgress = this.Curve?.Sample((float) prevFrameDurationProgress)
 			?? Math.Sin(prevFrameDurationProgress * Math.PI / 2);
 		double distanceDiffPx = this.DistancePx * (thisFrameDistanceProgress - prevFrameDistanceProgress);
-		this.Character.Velocity = this.ResolvedDirection * (float) (distanceDiffPx / delta)
-			+ this.Character.Velocity * this.ResolvedCrossDirection;
+		this.Character.Velocity = this.ResolvedDirection * (float) (distanceDiffPx / delta);
 	}
 }

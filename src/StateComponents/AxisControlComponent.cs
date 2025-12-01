@@ -3,7 +3,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class PlayerControl1DComponent : SuperconStateController
+public partial class AxisControlComponent : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
