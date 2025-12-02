@@ -11,6 +11,12 @@ public partial class SuperconBody2D : CharacterBody2D
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	[Export] public SuperconInputMapping InputMapping
+	{
+		get => field ??= new();
+		set => field = value;
+	}
+
 	// /// <summary>
 	// /// If true, the character will rotate to face the direction of movement.
 	// /// </summary>
@@ -96,7 +102,6 @@ public partial class SuperconBody2D : CharacterBody2D
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public SuperconStateMachine StateMachine => field != null ? field : field = this.RequireChild<SuperconStateMachine>();
-	public SuperconInputManager InputManager => field != null ? field : field = this.RequireChild<SuperconInputManager>();
 	public Vector2 LastOnFloorPosition { get; private set; }
 	public TimeSpan TimeOnFloor { get; private set; } = TimeSpan.Zero;
 	public TimeSpan TimeOnCeiling { get; private set; } = TimeSpan.Zero;
@@ -150,6 +155,7 @@ public partial class SuperconBody2D : CharacterBody2D
 			return;
 		}
 		base._Process(delta);
+		this.InputMapping.Update();
 		this.UpdateLastOnFloorPosition();
 		this.UpdateFacing();
 		this.UpdateContactTrackers(delta);
@@ -171,8 +177,8 @@ public partial class SuperconBody2D : CharacterBody2D
 	{
 		if (
 			Math.Abs(this.Velocity.X) > Mathf.Epsilon
-			&& Math.Abs(this.InputManager.MovementInput.X) > Mathf.Epsilon
-			&& Math.Sign(this.Velocity.X) == Math.Sign(this.InputManager.MovementInput.X)
+			&& Math.Abs(this.InputMapping.MovementInput.X) > Mathf.Epsilon
+			&& Math.Sign(this.Velocity.X) == Math.Sign(this.InputMapping.MovementInput.X)
 		)
 		{
 			this.FacingDirection = Math.Sign(this.Velocity.X);

@@ -18,7 +18,7 @@ public partial class SuperconStateController : Node
 
 	public SuperconState State => field ??= this.RequireAncestor<SuperconState>();
 	public SuperconBody2D Character => this.State.Character;
-	public SuperconInputManager InputManager => this.Character.InputManager;
+	public SuperconInputMapping InputMapping => this.Character.InputMapping;
 	public SuperconStateMachine StateMachine => this.Character.StateMachine;
 
 	// -----------------------------------------------------------------------------------------------------------------

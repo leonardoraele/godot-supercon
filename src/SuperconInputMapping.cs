@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Godot;
-using Raele.GodotUtils;
 
 namespace Raele.Supercon2D;
 
-public partial class SuperconInputManager : Node
+public partial class SuperconInputMapping : Resource
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
@@ -45,10 +44,10 @@ public partial class SuperconInputManager : Node
 	[Export] public bool Enabled { get; private set; } = true;
 
 	[ExportGroup("Movement InputAction Names")]
-	[Export] public string MoveLeftAction = "character_left";
-	[Export] public string MoveRightAction = "character_right";
-	[Export] public string MoveUpAction = "character_up";
-	[Export] public string MoveDownAction = "character_down";
+	[Export] public string MoveLeftAction = "character_move_left";
+	[Export] public string MoveRightAction = "character_move_right";
+	[Export] public string MoveUpAction = "character_move_up";
+	[Export] public string MoveDownAction = "character_move_down";
 
 	[ExportGroup("Input Buffer Settings")]
 	[Export] public int InputBufferDurationMs = 150;
@@ -58,17 +57,14 @@ public partial class SuperconInputManager : Node
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public Vector2 MovementInput { get; private set; }
-	public SuperconBody2D Character => field != null ? field : field = this.RequireAncestor<SuperconBody2D>();
-
 	private Dictionary<string, InputBuffer> InputBuffers = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _Process(double delta)
+	public void Update()
 	{
-		base._Process(delta);
 		if (!this.Enabled)
 		{
 			return;

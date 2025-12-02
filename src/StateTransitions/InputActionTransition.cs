@@ -152,7 +152,7 @@ public partial class InputActionTransition : SuperconStateController
 				&& Input.IsActionPressed(this.InputActionName)
 				|| this.InputMode == AbilityActivationMode.InputIsJustDown
 				&& !string.IsNullOrEmpty(this.InputActionName)
-				&& this.InputManager.GetInputBuffer(this.InputActionName).ConsumeInput()
+				&& this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput()
 				|| this.InputMode == AbilityActivationMode.InputIsReleased
 				&& !string.IsNullOrEmpty(this.InputActionName)
 				&& !Input.IsActionPressed(this.InputActionName)
@@ -165,5 +165,5 @@ public partial class InputActionTransition : SuperconStateController
 			&& !Input.IsActionPressed(this.InputActionName)
 			|| this.CancelingInputMode == AbilityCancelingMode.OnToggle
 			&& !string.IsNullOrEmpty(this.InputActionName)
-			&& this.InputManager.GetInputBuffer(this.InputActionName).ConsumeInput();
+			&& this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput();
 }

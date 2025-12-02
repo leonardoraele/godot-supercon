@@ -30,10 +30,10 @@ public partial class SuperconDebugger : Control
 		this.DrawString(ThemeDB.FallbackFont, Vector2.Zero, $"{this.Character.Velocity.Length():N2} px/s", default, default, 8, Colors.Green);
 
 		Vector2 inputPos = Vector2.Down * 32;
-		this.DrawLine(inputPos, this.Character.InputManager.MovementInput * defaultSpeedBarLength + inputPos, Colors.Green, -1, true);
+		this.DrawLine(inputPos, this.Character.InputMapping.MovementInput * defaultSpeedBarLength + inputPos, Colors.Green, -1, true);
 		this.DrawCircle(inputPos, 2, Colors.Green);
 		this.DrawArc(inputPos, defaultSpeedBarLength, 0f, 2 * (float) Math.PI, 360, Colors.Green);
-		this.DrawString(ThemeDB.FallbackFont, inputPos, $"({this.Character.InputManager.MovementInput.X:N2}, {this.Character.InputManager.MovementInput.Y:N2}) {this.Character.InputManager.MovementInput.Length():N2}/1 {this.Character.InputManager.MovementInput.Angle():N2}º", default, default, 8, Colors.Green);
+		this.DrawString(ThemeDB.FallbackFont, inputPos, $"({this.Character.InputMapping.MovementInput.X:N2}, {this.Character.InputMapping.MovementInput.Y:N2}) {this.Character.InputMapping.MovementInput.Length():N2}/1 {this.Character.InputMapping.MovementInput.Angle():N2}º", default, default, 8, Colors.Green);
 
 		if (this.Character.IsOnFloor()) {
 			this.DrawLine(Vector2.Zero, this.Character.GetFloorNormal() * 8, Colors.White, 1, true);

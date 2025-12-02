@@ -23,7 +23,7 @@ public partial class SuperconState : GodotUtils.StateMachine.BaseState
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public SuperconInputManager InputManager => this.Character.InputManager;
+	public SuperconInputMapping InputManager => this.Character.InputMapping;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// GODOT EVENTS

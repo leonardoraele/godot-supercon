@@ -20,7 +20,7 @@ public partial class BothAxisControlComponent : SuperconStateController
 	{
 		base._PhysicsProcessActive(delta);
 		float currentVelocityPxPSec = this.Character.Velocity.Length();
-		float targetVelocityPxPSec = this.InputManager.MovementInput.Length() * this.MaxSpeedPxPSec;
+		float targetVelocityPxPSec = this.InputMapping.MovementInput.Length() * this.MaxSpeedPxPSec;
 		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec
 			? this.AccelerationPxPSecSqr
 			: this.DecelerationPxPSecSqr;
@@ -29,6 +29,6 @@ public partial class BothAxisControlComponent : SuperconStateController
 			targetVelocityPxPSec,
 			accelerationPxPSecSqr * (float) delta
 		);
-		this.Character.Velocity = this.InputManager.MovementInput.Normalized() * newVelocity;
+		this.Character.Velocity = this.InputMapping.MovementInput.Normalized() * newVelocity;
 	}
 }

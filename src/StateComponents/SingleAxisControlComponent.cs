@@ -30,14 +30,12 @@ public partial class SingleAxisControlComponent : SuperconStateController
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private float LastFrameVelocity = 0f;
-
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private float AxisInput => this.Axis == AxisEnum.Horizontal ? this.InputManager.MovementInput.X
-		: this.Axis == AxisEnum.Vertical ? this.InputManager.MovementInput.Y
+	private float AxisInput => this.Axis == AxisEnum.Horizontal ? this.InputMapping.MovementInput.X
+		: this.Axis == AxisEnum.Vertical ? this.InputMapping.MovementInput.Y
 		: 0f;
 	private float AxisVelocity
 	{
@@ -61,26 +59,9 @@ public partial class SingleAxisControlComponent : SuperconStateController
 	// SIGNALS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Signal] public delegate void MovingEventHandler();
-	[Signal] public delegate void StoppedEventHandler();
-
 	// -----------------------------------------------------------------------------------------------------------------
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
-
-	public override void _EnterState()
-	{
-		base._EnterState();
-		this.LastFrameVelocity = 0f;
-		this.EmitSignal(SignalName.Stopped);
-	}
-
-	public override void _ProcessActive(double delta)
-	{
-		base._ProcessActive(delta);
-		this.ProcessSignals();
-		this.LastFrameVelocity = this.AxisVelocity;
-	}
 
 	public override void _PhysicsProcessActive(double delta)
 	{
@@ -108,20 +89,6 @@ public partial class SingleAxisControlComponent : SuperconStateController
 		else if (this.Axis == AxisEnum.Vertical)
 		{
 			this.Character.AccelerateY(targetVelocity, acceleration * delta);
-		}
-	}
-
-	private void ProcessSignals()
-	{
-		bool wasMoving = Math.Abs(this.LastFrameVelocity) > float.Epsilon;
-		bool isMoving = Math.Abs(this.AxisVelocity) > float.Epsilon;
-		if (!wasMoving && isMoving)
-		{
-			this.EmitSignal(SignalName.Moving);
-		}
-		else if (wasMoving && !isMoving)
-		{
-			this.EmitSignal(SignalName.Stopped);
 		}
 	}
 }

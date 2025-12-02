@@ -99,7 +99,7 @@ public partial class AnimationComponent : SuperconStateController
 				this.AnimatedSprite = this.Character.GetChildren().OfType<AnimatedSprite2D>().FirstOrDefault();
 			}
 		}
-		else
+		else if (this.PlayWhen == PlayWhenEnum.ConditionIsTrue)
 		{
 			if (this.Expression.Parse(this.Condition, ["context"]) != Error.Ok)
 			{
@@ -177,7 +177,7 @@ public partial class AnimationComponent : SuperconStateController
 				}
 			}
 		}
-		else if (this.FlipH == FlipHEnum.IfFacingLeft)
+		if (this.FlipH == FlipHEnum.IfFacingLeft)
 		{
 			this.AnimatedSprite?.FlipH = this.ShouldFlipH;
 		}
