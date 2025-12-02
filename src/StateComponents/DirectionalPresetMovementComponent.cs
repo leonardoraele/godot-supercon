@@ -9,7 +9,7 @@ public partial class DirectionalPresetMovementComponent : SuperconStateControlle
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Export] public Vector2 Direction = Vector2.Down;
+	[Export(PropertyHint.Range, "-180,180,5,radians_as_degrees")] public float DirectionAngle = 0f;
 
 	/// <summary>
 	/// If true, the direction is mirrored horizontally when the character is facing left.
@@ -48,7 +48,8 @@ public partial class DirectionalPresetMovementComponent : SuperconStateControlle
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public TimeSpan Duration => TimeSpan.FromMilliseconds(this.DurationMs);
-	public Vector2 ResolvedDirection => this.Direction * (this.UseFacing ? new Vector2(this.Character.FacingDirection, 1) : Vector2.One);
+	public Vector2 ResolvedDirection => Vector2.Right.Rotated(this.DirectionAngle)
+		* (this.UseFacing ? Vector2.Right * this.Character.FacingDirection : Vector2.One);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
