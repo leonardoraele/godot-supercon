@@ -63,9 +63,9 @@ public partial class SingleAxisControlComponent : SuperconStateController
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _PhysicsProcessActive(double delta)
+	public override void _SuperconPhysicsProcess(double delta)
 	{
-		base._PhysicsProcessActive(delta);
+		base._SuperconPhysicsProcess(delta);
 		float targetVelocity = this.AxisInput * this.MaxSpeedPxPSec;
 		float acceleration =
 			Math.Abs(targetVelocity) < Mathf.Epsilon ? this.SoftDecelerationPxPSecSqr

@@ -1,3 +1,3 @@
 namespace Raele.Supercon2D;
 
-public partial class SuperconStateMachine : Raele.GodotUtils.StateMachine.StateMachineNode {}
+public partial class SuperconStateMachine : Raele.GodotUtils.StateMachine.StateMachine<SuperconState> {}

@@ -175,9 +175,9 @@ public partial class AnimationComponent : SuperconStateController
 	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _EnterState()
+	public override void _SuperconEnter()
 	{
-		base._EnterState();
+		base._SuperconEnter();
 		if (
 			this.PlayAnimationWhen == PlayWhenEnum.StateEnter
 			|| this.PlayAnimationWhen == PlayWhenEnum.StateEnterIfExpressionIsTrue
@@ -188,7 +188,7 @@ public partial class AnimationComponent : SuperconStateController
 		}
 	}
 
-	public override void _ExitState()
+	public override void _SuperconExit()
 	{
 		if (
 			this.PlayAnimationWhen == PlayWhenEnum.StateExit
@@ -198,12 +198,12 @@ public partial class AnimationComponent : SuperconStateController
 		{
 			this.Play();
 		}
-		base._ExitState();
+		base._SuperconExit();
 	}
 
-	public override void _ProcessActive(double delta)
+	public override void _SuperconProcess(double delta)
 	{
-		base._ProcessActive(delta);
+		base._SuperconProcess(delta);
 		if (this.PlayAnimationWhen == PlayWhenEnum.ExpressionIsTrue)
 		{
 			if (this.AnimatedSprite?.Animation != this.Animation && this.EvaluateUserExpression())
@@ -260,7 +260,7 @@ public partial class AnimationComponent : SuperconStateController
 				{
 					return;
 				}
-				this.StateMachine.QueueTransition(this.TransitionOnAnimationEnd);
+				this.StateMachine.TransitionState(this.TransitionOnAnimationEnd);
 			});
 		}
 	}

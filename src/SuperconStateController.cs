@@ -1,10 +1,9 @@
 using Godot;
-using Raele.GodotUtils;
 
 namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public partial class SuperconStateController : Node
+public abstract partial class SuperconStateController : Node
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -16,77 +15,49 @@ public partial class SuperconStateController : Node
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public SuperconState State => field ??= this.RequireAncestor<SuperconState>();
+	public SuperconState State => field ??= this.GetParent<SuperconState>();
 	public SuperconBody2D Character => this.State.Character;
 	public SuperconInputMapping InputMapping => this.Character.InputMapping;
 	public SuperconStateMachine StateMachine => this.Character.StateMachine;
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// GODOT EVENTS
+	// VIRTUALS & OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _EnterTree()
-	{
-		if (Engine.IsEditorHint())
-		{
-			return;
-		}
-		base._EnterTree();
-		this.State.StateEntered += this.OnEnterState;
-		this.State.StateExited += this.OnExitState;
-	}
-
-	public override void _Process(double delta)
-	{
-		if (Engine.IsEditorHint())
-		{
-			this.SetProcess(false);
-			return;
-		}
-		base._Process(delta);
-		if (this.State.IsActive && this.Enabled)
-		{
-			this._ProcessActive(delta);
-		}
-	}
-
-	public override void _PhysicsProcess(double delta)
-	{
-		if (Engine.IsEditorHint())
-		{
-			this.SetPhysicsProcess(false);
-			return;
-		}
-		base._PhysicsProcess(delta);
-		if (this.State.IsActive && this.Enabled)
-		{
-			this._PhysicsProcessActive(delta);
-		}
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// VIRTUAL METHODS
-	// -----------------------------------------------------------------------------------------------------------------
-
-	private void OnEnterState()
+	private void _supercon_enter(SuperconStateMachine.Transition transition)
 	{
 		if (this.Enabled)
 		{
-			this._EnterState();
+			this._SuperconEnter();
 		}
 	}
 
-	private void OnExitState()
+	private void _supercon_exit(SuperconStateMachine.Transition transition)
 	{
 		if (this.Enabled)
 		{
-			this._ExitState();
+			this._SuperconExit();
 		}
 	}
 
-	public virtual void _EnterState() { }
-	public virtual void _ExitState() { }
-	public virtual void _ProcessActive(double delta) { }
-	public virtual void _PhysicsProcessActive(double delta) {}
+	private void _supercon_process(double delta)
+	{
+		if (this.Enabled)
+		{
+			this._SuperconProcess(delta);
+		}
+	}
 
+	private void _supercon_physics_process(double delta)
+	{
+		if (this.Enabled)
+		{
+			this._SuperconPhysicsProcess(delta);
+		}
+	}
+
+	public virtual void _SuperconEnter() { }
+	public virtual void _SuperconExit() { }
+	public virtual void _SuperconProcess(double delta) { }
+	public virtual void _SuperconPhysicsProcess(double delta) {}
 }

@@ -1,5 +1,4 @@
 using Godot;
-using Raele.GodotUtils;
 using System;
 
 namespace Raele.Supercon2D;
@@ -17,6 +16,8 @@ public partial class SuperconBody2D : CharacterBody2D
 		set => field = value;
 	}
 
+	[Export] public SuperconState? DefaultState;
+
 	// /// <summary>
 	// /// If enabled, constantly updates the character's transform so that the positive X axis is aligned with the
 	// /// character's facing direction.
@@ -33,11 +34,11 @@ public partial class SuperconBody2D : CharacterBody2D
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public SuperconStateMachine StateMachine => field != null ? field : field = this.RequireChild<SuperconStateMachine>();
 	public Vector2 LastOnFloorPosition { get; private set; }
 	public TimeSpan TimeOnFloor { get; private set; } = TimeSpan.Zero;
 	public TimeSpan TimeOnCeiling { get; private set; } = TimeSpan.Zero;
 	public TimeSpan TimeOnWall { get; private set; } = TimeSpan.Zero;
+	public SuperconStateMachine StateMachine = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
@@ -75,10 +76,11 @@ public partial class SuperconBody2D : CharacterBody2D
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	// public override void _Ready()
-	// {
-	// 	base._Ready();
-	// }
+	public override void _Ready()
+	{
+		base._Ready();
+		this.ResetState();
+	}
 
 	public override void _Process(double delta)
 	{
@@ -240,4 +242,12 @@ public partial class SuperconBody2D : CharacterBody2D
 				(float) Math.Sin(Math.Atan2(direction.Y, direction.X))
 			)
 			.Abs();
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// STATE MACHINE PROXY METHODS
+	// -----------------------------------------------------------------------------------------------------------------
+
+	public void ResetState() => this.StateMachine.TransitionState(this.DefaultState);
+	public void TransitionState(string stateName) => this.StateMachine.TransitionState(this.GetParent().GetNode(stateName) as SuperconState);
+	public void TransitionState(SuperconState state) => this.StateMachine.TransitionState(state as SuperconState);
 }

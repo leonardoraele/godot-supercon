@@ -28,7 +28,6 @@ public partial class SuperconAbility : Resource
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private object? test;
 	public int UseCount { get; private set; } = 0;
 	public TimeSpan AccumulatedUseTime { get; private set; } = TimeSpan.Zero;
 

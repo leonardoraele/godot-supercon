@@ -16,9 +16,9 @@ public partial class BothAxisControlComponent : SuperconStateController
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _PhysicsProcessActive(double delta)
+	public override void _SuperconPhysicsProcess(double delta)
 	{
-		base._PhysicsProcessActive(delta);
+		base._SuperconPhysicsProcess(delta);
 		float currentVelocityPxPSec = this.Character.Velocity.Length();
 		float targetVelocityPxPSec = this.InputMapping.MovementInput.Length() * this.MaxSpeedPxPSec;
 		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec

@@ -27,7 +27,6 @@ public partial class SuperconPlugin : EditorPlugin
 
 		// Core Types
 		this.AddCustomType(nameof(SuperconBody2D), nameof(CharacterBody2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconBody2D)}.cs"), null);
-		this.AddCustomType(nameof(SuperconStateMachine), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconStateMachine)}.cs"), null);
 		this.AddCustomType(nameof(SuperconState), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconState)}.cs"), stateIcon);
 
 		// State Controllers
@@ -48,7 +47,6 @@ public partial class SuperconPlugin : EditorPlugin
 	public override void _ExitTree()
 	{
 		this.RemoveCustomType(nameof(SuperconBody2D));
-		this.RemoveCustomType(nameof(SuperconStateMachine));
 		this.RemoveCustomType(nameof(SuperconState));
 
 		this.RemoveCustomType(nameof(AnimationComponent));

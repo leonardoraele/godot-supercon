@@ -41,9 +41,9 @@ public partial class ConditionalStateTransition : SuperconStateController
 		this.CompileExpression();
 	}
 
-	public override void _EnterState()
+	public override void _SuperconEnter()
 	{
-		base._EnterState();
+		base._SuperconEnter();
 		if (OS.IsDebugBuild())
 		{
 			this.CompileExpression();
@@ -51,7 +51,7 @@ public partial class ConditionalStateTransition : SuperconStateController
 		this.ConditionSatisfiedMoment = float.PositiveInfinity;
 	}
 
-	public override void _ProcessActive(double delta)
+	public override void _SuperconProcess(double delta)
 	{
 		if (this.TransitionOnTrue == null)
 		{
@@ -62,7 +62,7 @@ public partial class ConditionalStateTransition : SuperconStateController
 			this.ConditionSatisfiedMoment = Math.Min(this.ConditionSatisfiedMoment, Time.GetTicksMsec());
 			if (this.ConditionSatisfiedMoment + this.MinDurationMs <= Time.GetTicksMsec())
 			{
-				this.StateMachine.QueueTransition(this.TransitionOnTrue);
+				this.StateMachine.TransitionState(this.TransitionOnTrue);
 			}
 		}
 		else

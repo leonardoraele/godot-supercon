@@ -58,9 +58,9 @@ public partial class ImpulseComponent : SuperconStateController
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _EnterState()
+	public override void _SuperconEnter()
 	{
-		base._EnterState();
+		base._SuperconEnter();
 		switch (this.ImpulseType)
 		{
 			case ImpulseTypeEnum.Add:

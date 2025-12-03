@@ -30,9 +30,9 @@ public partial class GravityComponent : SuperconStateController
 		this.GravityMagnitudePxPSecSq = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 	}
 
-	public override void _PhysicsProcessActive(double delta)
+	public override void _SuperconPhysicsProcess(double delta)
 	{
-		base._PhysicsProcessActive(delta);
+		base._SuperconPhysicsProcess(delta);
 		this.Character.ApplyForce(
 			this.GravityDirection * this.GravityMagnitudePxPSecSq * (float) delta * this.GravityMultiplier,
 			this.MaxFallSpeedPxPSec

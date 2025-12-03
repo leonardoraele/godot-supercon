@@ -55,25 +55,25 @@ public partial class PresetMovementComponent : SuperconStateController
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _ProcessActive(double delta)
+	public override void _SuperconProcess(double delta)
 	{
-		base._ProcessActive(delta);
+		base._SuperconProcess(delta);
 		if (this.State.ActiveDuration >= this.Duration)
 		{
 			if (this.TransitionOnEnd != null)
 			{
-				this.StateMachine.QueueTransition(this.TransitionOnEnd);
+				this.Character.TransitionState(this.TransitionOnEnd);
 			}
 			else
 			{
-				this.StateMachine.Reset();
+				this.Character.ResetState();
 			}
 		}
 	}
 
-	public override void _PhysicsProcessActive(double delta)
+	public override void _SuperconPhysicsProcess(double delta)
 	{
-		base._PhysicsProcessActive(delta);
+		base._SuperconPhysicsProcess(delta);
 		// TODO We could precalculate the jump height curve so that we don't need to read the curve twice every frame.
 		// TODO We could read this.Character.GetPositionDelta and accumulate the movement instead of recalculing the
 		// previous frame every time.
