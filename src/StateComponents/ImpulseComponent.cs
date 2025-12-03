@@ -18,7 +18,8 @@ public partial class ImpulseComponent : SuperconStateController
 	public enum ImpulseTypeEnum : byte
 	{
 		Add,
-		Override,
+		OverrideSingleAxis,
+		OverrideBothAxis,
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -37,21 +38,21 @@ public partial class ImpulseComponent : SuperconStateController
 	[Export(PropertyHint.Range, "-180,180,5,radians_as_degrees")] public float Angle = 0f;
 
 	/// <summary>
-	/// If true, the impulse direction is inverted when the character is facing left.
-	/// </summary>
-	[Export] public bool UseFacingDirection = true;
-
-	/// <summary>
 	/// The magnitude of the impulse to be applied to the character's velocity, in pixels per second.
 	/// </summary>
 	[Export] public float MagnitudePxPSec = 200f;
+
+	/// <summary>
+	/// If true, the impulse direction is inverted when the character is facing left.
+	/// </summary>
+	[Export] public bool UseFacingDirection = true;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
 	private Vector2 ImpulseDirection => Vector2.Right.Rotated(this.Angle)
-		* Vector2.Right * (this.UseFacingDirection ? this.Character.FacingDirection : 1);
+		* (this.UseFacingDirection ? new Vector2(this.Character.FacingDirection, 1f) : Vector2.One);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
@@ -60,7 +61,17 @@ public partial class ImpulseComponent : SuperconStateController
 	public override void _EnterState()
 	{
 		base._EnterState();
-		this.Character.Velocity = this.Character.Velocity * (this.ImpulseType == ImpulseTypeEnum.Add ? 1 : 0)
-			+ this.ImpulseDirection * this.MagnitudePxPSec;
+		switch (this.ImpulseType)
+		{
+			case ImpulseTypeEnum.Add:
+				this.Character.Velocity = this.Character.Velocity + this.ImpulseDirection * this.MagnitudePxPSec;
+				break;
+			case ImpulseTypeEnum.OverrideSingleAxis:
+				this.Character.SetDirectionalVelocity(this.ImpulseDirection * this.MagnitudePxPSec);
+				break;
+			case ImpulseTypeEnum.OverrideBothAxis:
+				this.Character.Velocity = this.ImpulseDirection * this.MagnitudePxPSec;
+				break;
+		}
 	}
 }
