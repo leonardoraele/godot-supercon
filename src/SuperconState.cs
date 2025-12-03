@@ -10,7 +10,6 @@ public partial class SuperconState : GodotUtils.StateMachine.BaseState
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[ExportGroup("Options")]
 	[Export(PropertyHint.Flags, "X:1,Y:2")] public byte ResetVelocityOnEnter = 0;
 
 	// -----------------------------------------------------------------------------------------------------------------
