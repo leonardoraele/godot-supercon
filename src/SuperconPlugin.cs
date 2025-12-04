@@ -24,6 +24,7 @@ public partial class SuperconPlugin : EditorPlugin
 		Texture2D slopeIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_slope.png");
 		Texture2D impulseIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_impulse.png");
 		Texture2D presetIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_preset.png");
+		Texture2D facingIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_facing.png");
 
 		// Core Types
 		this.AddCustomType(nameof(SuperconBody2D), nameof(CharacterBody2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconBody2D)}.cs"), null);
@@ -33,7 +34,7 @@ public partial class SuperconPlugin : EditorPlugin
 		this.AddCustomType(nameof(AnimationComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(AnimationComponent)}.cs"), animatedSprite);
 		this.AddCustomType(nameof(BothAxisControlComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(BothAxisControlComponent)}.cs"), dualAxisControlIcon);
 		this.AddCustomType(nameof(PresetMovementComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(PresetMovementComponent)}.cs"), presetIcon);
-		this.AddCustomType(nameof(FacingDirectionComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(FacingDirectionComponent)}.cs"), presetIcon);
+		this.AddCustomType(nameof(FacingDirectionComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(FacingDirectionComponent)}.cs"), facingIcon);
 		this.AddCustomType(nameof(ForceComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ForceComponent)}.cs"), forceIcon);
 		this.AddCustomType(nameof(GravityComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(GravityComponent)}.cs"), gravityIcon);
 		this.AddCustomType(nameof(ImpulseComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ImpulseComponent)}.cs"), impulseIcon);
