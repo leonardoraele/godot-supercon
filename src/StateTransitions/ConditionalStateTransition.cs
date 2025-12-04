@@ -62,7 +62,7 @@ public partial class ConditionalStateTransition : SuperconStateController
 			this.ConditionSatisfiedMoment = Math.Min(this.ConditionSatisfiedMoment, Time.GetTicksMsec());
 			if (this.ConditionSatisfiedMoment + this.MinDurationMs <= Time.GetTicksMsec())
 			{
-				this.StateMachine.TransitionState(this.TransitionOnTrue);
+				this.StateMachine.QueueTransition(this.TransitionOnTrue);
 			}
 		}
 		else

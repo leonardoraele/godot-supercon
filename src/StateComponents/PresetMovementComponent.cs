@@ -62,7 +62,7 @@ public partial class PresetMovementComponent : SuperconStateController
 		{
 			if (this.TransitionOnEnd != null)
 			{
-				this.Character.TransitionState(this.TransitionOnEnd);
+				this.Character.QueueTransition(this.TransitionOnEnd);
 			}
 			else
 			{

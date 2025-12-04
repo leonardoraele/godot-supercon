@@ -260,7 +260,7 @@ public partial class AnimationComponent : SuperconStateController
 				{
 					return;
 				}
-				this.StateMachine.TransitionState(this.TransitionOnAnimationEnd);
+				this.StateMachine.QueueTransition(this.TransitionOnAnimationEnd);
 			});
 		}
 	}

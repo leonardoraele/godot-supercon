@@ -254,7 +254,7 @@ public partial class SuperconBody2D : CharacterBody2D
 	// STATE MACHINE PROXY METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public void ResetState() => this.StateMachine.TransitionState(this.DefaultState);
-	public void TransitionState(string stateName) => this.StateMachine.TransitionState(this.GetParent().GetNode(stateName) as SuperconState);
-	public void TransitionState(SuperconState state) => this.StateMachine.TransitionState(state as SuperconState);
+	public void ResetState() => this.StateMachine.QueueTransition(this.DefaultState);
+	public void QueueTransition(string stateName) => this.StateMachine.QueueTransition(this.GetParent().GetNode(stateName) as SuperconState);
+	public void QueueTransition(SuperconState state) => this.StateMachine.QueueTransition(state);
 }

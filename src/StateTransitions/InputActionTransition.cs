@@ -98,7 +98,7 @@ public partial class InputActionTransition : SuperconStateController
 			// }
 			GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "⚡", "Action triggered:", this.InputActionName, "Transition:", this.State.Name, "→", this.TargetState.Name);
 			this.CancelActionCheckActive = true;
-			this.StateMachine.TransitionState(this.TargetState);
+			this.StateMachine.QueueTransition(this.TargetState);
 		}
 		else if (this.CancelActionCheckActive)
 		{
@@ -118,7 +118,7 @@ public partial class InputActionTransition : SuperconStateController
 				// {
 					GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "↩", "Ability canceled:", this.InputActionName, "Transition:", this.State.Name, "←", this.TargetState?.Name ?? "<null>");
 				// }
-				this.StateMachine.TransitionState(this.StateTransitionOnAbilityCanceled ?? this.State);
+				this.StateMachine.QueueTransition(this.StateTransitionOnAbilityCanceled ?? this.State);
 			}
 		}
 	}
