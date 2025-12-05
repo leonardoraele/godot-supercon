@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
@@ -32,10 +31,10 @@ public partial class AnimationComponent : SuperconStateController
 
 	public enum SpeedScaleModeEnum
 	{
+		Unchanged,
 		Constant,
-		BasedOnAbsoluteVelocityX,
-		BasedOnAbsoluteVelocityY,
-		BasedOnVelocityMagnitude,
+		ExpressionOnce,
+		ExpressionEveryFrame,
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -46,28 +45,35 @@ public partial class AnimationComponent : SuperconStateController
 		{ get => field; set { field = value; this.NotifyPropertyListChanged(); }} = null;
 	[Export(PropertyHint.Enum)] public string Animation = "";
 	[Export] public FlipHEnum FlipH = FlipHEnum.IfFacingLeft;
-	[Export] public PlayWhenEnum PlayAnimationWhen
-		{ get => field; set { field = value; this.NotifyPropertyListChanged(); } }
-		= PlayWhenEnum.StateEnter;
-	[Export] public Node? Self;
-	[Export(PropertyHint.Expression)] public string Expression = "";
-	[Export] public Variant ContextVar = new Variant();
 	[Export] public SuperconState? TransitionOnAnimationEnd;
 
+	[ExportGroup("Timing", "Timing")]
+	[Export] public PlayWhenEnum TimingPlayAnimationWhen
+		{ get => field; set { field = value; this.NotifyPropertyListChanged(); } }
+		= PlayWhenEnum.StateEnter;
+	[Export] public Node? TimingSelf;
+	[Export(PropertyHint.Expression)] public string TimingExpression = "";
+	[Export] public Variant TimingContextVar = new Variant();
+
 	[ExportGroup("Speed Scale", "SpeedScale")]
-	[Export(PropertyHint.GroupEnable)] public bool SpeedScaleEnabled = false;
 	[Export] public SpeedScaleModeEnum SpeedScaleMode
 		{ get => field; set { field = value; this.NotifyPropertyListChanged(); } }
-		= SpeedScaleModeEnum.Constant;
-	[Export(PropertyHint.Range, "0.25,4,0.05,or_greater,or_less")] public float SpeedScaleFixedValue = 1f;
-	[Export] public Curve? SpeedScaleValueByVelocity;
-	[Export] public bool SpeedScaleResetOnAnimationEnd = true;
+		= SpeedScaleModeEnum.Unchanged;
+	[Export(PropertyHint.Range, "0.25,4,0.05,or_greater,or_less")] public float SpeedScaleValue = 1f;
+	[Export] public Node? SpeedScaleSelf;
+	[Export(PropertyHint.Expression)] public string SpeedScaleExpression = "";
+	/// <summary>
+	/// This value will be available in the expression's context as the 'context' variable.
+	/// </summary>
+	[Export] public Variant SpeedScaleContextVar = new Variant();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private Expression ExpressionParser = new();
+	private Expression? ExpressionParser;
+	private Expression? SpeedScaleExpressionParser;
+	private float OriginalSpeedScale = 1f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
@@ -113,11 +119,27 @@ public partial class AnimationComponent : SuperconStateController
 	public override void _Ready()
 	{
 		base._Ready();
-		if (this.PlayAnimationWhen == PlayWhenEnum.ExpressionIsTrue)
+		if (Engine.IsEditorHint() && this.AnimatedSprite == null)
 		{
-			if (this.ExpressionParser.Parse(this.Expression, ["context"]) != Error.Ok)
+			this.AnimatedSprite = this.Character.GetChildren().OfType<AnimatedSprite2D>().FirstOrDefault();
+		}
+		if (this.TimingPlayAnimationWhen == PlayWhenEnum.ExpressionIsTrue)
+		{
+			this.ExpressionParser = new();
+			if (this.ExpressionParser?.Parse(this.TimingExpression, ["context"]) != Error.Ok)
 			{
-				GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to parse expression: \"{this.Expression}\"");
+				GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to parse expression: \"{this.TimingExpression}\"");
+			}
+		}
+		if (
+			this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionOnce
+			|| this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionEveryFrame
+		)
+		{
+			this.SpeedScaleExpressionParser = new();
+			if (this.SpeedScaleExpressionParser?.Parse(this.SpeedScaleExpression, ["context"]) != Error.Ok)
+			{
+				GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to parse speed scale expression: \"{this.SpeedScaleExpression}\"");
 			}
 		}
 	}
@@ -145,27 +167,30 @@ public partial class AnimationComponent : SuperconStateController
 			case nameof(this.Animation):
 				property["hint_string"] = this.AnimatedSprite?.SpriteFrames?.GetAnimationNames().Join(",") ?? "";
 				break;
-			case nameof(this.Expression):
-			case nameof(this.Self):
-			case nameof(this.ContextVar):
-				property["usage"] = this.PlayAnimationWhen switch
+			case nameof(this.TimingExpression):
+			case nameof(this.TimingSelf):
+			case nameof(this.TimingContextVar):
+				property["usage"] = this.TimingPlayAnimationWhen switch
 				{
 					PlayWhenEnum.ExpressionIsTrue
 						or PlayWhenEnum.StateEnterIfExpressionIsTrue
 						or PlayWhenEnum.StateExitIfExpressionIsTrue
-						=> (int) PropertyUsageFlags.Default,
+						=> (int) PropertyUsageFlags.Default | (int) PropertyUsageFlags.NilIsVariant,
 					_ => (int) PropertyUsageFlags.NoEditor,
 				};
 				break;
-			case nameof(this.SpeedScaleFixedValue):
-				property["usage"] = this.SpeedScaleEnabled && this.SpeedScaleMode == SpeedScaleModeEnum.Constant
+			case nameof(this.SpeedScaleValue):
+				property["usage"] = this.SpeedScaleMode == SpeedScaleModeEnum.Constant
 					? (int) PropertyUsageFlags.Default
 					: (int) PropertyUsageFlags.NoEditor;
 				break;
-			case nameof(this.SpeedScaleValueByVelocity):
-				property["usage"] = this.SpeedScaleEnabled && this.SpeedScaleMode != SpeedScaleModeEnum.Constant
-					? (int) PropertyUsageFlags.Default
-					: (int) PropertyUsageFlags.NoEditor;
+			case nameof(this.SpeedScaleSelf):
+			case nameof(this.SpeedScaleExpression):
+			case nameof(this.SpeedScaleContextVar):
+				property["usage"] = this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionOnce
+					|| this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionEveryFrame
+						? (int) PropertyUsageFlags.Default | (int) PropertyUsageFlags.NilIsVariant
+						: (int) PropertyUsageFlags.NoEditor;
 				break;
 		}
 	}
@@ -177,9 +202,10 @@ public partial class AnimationComponent : SuperconStateController
 	public override void _SuperconEnter()
 	{
 		base._SuperconEnter();
+		this.OriginalSpeedScale = this.AnimatedSprite?.SpeedScale ?? 1f;
 		if (
-			this.PlayAnimationWhen == PlayWhenEnum.StateEnter
-			|| this.PlayAnimationWhen == PlayWhenEnum.StateEnterIfExpressionIsTrue
+			this.TimingPlayAnimationWhen == PlayWhenEnum.StateEnter
+			|| this.TimingPlayAnimationWhen == PlayWhenEnum.StateEnterIfExpressionIsTrue
 			&& this.EvaluateUserExpression()
 		)
 		{
@@ -189,9 +215,10 @@ public partial class AnimationComponent : SuperconStateController
 
 	public override void _SuperconExit()
 	{
+		this.AnimatedSprite?.SpeedScale = this.OriginalSpeedScale;
 		if (
-			this.PlayAnimationWhen == PlayWhenEnum.StateExit
-			|| this.PlayAnimationWhen == PlayWhenEnum.StateExitIfExpressionIsTrue
+			this.TimingPlayAnimationWhen == PlayWhenEnum.StateExit
+			|| this.TimingPlayAnimationWhen == PlayWhenEnum.StateExitIfExpressionIsTrue
 			&& this.EvaluateUserExpression()
 		)
 		{
@@ -204,26 +231,22 @@ public partial class AnimationComponent : SuperconStateController
 	{
 		base._SuperconProcess(delta);
 		if (
-			this.PlayAnimationWhen == PlayWhenEnum.ExpressionIsTrue
-			&& this.AnimatedSprite?.Animation != this.Animation
-			&& this.EvaluateUserExpression()
+			this.AnimatedSprite?.IsPlaying() == true
+			&& this.AnimatedSprite?.Animation == this.Animation
 		)
 		{
-			this.Play();
-		}
-		if (this.FlipH == FlipHEnum.IfFacingLeft && this.AnimatedSprite?.Animation == this.Animation)
-		{
-			this.AnimatedSprite?.FlipH = this.ShouldFlipH;
-		}
-		if (this.SpeedScaleEnabled && this.AnimatedSprite?.Animation == this.Animation)
-		{
-			this.AnimatedSprite.SpeedScale = this.SpeedScaleMode switch
+			if (this.FlipH == FlipHEnum.IfFacingLeft)
 			{
-				SpeedScaleModeEnum.BasedOnAbsoluteVelocityX => this.SpeedScaleValueByVelocity?.SampleBaked(Math.Abs(this.Character.Velocity.X)) ?? 1f,
-				SpeedScaleModeEnum.BasedOnAbsoluteVelocityY => this.SpeedScaleValueByVelocity?.SampleBaked(Math.Abs(this.Character.Velocity.Y)) ?? 1f,
-				SpeedScaleModeEnum.BasedOnVelocityMagnitude => this.SpeedScaleValueByVelocity?.SampleBaked(this.Character.Velocity.Length()) ?? 1f,
-				_ => 1f,
-			};
+				this.AnimatedSprite?.FlipH = this.ShouldFlipH;
+			}
+			if (this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionEveryFrame)
+			{
+				this.AnimatedSprite?.SpeedScale = this.EvaluateSpeedScaleExpression();
+			}
+		}
+		else if (this.TimingPlayAnimationWhen == PlayWhenEnum.ExpressionIsTrue && this.EvaluateUserExpression())
+		{
+			this.Play();
 		}
 	}
 
@@ -233,65 +256,59 @@ public partial class AnimationComponent : SuperconStateController
 
 	private void Play()
 	{
+		if (this.SpeedScaleMode == SpeedScaleModeEnum.Constant)
+		{
+			this.AnimatedSprite?.SpeedScale = this.SpeedScaleValue;
+		}
+		else if (this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionOnce)
+		{
+			this.AnimatedSprite?.SpeedScale = this.EvaluateSpeedScaleExpression();
+		}
 		this.AnimatedSprite?.Play(this.Animation);
 		this.AnimatedSprite?.FlipH = this.ShouldFlipH;
-
-		if (this.SpeedScaleEnabled && this.SpeedScaleMode == SpeedScaleModeEnum.Constant)
-		{
-			this.AnimatedSprite?.SpeedScale = this.SpeedScaleFixedValue;
-		}
-		if (this.SpeedScaleEnabled && this.SpeedScaleResetOnAnimationEnd)
-		{
-			float originalSpeedScale = this.AnimatedSprite?.SpeedScale ?? 1f;
-			this.WaitAnimationFinishedOrChanged().ContinueWith(task =>
-			{
-				if (task.Result == 'C')
-				{
-					return;
-				}
-				this.AnimatedSprite?.SpeedScale = originalSpeedScale;
-			});
-		}
-		if (this.TransitionOnAnimationEnd != null)
-		{
-			this.WaitAnimationFinishedOrChanged().ContinueWith(task =>
-			{
-				if (task.Result == 'C')
-				{
-					return;
-				}
-				this.StateMachine.QueueTransition(this.TransitionOnAnimationEnd);
-			});
-		}
 	}
 
-	private Task<char> WaitAnimationFinishedOrChanged() {
-		TaskCompletionSource<char> source = new();
-		Callable finished = Callable.From(() => source.SetResult('F'));
-		Callable changed = Callable.From(() => source.SetResult('C'));
-		this.AnimatedSprite?.Connect(AnimatedSprite2D.SignalName.AnimationFinished, finished);
-		this.AnimatedSprite?.Connect(AnimatedSprite2D.SignalName.AnimationChanged, changed);
-		source.Task.ContinueWith(_ => Callable.From(() =>
+	private float GetSpeedScale()
+	{
+		return this.SpeedScaleMode switch
 		{
-			this.AnimatedSprite?.Disconnect(AnimatedSprite2D.SignalName.AnimationFinished, finished);
-			this.AnimatedSprite?.Disconnect(AnimatedSprite2D.SignalName.AnimationChanged, changed);
-		}).CallDeferred());
-		return source.Task;
+			SpeedScaleModeEnum.Constant => this.SpeedScaleValue,
+			SpeedScaleModeEnum.ExpressionOnce => this.EvaluateSpeedScaleExpression(),
+			_ => this.AnimatedSprite?.SpeedScale ?? 1f,
+		};
+	}
+
+	private float EvaluateSpeedScaleExpression()
+	{
+		Variant result;
+		try {
+			result = this.SpeedScaleExpressionParser?.Execute([this.SpeedScaleContextVar], this.SpeedScaleSelf) ?? new Variant();
+		} catch (Exception e) {
+			GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to evaluate speed scale expression: \"{this.SpeedScaleExpression}\"", e);
+			return 1f;
+		}
+		if (result.VariantType != Variant.Type.Float && result.VariantType != Variant.Type.Int)
+		{
+			GD.PrintErr($"[{nameof(AnimationComponent)}] Speed scale expression did not evaluate to a number. Expression \"{this.SpeedScaleExpression}\" returned {result} ({result.VariantType})");
+			return 1f;
+		}
+		return result.AsSingle();
 	}
 
 	private bool EvaluateUserExpression()
 	{
+		Variant result;
 		try {
-			Variant result = this.ExpressionParser.Execute([this.ContextVar], this.Self);
-			if (result.VariantType != Variant.Type.Bool)
-			{
-				GD.PrintErr($"[{nameof(AnimationComponent)}] Condition did not evaluate to a boolean: \"{this.Expression}\"");
-				return false;
-			}
-			return result.AsBool();
+			result = this.ExpressionParser?.Execute([this.TimingContextVar], this.TimingSelf) ?? Variant.From(false);
 		} catch (Exception e) {
-			GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to evaluate condition: \"{this.Expression}\"", e);
+			GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to evaluate condition: \"{this.TimingExpression}\"", e);
 			return false;
 		}
+		if (result.VariantType != Variant.Type.Bool)
+		{
+			GD.PrintErr($"[{nameof(AnimationComponent)}] Condition did not evaluate to a boolean. Expression \"{this.TimingExpression}\" returned {result} ({result.VariantType})");
+			return false;
+		}
+		return result.AsBool();
 	}
 }

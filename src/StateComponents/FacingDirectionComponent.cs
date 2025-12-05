@@ -141,14 +141,14 @@ public partial class FacingDirectionComponent : SuperconStateController
 			case nameof(Self):
 			case nameof(ContextVar):
 				property["usage"] = this.NewFacingDirection == FacingDirectionOptions.Expression
-					? (long) PropertyUsageFlags.Default
+					? (long) PropertyUsageFlags.Default | (int) PropertyUsageFlags.NilIsVariant
 					: (long) PropertyUsageFlags.NoEditor;
 				break;
 			case nameof(TriggerExpression):
 			case nameof(TriggerSelf):
 			case nameof(TriggerContextVar):
 				property["usage"] = this.TriggerCondition == TriggerConditionenum.IfExpressionIsTrue
-					? (long) PropertyUsageFlags.Default
+					? (long) PropertyUsageFlags.Default | (int) PropertyUsageFlags.NilIsVariant
 					: (long) PropertyUsageFlags.NoEditor;
 				break;
 		}
