@@ -5,7 +5,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public partial class AnimationComponent : SuperconStateController
+public partial class AnimatedSprite2DComponent : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -18,6 +18,7 @@ public partial class AnimationComponent : SuperconStateController
 		Never,
 		Always,
 		IfFacingLeft,
+		IfFacingRight,
 	}
 
 	public enum PlayWhenEnum
@@ -84,6 +85,7 @@ public partial class AnimationComponent : SuperconStateController
 		FlipHEnum.Never => false,
 		FlipHEnum.Always => true,
 		FlipHEnum.IfFacingLeft => this.Character.FacingDirection < 0,
+		FlipHEnum.IfFacingRight => this.Character.FacingDirection > 0,
 		_ => false,
 	};
 
@@ -128,7 +130,7 @@ public partial class AnimationComponent : SuperconStateController
 			this.ExpressionParser = new();
 			if (this.ExpressionParser?.Parse(this.TimingExpression, ["context"]) != Error.Ok)
 			{
-				GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to parse expression: \"{this.TimingExpression}\"");
+				GD.PrintErr($"[{nameof(AnimatedSprite2DComponent)}] Failed to parse expression: \"{this.TimingExpression}\"");
 			}
 		}
 		if (
@@ -139,7 +141,7 @@ public partial class AnimationComponent : SuperconStateController
 			this.SpeedScaleExpressionParser = new();
 			if (this.SpeedScaleExpressionParser?.Parse(this.SpeedScaleExpression, ["context"]) != Error.Ok)
 			{
-				GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to parse speed scale expression: \"{this.SpeedScaleExpression}\"");
+				GD.PrintErr($"[{nameof(AnimatedSprite2DComponent)}] Failed to parse speed scale expression: \"{this.SpeedScaleExpression}\"");
 			}
 		}
 	}
@@ -235,10 +237,7 @@ public partial class AnimationComponent : SuperconStateController
 			&& this.AnimatedSprite?.Animation == this.Animation
 		)
 		{
-			if (this.FlipH == FlipHEnum.IfFacingLeft)
-			{
-				this.AnimatedSprite?.FlipH = this.ShouldFlipH;
-			}
+			this.AnimatedSprite?.FlipH = this.ShouldFlipH;
 			if (this.SpeedScaleMode == SpeedScaleModeEnum.ExpressionEveryFrame)
 			{
 				this.AnimatedSprite?.SpeedScale = this.EvaluateSpeedScaleExpression();
@@ -284,12 +283,12 @@ public partial class AnimationComponent : SuperconStateController
 		try {
 			result = this.SpeedScaleExpressionParser?.Execute([this.SpeedScaleContextVar], this.SpeedScaleSelf) ?? new Variant();
 		} catch (Exception e) {
-			GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to evaluate speed scale expression: \"{this.SpeedScaleExpression}\"", e);
+			GD.PrintErr($"[{nameof(AnimatedSprite2DComponent)}] Failed to evaluate speed scale expression: \"{this.SpeedScaleExpression}\"", e);
 			return 1f;
 		}
 		if (result.VariantType != Variant.Type.Float && result.VariantType != Variant.Type.Int)
 		{
-			GD.PrintErr($"[{nameof(AnimationComponent)}] Speed scale expression did not evaluate to a number. Expression \"{this.SpeedScaleExpression}\" returned {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(AnimatedSprite2DComponent)}] Speed scale expression did not evaluate to a number. Expression \"{this.SpeedScaleExpression}\" returned {result} ({result.VariantType})");
 			return 1f;
 		}
 		return result.AsSingle();
@@ -301,12 +300,12 @@ public partial class AnimationComponent : SuperconStateController
 		try {
 			result = this.ExpressionParser?.Execute([this.TimingContextVar], this.TimingSelf) ?? Variant.From(false);
 		} catch (Exception e) {
-			GD.PrintErr($"[{nameof(AnimationComponent)}] Failed to evaluate condition: \"{this.TimingExpression}\"", e);
+			GD.PrintErr($"[{nameof(AnimatedSprite2DComponent)}] Failed to evaluate condition: \"{this.TimingExpression}\"", e);
 			return false;
 		}
 		if (result.VariantType != Variant.Type.Bool)
 		{
-			GD.PrintErr($"[{nameof(AnimationComponent)}] Condition did not evaluate to a boolean. Expression \"{this.TimingExpression}\" returned {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(AnimatedSprite2DComponent)}] Condition did not evaluate to a boolean. Expression \"{this.TimingExpression}\" returned {result} ({result.VariantType})");
 			return false;
 		}
 		return result.AsBool();

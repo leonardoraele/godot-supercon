@@ -31,7 +31,7 @@ public partial class SuperconPlugin : EditorPlugin
 		this.AddCustomType(nameof(SuperconState), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconState)}.cs"), stateIcon);
 
 		// State Controllers
-		this.AddCustomType(nameof(AnimationComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(AnimationComponent)}.cs"), animatedSprite);
+		this.AddCustomType(nameof(AnimatedSprite2DComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(AnimatedSprite2DComponent)}.cs"), animatedSprite);
 		this.AddCustomType(nameof(BothAxisControlComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(BothAxisControlComponent)}.cs"), dualAxisControlIcon);
 		this.AddCustomType(nameof(PresetMovementComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(PresetMovementComponent)}.cs"), presetIcon);
 		this.AddCustomType(nameof(FacingDirectionComponent), nameof(Node), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(FacingDirectionComponent)}.cs"), facingIcon);
@@ -51,7 +51,7 @@ public partial class SuperconPlugin : EditorPlugin
 		this.RemoveCustomType(nameof(SuperconBody2D));
 		this.RemoveCustomType(nameof(SuperconState));
 
-		this.RemoveCustomType(nameof(AnimationComponent));
+		this.RemoveCustomType(nameof(AnimatedSprite2DComponent));
 		this.RemoveCustomType(nameof(BothAxisControlComponent));
 		this.RemoveCustomType(nameof(PresetMovementComponent));
 		this.RemoveCustomType(nameof(FacingDirectionComponent));
