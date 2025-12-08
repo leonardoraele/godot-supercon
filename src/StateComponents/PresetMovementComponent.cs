@@ -74,6 +74,14 @@ public partial class PresetMovementComponent : SuperconStateController
 	public override void _SuperconPhysicsProcess(double delta)
 	{
 		base._SuperconPhysicsProcess(delta);
+
+		// Prevents division by zero when the duration is zero.
+		// TODO Handle instant movement when duration is zero.
+		if (Mathf.IsZeroApprox(this.DurationMs))
+		{
+			return;
+		}
+
 		// TODO We could precalculate the jump height curve so that we don't need to read the curve twice every frame.
 		// TODO We could read this.Character.GetPositionDelta and accumulate the movement instead of recalculing the
 		// previous frame every time.
