@@ -1,9 +1,10 @@
-using System;
 using Godot;
+using Godot.Collections;
 using Raele.Supercon2D.StateComponents;
 
 namespace Raele.Supercon2D.StateTransitions;
 
+[Tool]
 public partial class InputActionTransition : SuperconStateController
 {
 	// -----------------------------------------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ public partial class InputActionTransition : SuperconStateController
 	/// <summary>
 	/// Name of the input action to be read for this ability.
 	/// </summary>
-	[Export] public string? InputActionName;
+	[Export] public string InputActionName = "";
 	[Export] public SuperconState? TargetState;
 	[Export] public AbilityActivationMode InputMode = AbilityActivationMode.InputIsJustDown;
 
@@ -85,6 +86,11 @@ public partial class InputActionTransition : SuperconStateController
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+		if (Engine.IsEditorHint())
+		{
+			this.SetProcess(false);
+			return;
+		}
 		if (this.CheckTransitionConditions(delta))
 		{
 			if (this.TargetState == null)
@@ -122,6 +128,23 @@ public partial class InputActionTransition : SuperconStateController
 			}
 		}
 	}
+
+	public override void _ValidateProperty(Dictionary property)
+	{
+		base._ValidateProperty(property);
+		switch (property["name"].AsString())
+		{
+			case nameof(InputActionName):
+				InputMap.LoadFromProjectSettings();
+				property["hint"] = (long) PropertyHint.Enum;
+				property["hint_string"] = string.Join(",", InputMap.GetActions());
+				break;
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// METHODS
+	// -----------------------------------------------------------------------------------------------------------------
 
 	private bool CheckTransitionConditions(double delta)
 		=> this.State.IsActive
