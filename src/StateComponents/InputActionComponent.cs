@@ -1,11 +1,10 @@
 using Godot;
 using Godot.Collections;
-using Raele.Supercon2D.StateComponents;
 
 namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public partial class InputActionTransition : SuperconStateComponent
+public partial class InputActionComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
@@ -102,7 +101,7 @@ public partial class InputActionTransition : SuperconStateComponent
 			// {
 			// 	this.Ability.AddUseCount();
 			// }
-			GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "⚡", "Action triggered:", this.InputActionName, "Transition:", this.State.Name, "→", this.TargetState.Name);
+			GD.PrintS(Time.GetTicksMsec(), nameof(InputActionComponent), ":", "⚡", "Action triggered:", this.InputActionName, "Transition:", this.State.Name, "→", this.TargetState.Name);
 			this.CancelActionCheckActive = true;
 			this.StateMachine.QueueTransition(this.TargetState);
 		}
@@ -122,7 +121,7 @@ public partial class InputActionTransition : SuperconStateComponent
 				// }
 				// else
 				// {
-					GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "↩", "Ability canceled:", this.InputActionName, "Transition:", this.State.Name, "←", this.TargetState?.Name ?? "<null>");
+					GD.PrintS(Time.GetTicksMsec(), nameof(InputActionComponent), ":", "↩", "Ability canceled:", this.InputActionName, "Transition:", this.State.Name, "←", this.TargetState?.Name ?? "<null>");
 				// }
 				this.StateMachine.QueueTransition(this.StateTransitionOnAbilityCanceled ?? this.State);
 			}
