@@ -44,13 +44,13 @@ public partial class SuperconInputMapping : Resource
 
 	[Export] public bool Enabled { get; private set; } = true;
 
-	[ExportGroup("Movement InputAction Names")]
 	[Export] public string MoveLeftAction = "character_move_left";
 	[Export] public string MoveRightAction = "character_move_right";
 	[Export] public string MoveUpAction = "character_move_up";
 	[Export] public string MoveDownAction = "character_move_down";
 
-	[ExportGroup("Input Buffer Settings")]
+	[ExportGroup("Buffer Inputs")]
+	[Export(PropertyHint.GroupEnable)] public bool BufferInputsEnabled = true;
 	[Export] public int InputBufferDurationMs = 150;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -61,8 +61,37 @@ public partial class SuperconInputMapping : Resource
 	private Dictionary<string, InputBuffer> InputBuffers = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
+	// PROPERTIES
+	// -----------------------------------------------------------------------------------------------------------------
+
+	public TimeSpan InputBufferDuration => this.BufferInputsEnabled
+		? TimeSpan.FromMilliseconds(this.InputBufferDurationMs)
+		: TimeSpan.Zero;
+
+	// -----------------------------------------------------------------------------------------------------------------
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
+
+	public override void _ValidateProperty(Godot.Collections.Dictionary property)
+	{
+		base._ValidateProperty(property);
+		switch (property["name"].AsString())
+		{
+			case nameof(MoveUpAction):
+			case nameof(MoveDownAction):
+			case nameof(MoveLeftAction):
+			case nameof(MoveRightAction):
+				InputMap.LoadFromProjectSettings();
+				property["hint"] = (long) PropertyHint.Enum;
+				property["hint_string"] = string.Join(",", InputMap.GetActions());
+				break;
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// METHODS
+	// -----------------------------------------------------------------------------------------------------------------
+
 
 	public void Update()
 	{
@@ -81,18 +110,13 @@ public partial class SuperconInputMapping : Resource
 			buffer.Update();
 		}
 	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// METHODS
-	// -----------------------------------------------------------------------------------------------------------------
-
 	public InputBuffer GetInputBuffer(string name)
 	{
 		if (!this.InputBuffers.ContainsKey(name))
 		{
 			this.InputBuffers[name] = new InputBuffer()
 			{
-				InputBufferDurationMs = () => TimeSpan.FromMilliseconds(this.InputBufferDurationMs),
+				InputBufferDurationMs = () => InputBufferDuration,
 				InputActionName = () => name,
 			};
 		}
