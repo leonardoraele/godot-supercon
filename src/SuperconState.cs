@@ -5,7 +5,7 @@ using Godot;
 namespace Raele.Supercon2D;
 
 [Tool][GlobalClass]
-public partial class SuperconState : Node, SuperconStateMachine.IState
+public partial class SuperconState : Node2D, SuperconStateMachine.IState
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

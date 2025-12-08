@@ -3,7 +3,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public abstract partial class SuperconStateController : Node
+public abstract partial class SuperconStateComponent : Node2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

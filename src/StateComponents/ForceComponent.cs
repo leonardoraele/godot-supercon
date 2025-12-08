@@ -4,7 +4,7 @@ using Godot.Collections;
 namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public partial class ForceComponent : SuperconStateController
+public partial class ForceComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES

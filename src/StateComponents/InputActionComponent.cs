@@ -2,10 +2,10 @@ using Godot;
 using Godot.Collections;
 using Raele.Supercon2D.StateComponents;
 
-namespace Raele.Supercon2D.StateTransitions;
+namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public partial class InputActionTransition : SuperconStateController
+public partial class InputActionTransition : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES

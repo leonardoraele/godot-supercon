@@ -3,7 +3,7 @@
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class SlopeComponent : SuperconStateController
+public partial class SlopeComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

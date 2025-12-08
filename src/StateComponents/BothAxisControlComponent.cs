@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class BothAxisControlComponent : SuperconStateController
+public partial class BothAxisControlComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

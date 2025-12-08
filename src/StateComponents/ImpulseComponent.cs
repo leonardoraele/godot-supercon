@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class ImpulseComponent : SuperconStateController
+public partial class ImpulseComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES

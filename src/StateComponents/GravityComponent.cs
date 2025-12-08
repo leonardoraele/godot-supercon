@@ -3,7 +3,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents;
 
 [Tool]
-public partial class GravityComponent : SuperconStateController
+public partial class GravityComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

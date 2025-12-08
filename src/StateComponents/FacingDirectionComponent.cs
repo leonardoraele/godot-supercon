@@ -5,7 +5,7 @@ using Raele.Supercon2D.StateComponents;
 namespace Raele.Supercon2D;
 
 [Tool]
-public partial class FacingDirectionComponent : SuperconStateController
+public partial class FacingDirectionComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
