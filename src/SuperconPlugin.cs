@@ -22,13 +22,15 @@ public partial class SuperconPlugin : EditorPlugin
 		Texture2D impulseIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_impulse.png");
 		Texture2D presetIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_preset.png");
 		Texture2D facingIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_facing.png");
+		Texture2D animationPlayIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_animation_play.png");
 
 		// Core Types
 		this.AddCustomType(nameof(SuperconBody2D), nameof(CharacterBody2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconBody2D)}.cs"), null);
 		this.AddCustomType(nameof(SuperconState), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconState)}.cs"), stateIcon);
 
 		// State Components
-		this.AddCustomType(nameof(ExpressionComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ExpressionComponent)}.cs"), binaryIcon);
+		this.AddCustomType(nameof(AnimationComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(AnimationComponent)}.cs"), animationPlayIcon);
+		this.AddCustomType(nameof(CustomTransitionComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(CustomTransitionComponent)}.cs"), binaryIcon);
 		this.AddCustomType(nameof(FacingDirectionComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(FacingDirectionComponent)}.cs"), facingIcon);
 		this.AddCustomType(nameof(ForceComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ForceComponent)}.cs"), forceIcon);
 		this.AddCustomType(nameof(GravityComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(GravityComponent)}.cs"), gravityIcon);
@@ -46,7 +48,8 @@ public partial class SuperconPlugin : EditorPlugin
 		this.RemoveCustomType(nameof(SuperconBody2D));
 		this.RemoveCustomType(nameof(SuperconState));
 
-		this.RemoveCustomType(nameof(ExpressionComponent));
+		this.RemoveCustomType(nameof(AnimationComponent));
+		this.RemoveCustomType(nameof(CustomTransitionComponent));
 		this.RemoveCustomType(nameof(FacingDirectionComponent));
 		this.RemoveCustomType(nameof(ForceComponent));
 		this.RemoveCustomType(nameof(GravityComponent));

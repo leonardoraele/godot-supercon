@@ -3,21 +3,21 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class ExpressionComponent : SuperconStateComponent
+public partial class CustomTransitionComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export] public Node? Self;
-	[Export(PropertyHint.Expression)] public string Expression = "";
-	[Export] public SuperconState? TransitionOnTrue;
-
-	[ExportGroup("Options")]
 	/// <summary>
 	/// This value will be available in the expression's context as the 'context' variable.
 	/// </summary>
 	[Export] public Variant ContextVar = new Variant();
+	[Export(PropertyHint.Expression)] public string Expression = "";
+	[Export] public SuperconState? TransitionOnTrue;
+
+	[ExportGroup("Options")]
 	/// <summary>
 	/// Minimum duration, in milliseconds, that the condition must be true before the transition is triggered.
 	/// </summary>
@@ -79,7 +79,7 @@ public partial class ExpressionComponent : SuperconStateComponent
 		Error error = this.CompiledExpression.Parse(this.Expression, ["context"]);
 		if (error != Error.Ok)
 		{
-			GD.PrintErr($"[{nameof(ExpressionComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.CompiledExpression.GetErrorText()}");
+			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.CompiledExpression.GetErrorText()}");
 		}
 	}
 
@@ -91,16 +91,16 @@ public partial class ExpressionComponent : SuperconStateComponent
 			result = this.CompiledExpression.Execute([this.ContextVar], this.Self ?? this);
 		} catch (Exception e)
 		{
-			GD.PrintErr($"[{nameof(ExpressionComponent)} at \"{this.GetPath()}\"] An exception occured while executing expression. Exception: {e}");
+			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] An exception occured while executing expression. Exception: {e}");
 			result = new Variant();
 		}
 		if (this.CompiledExpression.HasExecuteFailed())
 		{
-			GD.PrintErr($"[{nameof(ExpressionComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.CompiledExpression.GetErrorText()}");
+			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.CompiledExpression.GetErrorText()}");
 			return false;
 		} else if (result.VariantType != Variant.Type.Bool)
 		{
-			GD.PrintErr($"[{nameof(ExpressionComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {result} ({result.VariantType})");
 			return false;
 		}
 		return result.AsBool();
