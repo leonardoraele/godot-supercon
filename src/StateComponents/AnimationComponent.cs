@@ -91,10 +91,14 @@ public partial class AnimationComponent : SuperconStateComponent
 		{
 			this.AnimationPlayer = this.Character.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
 		}
-		if ((this.TimingExpressionParser = new()).Parse(this.TimingExpression, ["context"]) is Error error && error != Error.Ok)
+		if (this.TimingPlayWhen == PlayWhenEnum.ExpressionIsTrue)
 		{
-			GD.PrintErr($"[{nameof(AnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
-			this.TimingExpressionParser = null;
+			this.TimingExpressionParser = new();
+			if (this.TimingExpressionParser.Parse(this.TimingExpression, ["context"]) is Error error && error != Error.Ok)
+			{
+				GD.PrintErr($"[{nameof(AnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
+				this.TimingExpressionParser = null;
+			}
 		}
 		this.AnimationPlayer?.AnimationFinished += _ => this.OnAnimationfinished();
 	}
@@ -127,6 +131,7 @@ public partial class AnimationComponent : SuperconStateComponent
 				break;
 			case nameof(this.TimingSelf):
 			case nameof(this.TimingExpression):
+			case nameof(this.TimingMinDurationMs):
 				property["usage"] = this.TimingPlayWhen == PlayWhenEnum.ExpressionIsTrue
 					? (long) PropertyUsageFlags.Default
 					: (long) PropertyUsageFlags.NoEditor;

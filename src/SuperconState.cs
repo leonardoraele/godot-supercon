@@ -57,7 +57,7 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 		}
 		this.GetChildren().ToList().ForEach(child =>
 		{
-			if (child.HasMethod("_supercon_process"))
+			if (child.CanProcess() && child.HasMethod("_supercon_process"))
 			{
 				child.Call("_supercon_process", delta);
 			}
@@ -78,7 +78,7 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 		}
 		this.GetChildren().ToList().ForEach(child =>
 		{
-			if (child.HasMethod("_supercon_physics_process"))
+			if (child.CanProcess() && child.HasMethod("_supercon_physics_process"))
 			{
 				child.Call("_supercon_physics_process", delta);
 			}
