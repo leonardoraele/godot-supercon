@@ -21,7 +21,7 @@ public partial class AnimationComponent : SuperconStateComponent
 	[Export(PropertyHint.Enum)] public string Animation = "";
 
 	[ExportGroup("Playback Options")]
-	[Export(PropertyHint.Range, "0.05,8,0.05,or_greater")] public float SpeedScale = 1f;
+	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float SpeedScale = 1f;
 	[Export] public bool PlayBackwards = false;
 	[Export] public float BeginSeekSec = 0f;
 
@@ -185,6 +185,12 @@ public partial class AnimationComponent : SuperconStateComponent
 
 	public void Activate()
 	{
+		if (this.AnimationPlayer?.IsPlaying() == true && this.AnimationPlayer?.CurrentAnimation == this.Animation)
+		{
+			return;
+		}
+		this.AnimationPlayer?.Play("RESET");
+		this.AnimationPlayer?.Advance(0f); // Force reset immediately
 		this.AnimationPlayer?.Play(
 			this.Animation,
 			this.BlendEnabled ? this.BlendTimeMs * this.PlayBackwardsInt : default,
