@@ -9,17 +9,16 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Export(PropertyHint.Range, "-180,180,5,radians_as_degrees")] public float DirectionAngle = 0f;
+	// TODO Implement handles to edit bezier curve movement in the editor, and draw the curve preview using _Draw().
+	[Export] public MovementTypeEnum MovementType = MovementTypeEnum.Straight;
+	[Export] public Vector2 Destination;
+	// [Export] public Vector2 HandleA; // TODO
+	// [Export] public Vector2 HandleB; // TODO
 
 	/// <summary>
 	/// If true, the direction is mirrored horizontally when the character is facing left.
 	/// </summary>
 	[Export] public bool UseFacing = false;
-
-	/// <summary>
-	/// Determines the upmost height the character is able to reach, in pixels.
-	/// </summary>
-	[Export] public float DistancePx = 200f;
 
 	/// <summary>
 	/// Determines the time it takes for the character to reach the jump's apex, in miliseconds. If IsCancelable is
@@ -37,61 +36,102 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	/// </summary>
 	[Export] public Curve? Curve;
 
+	[ExportGroup("State Transitions")]
 	/// <summary>
 	/// If set, the controller will transition to the specified state when the jump ends (i.e., when the character
 	/// reaches the apex or finishes the ascent).
 	/// </summary>
-	[Export] public SuperconState? TransitionOnEnd;
+	[Export] public SuperconState? TransitionOnMoveComplete;
+	[Export] public SuperconState? TransitionOnCollision;
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// FIELDS
+	// -----------------------------------------------------------------------------------------------------------------
+
+	private Vector2 InternalVelocity;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public TimeSpan Duration => TimeSpan.FromMilliseconds(this.DurationMs);
-	public Vector2 MovementDirection => Vector2.Right.Rotated(this.DirectionAngle)
-		* (this.UseFacing ? new Vector2(this.Character.FacingDirection, 1f) : Vector2.One);
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// SIGNALS
+	// -----------------------------------------------------------------------------------------------------------------
+
+	[Signal] public delegate void MovementCompleteEventHandler();
+	[Signal] public delegate void MovementInterruptedEventHandler();
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// LOCAL TYPES
+	// -----------------------------------------------------------------------------------------------------------------
+
+	public enum MovementTypeEnum
+	{
+		Straight,
+		// QuadraticBezier, // TODO
+		// CubicBezier, // TODO
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconProcess(double delta)
+	public override void _SuperconEnter()
 	{
-		base._SuperconProcess(delta);
-		if (this.State.ActiveDuration >= this.Duration)
-		{
-			if (this.TransitionOnEnd != null)
-			{
-				this.Character.QueueTransition(this.TransitionOnEnd);
-			}
-			else
-			{
-				this.Character.ResetState();
-			}
-		}
+		base._SuperconEnter();
+		this.InternalVelocity = Vector2.Zero;
 	}
 
 	public override void _SuperconPhysicsProcess(double delta)
 	{
 		base._SuperconPhysicsProcess(delta);
 
-		// Prevents division by zero when the duration is zero.
-		// TODO Handle instant movement when duration is zero.
-		if (Mathf.IsZeroApprox(this.DurationMs))
+		if (this.State.ActiveDuration >= this.Duration)
 		{
+			// Handles instant movement when the duration is zero and prevents division by zero.
+			if (Mathf.IsZeroApprox(this.DurationMs))
+			{
+				this.Character.MoveAndCollide(this.Destination);
+			}
+
+			if (this.TransitionOnMoveComplete != null)
+			{
+				this.Character.QueueTransition(this.TransitionOnMoveComplete);
+			}
+			else
+			{
+				this.Character.ResetState();
+			}
+
+			this.EmitSignalMovementComplete();
 			return;
 		}
+
+		TimeSpan thisFrameActiveDuration = this.State.ActiveDuration;
+		TimeSpan lastFrameActiveDuration = this.State.ActiveDuration.Subtract(TimeSpan.FromSeconds(delta));
 
 		// TODO We could precalculate the jump height curve so that we don't need to read the curve twice every frame.
 		// TODO We could read this.Character.GetPositionDelta and accumulate the movement instead of recalculing the
 		// previous frame every time.
-		double thisFrameDurationProgress = this.State.ActiveDuration.TotalMilliseconds / this.DurationMs;
-		double thisFrameDistanceProgress = this.Curve?.Sample((float) thisFrameDurationProgress)
-			?? Math.Sin(thisFrameDurationProgress * Math.PI / 2);
-		double prevFrameDurationProgress = Math.Max(0, (this.State.ActiveDuration.TotalMilliseconds - delta * 1000) / this.DurationMs);
-		double prevFrameDistanceProgress = this.Curve?.Sample((float) prevFrameDurationProgress)
-			?? Math.Sin(prevFrameDurationProgress * Math.PI / 2);
-		double distanceDiffPx = this.DistancePx * (thisFrameDistanceProgress - prevFrameDistanceProgress);
-		this.Character.SetDirectionalVelocity(this.MovementDirection, (float) (distanceDiffPx / delta));
+		Vector2 thisFramePosition = this.CalculateExpectedPosition(thisFrameActiveDuration / this.Duration);
+		Vector2 lastFramePosition = this.CalculateExpectedPosition(lastFrameActiveDuration / this.Duration);
+		this.Character.Velocity -= this.InternalVelocity;
+		this.InternalVelocity = (thisFramePosition - lastFramePosition) / (float) delta;
+		this.Character.Velocity += this.InternalVelocity;
+	}
+
+	private Vector2 CalculateExpectedPosition(double progress)
+	{
+		progress = Mathf.Clamp(progress, 0, 1);
+		double distanceProgress = this.Curve?.Sample((float) progress) ?? Math.Sin(progress * Math.PI / 2);
+		return this.SamplePath(distanceProgress);
+	}
+
+	private Vector2 SamplePath(double distanceProgress)
+	{
+		return this.Destination * (float) distanceProgress
+			* (this.UseFacing ? new Vector2(this.Character.FacingDirection, 1) : Vector2.One);
 	}
 }
