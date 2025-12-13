@@ -24,23 +24,21 @@ public abstract partial class SuperconStateComponent : Node2D
 	// VIRTUALS & OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private void _supercon_enter(SuperconStateMachine.Transition transition)
+	public override void _EnterTree()
 	{
-		if (this.Enabled)
-		{
-			this._SuperconEnter();
-		}
+		base._ExitTree();
+		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateEntered, new Callable(this, MethodName._SuperconEnter));
+		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateExited, new Callable(this, MethodName._SuperconExit));
 	}
 
-	private void _supercon_exit(SuperconStateMachine.Transition transition)
+	public override void _ExitTree()
 	{
-		if (this.Enabled)
-		{
-			this._SuperconExit();
-		}
+		base._ExitTree();
+		this.GetParentOrNull<SuperconState>()?.Disconnect(SuperconState.SignalName.StateEntered, new Callable(this, MethodName._SuperconEnter));
+		this.GetParentOrNull<SuperconState>()?.Disconnect(SuperconState.SignalName.StateExited, new Callable(this, MethodName._SuperconExit));
 	}
 
-	private void _supercon_process(double delta)
+	public override void _Process(double delta)
 	{
 		if (this.Enabled)
 		{
@@ -48,7 +46,7 @@ public abstract partial class SuperconStateComponent : Node2D
 		}
 	}
 
-	private void _supercon_physics_process(double delta)
+	public override void _PhysicsProcess(double delta)
 	{
 		if (this.Enabled)
 		{
@@ -56,8 +54,28 @@ public abstract partial class SuperconStateComponent : Node2D
 		}
 	}
 
-	public virtual void _SuperconEnter() { }
-	public virtual void _SuperconExit() { }
+	public virtual void _SuperconEnter(SuperconStateMachine.Transition transition) { }
+	public virtual void _SuperconExit(SuperconStateMachine.Transition transition) { }
 	public virtual void _SuperconProcess(double delta) { }
 	public virtual void _SuperconPhysicsProcess(double delta) {}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// METHODS
+	// -----------------------------------------------------------------------------------------------------------------
+
+	private void OnStateEnter(SuperconStateMachine.Transition transition)
+	{
+		if (this.Enabled && this.CanProcess())
+		{
+			this._SuperconEnter(transition);
+		}
+	}
+
+	private void OnStateExit(SuperconStateMachine.Transition transition)
+	{
+		if (this.Enabled && this.CanProcess())
+		{
+			this._SuperconExit(transition);
+		}
+	}
 }

@@ -40,9 +40,9 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 		this.CompileExpression();
 	}
 
-	public override void _SuperconEnter()
+	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
 	{
-		base._SuperconEnter();
+		base._SuperconEnter(transition);
 		if (OS.IsDebugBuild())
 		{
 			this.CompileExpression();

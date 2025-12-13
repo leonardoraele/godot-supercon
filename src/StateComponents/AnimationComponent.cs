@@ -148,18 +148,18 @@ public partial class AnimationComponent : SuperconStateComponent
 	// OTHER OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter()
+	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
 	{
-		base._SuperconEnter();
+		base._SuperconEnter(transition);
 		if (this.TimingPlayWhen == PlayWhenEnum.StateEnter)
 		{
 			this.Activate();
 		}
 	}
 
-	public override void _SuperconExit()
+	public override void _SuperconExit(SuperconStateMachine.Transition transition)
 	{
-		base._SuperconExit();
+		base._SuperconExit(transition);
 		if (this.TimingPlayWhen == PlayWhenEnum.StateExit)
 		{
 			this.Activate();

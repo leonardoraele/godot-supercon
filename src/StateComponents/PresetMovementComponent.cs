@@ -78,9 +78,9 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter()
+	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
 	{
-		base._SuperconEnter();
+		base._SuperconEnter(transition);
 		this.InternalVelocity = Vector2.Zero;
 	}
 

@@ -62,15 +62,15 @@ public partial class InputActionComponent : SuperconStateComponent
 	[Export] public SuperconState? PreviousState;
 	// [Export] public SuperconAbility? Ability;
 
-	[ExportGroup("Action Canceling")]
-	[Export] public AbilityCancelingMode CancelingInputMode = AbilityCancelingMode.Never;
-	/// <summary>
-	/// This is the this.State the character will be transitioned to when this ability is canceled. The ability is canceled
-	/// when the input is released (if input mode is Hold) or when the input is pressed again (if input mode is Toggle).
-	/// If the input mode is Trigger, this property is ignored. If this property is null, the character will not be
-	/// transitioned to another this.State when the ability is canceled.
-	/// </summary>
-	[Export] public SuperconState? StateTransitionOnAbilityCanceled;
+	// [ExportGroup("Action Canceling")]
+	// [Export] public AbilityCancelingMode CancelingInputMode = AbilityCancelingMode.Never;
+	// /// <summary>
+	// /// This is the this.State the character will be transitioned to when this ability is canceled. The ability is canceled
+	// /// when the input is released (if input mode is Hold) or when the input is pressed again (if input mode is Toggle).
+	// /// If the input mode is Trigger, this property is ignored. If this property is null, the character will not be
+	// /// transitioned to another this.State when the ability is canceled.
+	// /// </summary>
+	// [Export] public SuperconState? StateTransitionOnAbilityCanceled;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -105,27 +105,27 @@ public partial class InputActionComponent : SuperconStateComponent
 			this.CancelActionCheckActive = true;
 			this.StateMachine.QueueTransition(this.TargetState);
 		}
-		else if (this.CancelActionCheckActive)
-		{
-			if (this.StateMachine.ActiveState != this.TargetState || !this.State.IsPreviousActiveState)
-			{
-				this.CancelActionCheckActive = false;
-				return;
-			}
-			// this.Ability?.AddUseTime(TimeSpan.FromMilliseconds(delta));
-			if (this.CheckTransitionCancelingConditions())
-			{
-				// if (this.Ability?.TimeLimitExceeded == true)
-				// {
-				// 	GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "⛔", "Ability time limit exceeded. State:", this.State.Name, "Action:", this.InputActionName);
-				// }
-				// else
-				// {
-					GD.PrintS(Time.GetTicksMsec(), nameof(InputActionComponent), ":", "↩", "Ability canceled:", this.InputActionName, "Transition:", this.State.Name, "←", this.TargetState?.Name ?? "<null>");
-				// }
-				this.StateMachine.QueueTransition(this.StateTransitionOnAbilityCanceled ?? this.State);
-			}
-		}
+		// else if (this.CancelActionCheckActive)
+		// {
+		// 	if (this.StateMachine.ActiveState != this.TargetState || !this.State.IsPreviousActiveState)
+		// 	{
+		// 		this.CancelActionCheckActive = false;
+		// 		return;
+		// 	}
+		// 	// this.Ability?.AddUseTime(TimeSpan.FromMilliseconds(delta));
+		// 	if (this.CheckTransitionCancelingConditions())
+		// 	{
+		// 		// if (this.Ability?.TimeLimitExceeded == true)
+		// 		// {
+		// 		// 	GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "⛔", "Ability time limit exceeded. State:", this.State.Name, "Action:", this.InputActionName);
+		// 		// }
+		// 		// else
+		// 		// {
+		// 			GD.PrintS(Time.GetTicksMsec(), nameof(InputActionComponent), ":", "↩", "Ability canceled:", this.InputActionName, "Transition:", this.State.Name, "←", this.TargetState?.Name ?? "<null>");
+		// 		// }
+		// 		this.StateMachine.QueueTransition(this.StateTransitionOnAbilityCanceled ?? this.State);
+		// 	}
+		// }
 	}
 
 	public override void _ValidateProperty(Dictionary property)
@@ -166,12 +166,12 @@ public partial class InputActionComponent : SuperconStateComponent
 				&& !Input.IsActionPressed(this.InputActionName)
 			);
 
-	private bool CheckTransitionCancelingConditions()
-		=> /*this.Ability?.TimeLimitExceeded == true
-			||*/ this.CancelingInputMode == AbilityCancelingMode.OnRelease
-			&& !string.IsNullOrEmpty(this.InputActionName)
-			&& !Input.IsActionPressed(this.InputActionName)
-			|| this.CancelingInputMode == AbilityCancelingMode.OnToggle
-			&& !string.IsNullOrEmpty(this.InputActionName)
-			&& this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput();
+	// private bool CheckTransitionCancelingConditions()
+	// 	=> /*this.Ability?.TimeLimitExceeded == true
+	// 		||*/ this.CancelingInputMode == AbilityCancelingMode.OnRelease
+	// 		&& !string.IsNullOrEmpty(this.InputActionName)
+	// 		&& !Input.IsActionPressed(this.InputActionName)
+	// 		|| this.CancelingInputMode == AbilityCancelingMode.OnToggle
+	// 		&& !string.IsNullOrEmpty(this.InputActionName)
+	// 		&& this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput();
 }

@@ -154,18 +154,18 @@ public partial class FacingDirectionComponent : SuperconStateComponent
 		}
 	}
 
-	public override void _SuperconEnter()
+	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
 	{
-		base._SuperconEnter();
+		base._SuperconEnter(transition);
 		if (this.TriggerCondition == TriggerConditionenum.OnStateEnter)
 		{
 			this.ApplyFacingDirection();
 		}
 	}
 
-	public override void _SuperconExit()
+	public override void _SuperconExit(SuperconStateMachine.Transition transition)
 	{
-		base._SuperconExit();
+		base._SuperconExit(transition);
 		if (this.TriggerCondition == TriggerConditionenum.OnStateExit)
 		{
 			this.ApplyFacingDirection();

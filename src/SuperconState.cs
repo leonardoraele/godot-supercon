@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Godot;
 
 namespace Raele.Supercon2D;
@@ -43,59 +42,51 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _Process(double delta)
+	public override void _Ready()
 	{
-		base._Process(delta);
-		if (Engine.IsEditorHint())
-		{
-			this.SetProcess(false);
-			return;
-		}
-		if (this.StateMachine.ActiveState != this)
-		{
-			return;
-		}
-		this.GetChildren().ToList().ForEach(child =>
-		{
-			if (child.CanProcess() && child.HasMethod("_supercon_process"))
-			{
-				child.Call("_supercon_process", delta);
-			}
-		});
+		base._Ready();
+		this.ProcessMode = this.ProcessModeWhenInactive;
 	}
 
-	public override void _PhysicsProcess(double delta)
-	{
-		base._PhysicsProcess(delta);
-		if (Engine.IsEditorHint())
-		{
-			this.SetPhysicsProcess(false);
-			return;
-		}
-		if (this.StateMachine.ActiveState != this)
-		{
-			return;
-		}
-		this.GetChildren().ToList().ForEach(child =>
-		{
-			if (child.CanProcess() && child.HasMethod("_supercon_physics_process"))
-			{
-				child.Call("_supercon_physics_process", delta);
-			}
-		});
-	}
+	// public override void _Process(double delta)
+	// {
+	// 	base._Process(delta);
+	// }
+
+	// public override void _PhysicsProcess(double delta)
+	// {
+	// 	base._PhysicsProcess(delta);
+	// }
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public void EnterState(SuperconStateMachine.Transition transition)
+	void SuperconStateMachine.IState.EnterState(SuperconStateMachine.Transition transition)
 	{
 		if (Engine.IsEditorHint())
 		{
 			return;
 		}
 		this.ProcessMode = this.ProcessModeWhenActive;
+		this.ApplyResetVelocityOnEnter();
+		this.EmitSignalStateEntered(transition);
+	}
+
+	void SuperconStateMachine.IState.ExitState(SuperconStateMachine.Transition transition)
+	{
+		if (Engine.IsEditorHint())
+		{
+			return;
+		}
+		this.ProcessMode = this.ProcessModeWhenInactive;
+		this.EmitSignalStateExited(transition);
+	}
+
+	public void QueueTransition() => this.StateMachine.QueueTransition(this);
+
+	private void ApplyResetVelocityOnEnter()
+	{
 		if ((this.ResetVelocityOnEnter & 1) != 0)
 		{
 			this.Character.VelocityX = 0;
@@ -104,32 +95,5 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 		{
 			this.Character.VelocityY = 0;
 		}
-		this.EmitSignalStateEntered(transition);
-		this.GetChildren().ToList().ForEach(child =>
-		{
-			if (child.HasMethod("_supercon_enter"))
-			{
-				child.Call("_supercon_enter", transition);
-			}
-		});
 	}
-
-	public void ExitState(SuperconStateMachine.Transition transition)
-	{
-		if (Engine.IsEditorHint())
-		{
-			return;
-		}
-		this.ProcessMode = this.ProcessModeWhenInactive;
-		this.EmitSignalStateExited(transition);
-		this.GetChildren().ToList().ForEach(child =>
-		{
-			if (child.HasMethod("_supercon_exit"))
-			{
-				child.Call("_supercon_exit", transition);
-			}
-		});
-	}
-
-	public void QueueTransition() => this.StateMachine.QueueTransition(this);
 }
