@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 namespace Raele.Supercon2D;
 
@@ -17,6 +18,10 @@ public partial class SuperconBody2D : CharacterBody2D
 	}
 
 	[Export] public SuperconState? DefaultState;
+
+	[ExportGroup("Horizontal Flipping When Facing Left", "FlipH")]
+	[Export] public Node2D? FlipHFlipNodeScaleX;
+	[Export(PropertyHint.NodeType, $"{nameof(Sprite2D)},{nameof(AnimatedSprite2D)}")] public Node? FlipHFlipSprite;
 
 	// /// <summary>
 	// /// If enabled, constantly updates the character's transform so that the positive X axis is aligned with the
@@ -97,7 +102,14 @@ public partial class SuperconBody2D : CharacterBody2D
 	{
 		if (Engine.IsEditorHint())
 		{
-			this.SetProcess(false);
+			if (this.DefaultState == null)
+			{
+				this.DefaultState = this.GetChildren().OfType<SuperconState>().FirstOrDefault();
+			}
+			else
+			{
+				this.SetProcess(false);
+			}
 			return;
 		}
 		base._Process(delta);
@@ -139,6 +151,24 @@ public partial class SuperconBody2D : CharacterBody2D
 		)
 		{
 			this.FacingDirection = Math.Sign(this.Velocity.X);
+		}
+		if (this.FlipHFlipNodeScaleX != null)
+		{
+			this.FlipHFlipNodeScaleX.Scale = new Vector2(
+				Math.Abs(this.FlipHFlipNodeScaleX.Scale.X) * -this.FacingDirection,
+				this.FlipHFlipNodeScaleX.Scale.Y
+			);
+		}
+		if (this.FlipHFlipSprite != null)
+		{
+			if (this.FlipHFlipSprite is Sprite2D sprite)
+			{
+				sprite.FlipH = this.IsFacingLeft;
+			}
+			else if (this.FlipHFlipSprite is AnimatedSprite2D animatedSprite)
+			{
+				animatedSprite.FlipH = this.IsFacingLeft;
+			}
 		}
 	}
 
