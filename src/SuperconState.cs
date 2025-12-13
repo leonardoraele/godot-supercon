@@ -130,4 +130,6 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 			}
 		});
 	}
+
+	public void QueueTransition() => this.StateMachine.QueueTransition(this);
 }
