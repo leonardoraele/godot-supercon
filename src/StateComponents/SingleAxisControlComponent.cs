@@ -20,11 +20,11 @@ public partial class SingleAxisControlComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export] public AxisEnum Axis = AxisEnum.Horizontal;
-	[Export] public float MaxSpeedPxPSec = 200f;
-	[Export] public float AccelerationPxPSecSqr = 400f;
-	[Export] public float SoftDecelerationPxPSecSqr = 650f; // Rename to DampPxPSecSq?
+	[Export(PropertyHint.None, "suffix:px/s")] public float MaxSpeedPxPSec = 200f;
+	[Export(PropertyHint.None, "suffix:px/s²")] public float AccelerationPxPSecSqr = 400f;
+	[Export(PropertyHint.None, "suffix:px/s²")] public float SoftDecelerationPxPSecSqr = 650f; // Rename to DampPxPSecSq?
 	// [Export] public float DampMultiplierPFrame = 1f;
-	[Export] public float HardDecelerationPxPSecSqr = 2000f; // Rename to BrakePxPSecSq?
+	[Export(PropertyHint.None, "suffix:px/s²")] public float HardDecelerationPxPSecSqr = 2000f; // Rename to BrakePxPSecSq?
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS

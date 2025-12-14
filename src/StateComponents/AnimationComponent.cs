@@ -23,11 +23,11 @@ public partial class AnimationComponent : SuperconStateComponent
 	[ExportGroup("Playback Options")]
 	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float SpeedScale = 1f;
 	[Export] public bool PlayBackwards = false;
-	[Export] public float BeginSeekSec = 0f;
+	[Export(PropertyHint.None, "suffix:s")] public float BeginSeekSec = 0f;
 
 	[ExportGroup("Blending")]
 	[Export(PropertyHint.GroupEnable)] public bool BlendEnabled;
-	[Export] public float BlendTimeMs = 200f;
+	[Export(PropertyHint.None, "suffix:ms")] public float BlendTimeMs = 200f;
 
 	[ExportGroup("Timing", "Timing")]
 	[Export] public PlayWhenEnum TimingPlayWhen = PlayWhenEnum.StateEnter;
@@ -35,7 +35,7 @@ public partial class AnimationComponent : SuperconStateComponent
 	[ExportSubgroup("Expression Options")]
 	[Export] public Node? TimingSelf = null;
 	[Export] public Variant TimingContextVar = new Variant();
-	[Export] public float TimingMinDurationMs = 0f;
+	[Export(PropertyHint.None, "suffix:ms")] public float TimingMinDurationMs = 0f;
 
 	[ExportGroup("State Transition", "Transition")]
 	[Export] public SuperconState? TransitionOnAnimationEnd = null;

@@ -21,7 +21,7 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 	/// <summary>
 	/// Minimum duration, in milliseconds, that the condition must be true before the transition is triggered.
 	/// </summary>
-	[Export] public uint MinDurationMs = 0;
+	[Export(PropertyHint.None, "suffix:ms")] public uint MinDurationMs = 0;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS

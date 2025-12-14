@@ -11,7 +11,7 @@ public partial class PresetMovementComponent : SuperconStateComponent
 
 	// TODO Implement handles to edit bezier curve movement in the editor, and draw the curve preview using _Draw().
 	[Export] public MovementTypeEnum MovementType = MovementTypeEnum.Straight;
-	[Export] public Vector2 Destination;
+	[Export(PropertyHint.None, "suffix:px")] public Vector2 Destination;
 	// [Export] public Vector2 HandleA; // TODO
 	// [Export] public Vector2 HandleB; // TODO
 
@@ -25,7 +25,7 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	/// true, the player can cancel the jump earlier by releasing the jump button. In this case, the character might not
 	/// reach this height.
 	/// </summary>
-	[Export] public float DurationMs = 400f;
+	[Export(PropertyHint.None, "suffix:ms")] public float DurationMs = 400f;
 
 	/// <summary>
 	/// By default, the controller uses a simple sine-based easing function to calculate the character's jump height

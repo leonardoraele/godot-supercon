@@ -42,10 +42,13 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _Ready()
+	public override void _EnterTree()
 	{
-		base._Ready();
-		this.ProcessMode = this.ProcessModeWhenInactive;
+		base._EnterTree();
+		if (!Engine.IsEditorHint())
+		{
+			this.ProcessMode = this.ProcessModeWhenInactive;
+		}
 	}
 
 	// public override void _Process(double delta)
