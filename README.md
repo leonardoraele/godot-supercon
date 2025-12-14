@@ -43,3 +43,8 @@ git submodule add <this_repository_clone_uri> SuperPlatformer
 // - Dead Cells
 // - Blasphemous
 -->
+<!--
+// TODO States to implement:
+- [ ] CollisionObjectComponent - Set collision layer & collision masks for this state
+
+-->

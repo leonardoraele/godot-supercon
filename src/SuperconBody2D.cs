@@ -152,24 +152,11 @@ public partial class SuperconBody2D : CharacterBody2D
 		{
 			this.FacingDirection = Math.Sign(this.Velocity.X);
 		}
-		if (this.FlipHFlipNodeScaleX != null)
-		{
-			this.FlipHFlipNodeScaleX.Scale = new Vector2(
-				Math.Abs(this.FlipHFlipNodeScaleX.Scale.X) * -this.FacingDirection,
-				this.FlipHFlipNodeScaleX.Scale.Y
-			);
-		}
-		if (this.FlipHFlipSprite != null)
-		{
-			if (this.FlipHFlipSprite is Sprite2D sprite)
-			{
-				sprite.FlipH = this.IsFacingLeft;
-			}
-			else if (this.FlipHFlipSprite is AnimatedSprite2D animatedSprite)
-			{
-				animatedSprite.FlipH = this.IsFacingLeft;
-			}
-		}
+		this.FlipHFlipNodeScaleX?.Scale = new Vector2(
+			Math.Abs(this.FlipHFlipNodeScaleX.Scale.X) * -this.FacingDirection,
+			this.FlipHFlipNodeScaleX.Scale.Y
+		);
+		this.FlipHFlipSprite?.Set("flip_h", this.IsFacingLeft);
 	}
 
 	private void UpdateContactTrackers(double delta)
