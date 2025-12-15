@@ -12,6 +12,7 @@ public partial class SuperconDebugger : CanvasLayer
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export] public string ToggleVisibilityInputAction = "ui_menu";
+	[Export] public PackedScene? DebuggerInterfaceScene;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED PROPERTIES
@@ -25,9 +26,10 @@ public partial class SuperconDebugger : CanvasLayer
 
 	public override void _Ready()
 	{
-		// this.Visible = false;
+		this.Visible = !Engine.IsEditorHint() && OS.IsDebugBuild();
 		this.ProcessMode = ProcessModeEnum.Always;
-		Node node = ResourceLoader.Load<PackedScene>($"res://addons/{nameof(Supercon2D)}/SuperconDebuggerInterface.tscn").Instantiate();
+		this.DebuggerInterfaceScene = ResourceLoader.Load<PackedScene>($"res://addons/{nameof(Supercon2D)}/SuperconDebuggerInterface.tscn");
+		Node node = this.DebuggerInterfaceScene.Instantiate();
 		node.Set("debugger", this);
 		this.AddChild(node);
 	}
@@ -61,6 +63,11 @@ public partial class SuperconDebugger : CanvasLayer
 
 	public override void _Input(InputEvent @event)
 	{
+		if (!OS.IsDebugBuild())
+		{
+			this.SetProcessInput(false);
+			return;
+		}
 		if (@event.IsActionPressed(this.ToggleVisibilityInputAction)) {
 			this.Visible = !this.Visible;
 			this.GetChildren().ToList().ForEach(child =>
@@ -79,6 +86,9 @@ public partial class SuperconDebugger : CanvasLayer
 				InputMap.LoadFromProjectSettings();
 				property["hint"] = (long) PropertyHint.Enum;
 				property["hint_string"] = string.Join(",", InputMap.GetActions());
+				break;
+			case nameof(this.DebuggerInterfaceScene):
+				property["usage"] = (long) PropertyUsageFlags.ReadOnly | (long) PropertyUsageFlags.Editor;
 				break;
 		}
 	}

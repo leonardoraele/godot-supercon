@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://bc4ft8kivco61"]
+[gd_scene load_steps=8 format=3 uid="uid://bc4ft8kivco61"]
 
 [ext_resource type="Script" uid="uid://dewfdcqrkjauk" path="res://addons/Supercon2D/src/SuperconState.cs" id="1_fpan4"]
 
@@ -11,10 +11,57 @@ var character: SuperconBody2D:
 		return debugger.Character
 "
 
-[sub_resource type="GDScript" id="GDScript_fpan4"]
-script/source = "extends Control
+[sub_resource type="GDScript" id="GDScript_a4l51"]
+script/source = "extends Label
 
-@onready var character = $\"../../..\".character
+@onready var character: SuperconBody2D = $\"../../../..\".character
+@onready var text_format: String = text
+
+func _process(delta: float) -> void:
+	text = text_format.format({
+		\"position\": character.global_position
+	})
+"
+
+[sub_resource type="GDScript" id="GDScript_foyp6"]
+script/source = "extends Label
+
+@onready var character: SuperconBody2D = $\"../../../..\".character
+@onready var text_format: String = text
+
+func _process(delta: float) -> void:
+	text = text_format.format({
+		\"facing\": \"left\" if character.IsFacingLeft \\
+			else \"right\" if character.IsFacingRight \\
+			else \"neutral\"
+	})
+"
+
+[sub_resource type="GDScript" id="GDScript_hhesw"]
+script/source = "extends Label
+
+@onready var character: SuperconBody2D = $\"../../../..\".character
+@onready var text_format: String = text
+
+func _process(delta: float) -> void:
+	text = text_format.format({
+		\"state\": character.ActiveState.name
+	})
+"
+
+[sub_resource type="GDScript" id="GDScript_fpan4"]
+script/source = "@tool
+extends Control
+
+@export var color: Color = Color.GREEN
+
+@onready var supercon_debugger_interface = $\"../../../..\"
+
+var velocity: Vector2:
+	get:
+		if Engine.is_editor_hint():
+			return Vector2.ZERO
+		return supercon_debugger_interface.character.velocity
 
 func _process(delta: float) -> void:
 	queue_redraw()
@@ -23,7 +70,7 @@ func _draw() -> void:
 	var center: Vector2 = size / 2
 	var radius: float = min(size.x, size.y) / 2
 	var max_velocity: float = 900
-	var end: Vector2 = center + character.velocity * radius / max_velocity
+	var end: Vector2 = center + velocity * radius / max_velocity
 	draw_circle(center, radius, Color.WHITE, true)
 	draw_circle(center, radius * 3/4, Color.LIGHT_GRAY, false)
 	draw_circle(center, radius * 1/4, Color.LIGHT_GRAY, false)
@@ -39,8 +86,8 @@ func _draw() -> void:
 	draw_line(center, center + Vector2.RIGHT.rotated(PI * 20/12) * radius, Color.LIGHT_GRAY)
 	draw_line(center, center + Vector2.RIGHT.rotated(PI * 21/12) * radius, Color.LIGHT_GRAY)
 	draw_line(center, center + Vector2.RIGHT.rotated(PI * 22/12) * radius, Color.LIGHT_GRAY)
-	draw_line(center, end, Color.WEB_GREEN, 4)
-	draw_circle(end, 4, Color.WEB_GREEN)
+	draw_line(center, end, color, 4)
+	draw_circle(end, 4, color)
 	draw_circle(center, radius * 4/4, Color.BLACK, false)
 	draw_circle(center, radius * 2/4, Color.BLACK, false)
 	draw_line(center, center + Vector2.RIGHT.rotated(PI * 0/12) * radius, Color.BLACK)
@@ -52,10 +99,11 @@ func _draw() -> void:
 [sub_resource type="GDScript" id="GDScript_cfi8b"]
 script/source = "extends Label
 
-@onready var character: CharacterBody2D = $\"../../..\".character
+@onready var character: CharacterBody2D = $\"../../../..\".character
+@onready var text_format: String = text
 
 func _process(delta: float) -> void:
-	text = \"Velocity: {velocity}px/s ({angle}º)\".format({
+	text = text_format.format({
 		\"velocity\": \"%.0f\" % character.velocity.length(),
 		\"angle\": \"%.0f\" % rad_to_deg(character.velocity.angle()),
 	})
@@ -78,14 +126,61 @@ offset_bottom = 141.0
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
 layout_mode = 2
 
-[node name="Control <Velocity Meter>" type="Control" parent="PanelContainer/VBoxContainer"]
+[node name="HBoxContainer <Position>" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Position>"]
+layout_mode = 2
+text = "Position:"
+
+[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Position>"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "{position}"
+script = SubResource("GDScript_a4l51")
+
+[node name="HBoxContainer <Facing>" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Facing>"]
+layout_mode = 2
+text = "Facing:"
+
+[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Facing>"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "{facing}"
+script = SubResource("GDScript_foyp6")
+
+[node name="HBoxContainer <State>" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <State>"]
+layout_mode = 2
+text = "State:"
+
+[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <State>"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "{state}"
+script = SubResource("GDScript_hhesw")
+
+[node name="VBoxContainer <Velocity>" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>"]
+layout_mode = 2
+text = "Velocity:"
+
+[node name="Control <Velocity Meter>" type="Control" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 script = SubResource("GDScript_fpan4")
 
-[node name="Label <Velocity Monitor>" type="Label" parent="PanelContainer/VBoxContainer"]
+[node name="Label <Velocity Monitor>" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>"]
 layout_mode = 2
-text = "Velocity"
+text = "{velocity} px/s ({angle}º)"
+horizontal_alignment = 1
 script = SubResource("GDScript_cfi8b")
 
 [node name="SuperconState" type="Node2D" parent="."]
