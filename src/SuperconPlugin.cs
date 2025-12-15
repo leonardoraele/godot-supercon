@@ -31,7 +31,6 @@ public partial class SuperconPlugin : EditorPlugin
 		// State Components
 		this.AddCustomType(nameof(AnimationComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(AnimationComponent)}.cs"), animationPlayIcon);
 		this.AddCustomType(nameof(CustomTransitionComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(CustomTransitionComponent)}.cs"), binaryIcon);
-		this.AddCustomType(nameof(FacingDirectionComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(FacingDirectionComponent)}.cs"), facingIcon);
 		this.AddCustomType(nameof(ForceComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ForceComponent)}.cs"), forceIcon);
 		this.AddCustomType(nameof(GravityComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(GravityComponent)}.cs"), gravityIcon);
 		this.AddCustomType(nameof(ImpulseComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ImpulseComponent)}.cs"), impulseIcon);
@@ -50,7 +49,6 @@ public partial class SuperconPlugin : EditorPlugin
 
 		this.RemoveCustomType(nameof(AnimationComponent));
 		this.RemoveCustomType(nameof(CustomTransitionComponent));
-		this.RemoveCustomType(nameof(FacingDirectionComponent));
 		this.RemoveCustomType(nameof(ForceComponent));
 		this.RemoveCustomType(nameof(GravityComponent));
 		this.RemoveCustomType(nameof(ImpulseComponent));

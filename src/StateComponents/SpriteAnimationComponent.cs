@@ -84,8 +84,8 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 	{
 		FlipHEnum.Never => false,
 		FlipHEnum.Always => true,
-		FlipHEnum.IfFacingLeft => this.Character.FacingDirection < 0,
-		FlipHEnum.IfFacingRight => this.Character.FacingDirection > 0,
+		FlipHEnum.IfFacingLeft => this.Character.HorizontalFacingDirection < 0,
+		FlipHEnum.IfFacingRight => this.Character.HorizontalFacingDirection > 0,
 		_ => false,
 	};
 

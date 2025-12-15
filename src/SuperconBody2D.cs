@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System;
 using System.Linq;
 
@@ -14,14 +15,29 @@ public partial class SuperconBody2D : CharacterBody2D
 	[Export] public SuperconInputMapping InputMapping
 	{
 		get => field ??= new();
-		set => field = value;
+		set;
 	}
 
 	[Export] public SuperconState? DefaultState;
 
-	[ExportGroup("Horizontal Flipping When Facing Left", "FlipH")]
-	[Export] public Node2D? FlipHFlipNodeScaleX;
-	[Export(PropertyHint.NodeType, $"{nameof(Sprite2D)},{nameof(AnimatedSprite2D)}")] public Node? FlipHFlipSprite;
+	[ExportGroup("Facing")]
+	/// <summary>
+	/// If this field is set, the node will be flipped horizontally (if CharacterBody2D.motion_mode is GROUNDED) or
+	/// rotated accordingly (if CharacterBody2D.motion_mode is FLOATING) based on the <see cref="FacingDirection"/> the
+	/// character is facing at any given moment.
+	/// </summary>
+	[Export] public Node2D? FacingNode;
+	/// <summary>
+	/// If CharacterBody2D.motion_mode is set to FLOATING, then this field determines the direction where the FacingNode
+	/// is facing at its resting pose. It will be used as a reference to calculate the rotation needed to make the
+	/// FacingNode face the direction specified by the FacingDirection property.
+	/// </summary>
+	[Export] public Vector2 ForwardDirection;
+	/// <summary>
+	/// If this field is set to a Sprite2D or AnimatedSprote2D, the sprite will be flipped horizontally when the
+	/// character is facing left.
+	/// </summary>
+	[Export(PropertyHint.NodeType, $"{nameof(Sprite2D)},{nameof(AnimatedSprite2D)}")] public Node? FlipSpriteH;
 
 	// /// <summary>
 	// /// If enabled, constantly updates the character's transform so that the positive X axis is aligned with the
@@ -39,6 +55,21 @@ public partial class SuperconBody2D : CharacterBody2D
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	/// <summary>
+	/// Determines the direction the character is facing. Any value lower than 0 means the character is facing left,
+	/// any value greater than 0 means the character is facing right, and 0 means the character is not facing any.
+	/// A value of 0 might be used if, for example, the character is facing the camera or away from the camera.
+	/// </summary>
+	public Vector2 FacingDirection
+		{
+			get;
+			set => field
+				= this.MotionMode == MotionModeEnum.Grounded ? Vector2.Right * Math.Sign(value.X)
+				: value.IsEqualApprox(Vector2.Zero) ? Vector2.Zero
+				: value.Normalized();
+		}
+		= Vector2.Zero;
+
 	public Vector2 LastOnFloorPosition { get; private set; }
 	public TimeSpan TimeOnFloor { get; private set; } = TimeSpan.Zero;
 	public TimeSpan TimeOnCeiling { get; private set; } = TimeSpan.Zero;
@@ -46,21 +77,17 @@ public partial class SuperconBody2D : CharacterBody2D
 	public SuperconStateMachine StateMachine = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// PROPERTIES
+	// COMPUTED PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public SuperconState? ActiveState => this.StateMachine.ActiveState;
-	public bool IsFacingLeft => this.FacingDirection < 0;
-	public bool IsFacingRight => this.FacingDirection > 0;
-	public bool IsFacingNeutral => this.FacingDirection == 0;
 	public bool IsOnSlope => this.IsOnFloor() && Math.Abs(this.GetFloorNormal().AngleTo(Vector2.Up)) > Mathf.Epsilon;
 
-	/// <summary>
-	/// Determines the direction the character is facing. Any value lower than 0 means the character is facing left,
-	/// any value greater than 0 means the character is facing right, and 0 means the character is not facing any.
-	/// A value of 0 might be used if, for example, the character is facing the camera or away from the camera.
-	/// </summary>
-	public int FacingDirection { get; set => field = Math.Sign(value); } = 1;
+	public int HorizontalFacingDirection
+	{
+		get => Math.Sign(this.FacingDirection.X);
+		set => this.FacingDirection = Vector2.Right * Math.Sign(value);
+	}
 
 	public float VelocityX
 	{
@@ -131,6 +158,25 @@ public partial class SuperconBody2D : CharacterBody2D
 		this.CallDeferred(MethodName.MoveAndSlide);
 	}
 
+	public override void _ValidateProperty(Dictionary property)
+	{
+		base._ValidateProperty(property);
+		switch (property["name"].AsString())
+		{
+			case nameof(this.ForwardDirection):
+				property["usage"] = this.MotionMode == MotionModeEnum.Floating
+					? (long) PropertyUsageFlags.Default
+					: (long) PropertyUsageFlags.None;
+				break;
+			default:
+				if (property["name"].AsString() == CharacterBody2D.PropertyName.MotionMode)
+				{
+					property["usage"] = property["usage"].AsInt64() | (long) PropertyUsageFlags.UpdateAllIfModified;
+				}
+				break;
+		}
+	}
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
@@ -145,19 +191,20 @@ public partial class SuperconBody2D : CharacterBody2D
 
 	private void UpdateFacing()
 	{
-		if (
-			Math.Abs(this.Velocity.X) > Mathf.Epsilon
-			&& Math.Abs(this.InputMapping.MovementInput.X) > Mathf.Epsilon
-			&& Math.Sign(this.Velocity.X) == Math.Sign(this.InputMapping.MovementInput.X)
-		)
+		if (this.FacingNode != null)
 		{
-			this.FacingDirection = Math.Sign(this.Velocity.X);
+			if (this.MotionMode == MotionModeEnum.Grounded)
+			{
+				this.FacingNode.Scale = this.HorizontalFacingDirection != 0
+					? new Vector2(this.HorizontalFacingDirection, 1)
+					: Vector2.Right;
+			}
+			else if (this.MotionMode == MotionModeEnum.Floating)
+			{
+				this.FacingNode.Rotation = this.FacingDirection.Angle() - this.ForwardDirection.Angle();
+			}
 		}
-		this.FlipHFlipNodeScaleX?.Scale = new Vector2(
-			Math.Abs(this.FlipHFlipNodeScaleX.Scale.X) * -this.FacingDirection,
-			this.FlipHFlipNodeScaleX.Scale.Y
-		);
-		this.FlipHFlipSprite?.Set("flip_h", this.IsFacingLeft);
+		this.FlipSpriteH?.Set("flip_h", this.HorizontalFacingDirection < 0);
 	}
 
 	private void UpdateContactTrackers(double delta)

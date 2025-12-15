@@ -31,8 +31,8 @@ script/source = "extends Label
 
 func _process(delta: float) -> void:
 	text = text_format.format({
-		\"facing\": \"left\" if character.IsFacingLeft \\
-			else \"right\" if character.IsFacingRight \\
+		\"facing\": \"left\" if character.HorizontalFacingDirection < 0 \\
+			else \"right\" if character.HorizontalFacingDirection > 0 \\
 			else \"neutral\"
 	})
 "

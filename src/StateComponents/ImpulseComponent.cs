@@ -52,7 +52,7 @@ public partial class ImpulseComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	private Vector2 ImpulseDirection => Vector2.Right.Rotated(this.Angle)
-		* (this.UseFacingDirection ? new Vector2(this.Character.FacingDirection, 1f) : Vector2.One);
+		* (this.UseFacingDirection ? new Vector2(this.Character.HorizontalFacingDirection, 1f) : Vector2.One);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS

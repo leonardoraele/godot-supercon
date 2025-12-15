@@ -12,9 +12,9 @@ public partial class ForceComponent : SuperconStateComponent
 
 	public enum ForceTypeEnum
 	{
-		FixedDirection,
-		FacingDirection,
-		Drag,
+		FixedDirection = 0,
+		Drag = 1,
+		AlignedToFacingDirection = 2,
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ public partial class ForceComponent : SuperconStateComponent
 	public Vector2 ForceDirection => this.ForceType switch
 	{
 		ForceTypeEnum.FixedDirection => this.Direction.Normalized(),
-		ForceTypeEnum.FacingDirection => Vector2.Right * this.Character.FacingDirection,
+		ForceTypeEnum.AlignedToFacingDirection => Vector2.Right * this.Character.HorizontalFacingDirection,
 		ForceTypeEnum.Drag => this.Character.Velocity.Normalized() * -1,
 		_ => Vector2.Zero,
 	};

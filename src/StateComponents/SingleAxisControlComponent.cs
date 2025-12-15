@@ -26,6 +26,10 @@ public partial class SingleAxisControlComponent : SuperconStateComponent
 	// [Export] public float DampMultiplierPFrame = 1f;
 	[Export(PropertyHint.None, "suffix:px/s²")] public float HardDecelerationPxPSecSqr = 2000f; // Rename to BrakePxPSecSq?
 
+	[ExportGroup("Facing")]
+	[Export(PropertyHint.GroupEnable)] public bool FaceMovingDirection = true;
+	[Export(PropertyHint.None, "suffix:px/s")] public float FaceMinSpeed = 10f;
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
@@ -62,6 +66,17 @@ public partial class SingleAxisControlComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
+
+	public override void _SuperconProcess(double delta)
+	{
+		base._SuperconProcess(delta);
+		if (this.FaceMovingDirection && Math.Abs(this.AxisVelocity) >= this.FaceMinSpeed)
+		{
+			this.Character.FacingDirection = this.Axis == AxisEnum.Horizontal
+				? Vector2.Right * Math.Sign(this.AxisVelocity)
+				: Vector2.Up * Math.Sign(this.AxisVelocity);
+		}
+	}
 
 	public override void _SuperconPhysicsProcess(double delta)
 	{

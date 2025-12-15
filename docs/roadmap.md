@@ -1,12 +1,13 @@
 # Supercon2D Big TODO Document
 
-Brainstorm/ideas:
-- Velocity-based frame selection
+Brainstorm/ideas/problems:
+X Velocity-based frame selection
 	- Select jump sprite based on jump height
-- Velocity-based speed scale
+OK Velocity-based animation speed scale
 	- Slow/fast run animation
-- Velocity-based animation selection
+OK Velocity-based animation selection
 	- Walk/run animation
+- Asymmetric facing direction
 
 ## Components
 

@@ -147,6 +147,6 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	private Vector2 SamplePath(double distanceProgress)
 	{
 		return this.Destination * (float) distanceProgress
-			* (this.UseFacing ? new Vector2(this.Character.FacingDirection, 1) : Vector2.One);
+			* (this.UseFacing ? new Vector2(this.Character.HorizontalFacingDirection, 1) : Vector2.One);
 	}
 }
