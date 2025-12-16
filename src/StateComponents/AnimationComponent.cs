@@ -21,15 +21,9 @@ public partial class AnimationComponent : SuperconStateComponent
 	[Export(PropertyHint.Enum)] public string Animation = "";
 
 	[ExportGroup("Playback Options")]
+	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float SpeedScale = 1f;
 	[Export] public bool PlayBackwards = false;
 	[Export(PropertyHint.None, "suffix:s")] public float BeginSeekSec = 0f;
-	[ExportSubgroup("Speed Scaling")]
-	[Export] public SpeedScaleModeEnum SpeedScaleMode = SpeedScaleModeEnum.FixedValue;
-	[Export(PropertyHint.None, "suffix:px/s")] public float MinSpeed = 0;
-	[Export(PropertyHint.None, "suffix:px/s")] public float MaxSpeed = float.PositiveInfinity;
-	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float MinSpeedScale = 1f;
-	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float MaxSpeedScale = 1f;
-	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float SpeedScale = 1f;
 
 	[ExportGroup("Blending")]
 	[Export(PropertyHint.GroupEnable)] public bool BlendEnabled;
@@ -155,22 +149,6 @@ public partial class AnimationComponent : SuperconStateComponent
 					? (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.NilIsVariant
 					: (long) PropertyUsageFlags.NoEditor;
 				break;
-			case nameof(this.SpeedScaleMode):
-				property["usage"] = (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.UpdateAllIfModified;
-				break;
-			case nameof(this.SpeedScale):
-				property["usage"] = this.SpeedScaleMode == SpeedScaleModeEnum.FixedValue
-					? (long) PropertyUsageFlags.Default
-					: (long) PropertyUsageFlags.NoEditor;
-				break;
-			case nameof(this.MinSpeed):
-			case nameof(this.MaxSpeed):
-			case nameof(this.MinSpeedScale):
-			case nameof(this.MaxSpeedScale):
-				property["usage"] = this.SpeedScaleMode != SpeedScaleModeEnum.FixedValue
-					? (long) PropertyUsageFlags.Default
-					: (long) PropertyUsageFlags.NoEditor;
-				break;
 		}
 	}
 
@@ -207,10 +185,6 @@ public partial class AnimationComponent : SuperconStateComponent
 		{
 			this.Activate();
 		}
-		if (this.SpeedScaleMode != SpeedScaleModeEnum.FixedValue)
-		{
-			this.AnimationPlayer?.SpeedScale = this.GetCurrentFrameSpeedScale() * this.PlayBackwardsInt;
-		}
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -228,7 +202,7 @@ public partial class AnimationComponent : SuperconStateComponent
 		this.AnimationPlayer?.Play(
 			this.Animation,
 			this.BlendEnabled ? this.BlendTimeMs * this.PlayBackwardsInt : default,
-			this.GetInitialSpeedScale() * this.PlayBackwardsInt,
+			this.SpeedScale * this.PlayBackwardsInt,
 			this.PlayBackwards
 		);
 		if (!Mathf.IsZeroApprox(this.BeginSeekSec))
@@ -278,24 +252,5 @@ public partial class AnimationComponent : SuperconStateComponent
 			return;
 		}
 		this.StateMachine?.QueueTransition(this.TransitionOnAnimationEnd);
-	}
-
-	private float GetInitialSpeedScale() => this.SpeedScaleMode == SpeedScaleModeEnum.FixedValue ? this.SpeedScale : 1f;
-	private float GetCurrentFrameSpeedScale()
-	{
-		if (this.SpeedScaleMode == SpeedScaleModeEnum.FixedValue)
-		{
-			return this.SpeedScale;
-		}
-		float velocity = this.SpeedScaleMode switch
-		{
-			SpeedScaleModeEnum.HorizontalVelocity => Math.Abs(this.Character.Velocity.X),
-			SpeedScaleModeEnum.VerticalVelocity => Math.Abs(this.Character.Velocity.Y),
-			SpeedScaleModeEnum.Velocity => this.Character.Velocity.Length(),
-			_ => 0,
-		};
-		return Math.Clamp((velocity - this.MinSpeed) / (this.MaxSpeed - this.MinSpeed), 0, 1)
-			* (this.MaxSpeedScale - this.MinSpeedScale)
-			+ this.MinSpeedScale;
 	}
 }
