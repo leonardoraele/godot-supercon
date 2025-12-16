@@ -27,6 +27,12 @@ public abstract partial class SuperconStateComponent : Node2D
 	public override void _EnterTree()
 	{
 		base._ExitTree();
+		if (Engine.IsEditorHint())
+		{
+			this.SetProcess(false);
+			this.SetPhysicsProcess(false);
+			return;
+		}
 		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateEntered, new Callable(this, MethodName.OnStateEntered));
 		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateExited, new Callable(this, MethodName.OnStateExited));
 	}
@@ -34,6 +40,10 @@ public abstract partial class SuperconStateComponent : Node2D
 	public override void _ExitTree()
 	{
 		base._ExitTree();
+		if (Engine.IsEditorHint())
+		{
+			return;
+		}
 		this.GetParentOrNull<SuperconState>()?.Disconnect(SuperconState.SignalName.StateEntered, new Callable(this, MethodName.OnStateEntered));
 		this.GetParentOrNull<SuperconState>()?.Disconnect(SuperconState.SignalName.StateExited, new Callable(this, MethodName.OnStateExited));
 	}

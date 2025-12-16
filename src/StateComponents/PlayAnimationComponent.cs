@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Godot;
+using Raele.GodotUtils.StateMachine;
 
 namespace Raele.Supercon2D.StateComponents;
 
@@ -19,33 +20,42 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 
 	[Export] public AnimationPlayer? AnimationPlayer;
 	[Export(PropertyHint.Enum)] public string Animation = "";
+	[Export] public ResetStrategyEnum ResetStrategy = ResetStrategyEnum.BeforePlay;
 
 	[ExportGroup("Playback Options")]
 	[Export(PropertyHint.Range, "0.05,8,or_greater,or_less")] public float SpeedScale = 1f;
 	[Export] public bool PlayBackwards = false;
-	[Export(PropertyHint.None, "suffix:s")] public float BeginSeekSec = 0f;
+
+	[ExportSubgroup("Sectioning", "Sectioning")]
+	[Export(PropertyHint.GroupEnable)] public bool SectioningEnabled = false;
+	[Export] public bool SectioningUseMarkers = false;
+	[Export(PropertyHint.None, "suffix:s")] public float SectioningStartTimeSec = 0f;
+	[Export(PropertyHint.None, "suffix:s")] public float SectioningEndTimeSec = 0f;
+	[Export(PropertyHint.Enum)] public string SectioningStartMarker = "";
+	[Export(PropertyHint.Enum)] public string SectioningEndMarker = "";
+
+	[ExportGroup("Queueing")]
+	[Export(PropertyHint.ArrayType)] public string[]? QueueAnimations;
 
 	[ExportGroup("Blending")]
 	[Export(PropertyHint.GroupEnable)] public bool BlendEnabled;
 	[Export(PropertyHint.None, "suffix:ms")] public float BlendTimeMs = 200f;
 
 	[ExportGroup("Timing", "Timing")]
-	[Export] public PlayWhenEnum TimingPlayWhen = PlayWhenEnum.StateEnter;
+	[Export] public TimingStrategyEnum TimingStrategy = TimingStrategyEnum.OnStateEnter;
+	[Export] public Node? TimingContext = null;
+	[Export] public Variant TimingParamVar = new Variant();
 	[Export(PropertyHint.Expression)] public string TimingExpression = "";
-	[ExportSubgroup("Expression Options")]
-	[Export] public Node? TimingSelf = null;
-	[Export] public Variant TimingContextVar = new Variant();
-	[Export(PropertyHint.None, "suffix:ms")] public float TimingMinDurationMs = 0f;
 
 	[ExportGroup("State Transition", "Transition")]
-	[Export] public SuperconState? TransitionOnAnimationEnd = null;
+	[Export] public SuperconState? TransitionOnAnimationFinished = null;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
 	private Expression? TimingExpressionParser;
-	private float TimingDurationAccumulatedTimeMs = 0f;
+	private bool AnimationFinished;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED PROPERTIES
@@ -63,18 +73,19 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	// INTERNAL TYPES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public enum PlayWhenEnum :  byte
+	public enum TimingStrategyEnum :  byte
 	{
-		StateEnter = 1,
-		ExpressionIsTrue = 3,
+		OnStateEnter = 0,
+		WhenPlayerIsIdle = 1,
+		WhenExpressionIsTrue = 2,
 	}
 
-	public enum SpeedScaleModeEnum : byte
+	public enum ResetStrategyEnum : byte
 	{
-		FixedValue = 1,
-		Velocity = 2,
-		HorizontalVelocity = 3,
-		VerticalVelocity = 4,
+		Never = 0,
+		BeforePlay = 1,
+		AfterFinished = 2,
+		Both = 3,
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -96,18 +107,18 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		base._Ready();
 		if (Engine.IsEditorHint() && this.AnimationPlayer == null)
 		{
-			this.AnimationPlayer = this.Character.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
+			this.AnimationPlayer ??= this.Character.GetChildren().OfType<AnimationPlayer>().FirstOrDefault()
+				?? this.State.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
 		}
-		if (this.TimingPlayWhen == PlayWhenEnum.ExpressionIsTrue)
+		if (this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue)
 		{
 			this.TimingExpressionParser = new();
-			if (this.TimingExpressionParser.Parse(this.TimingExpression, ["context"]) is Error error && error != Error.Ok)
+			if (this.TimingExpressionParser.Parse(this.TimingExpression, ["param"]) is Error error && error != Error.Ok)
 			{
 				GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
 				this.TimingExpressionParser = null;
 			}
 		}
-		this.AnimationPlayer?.AnimationFinished += _ => this.OnAnimationfinished();
 	}
 
 	// public override void _Process(double delta)
@@ -130,21 +141,72 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		base._ValidateProperty(property);
 		switch (property["name"].AsString())
 		{
-			case nameof(this.Animation):
-				property["hint_string"] = this.AnimationPlayer?.GetAnimationList().Join(",") ?? "";
-				break;
-			case nameof(this.TimingPlayWhen):
+			case nameof(this.AnimationPlayer):
 				property["usage"] = (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.UpdateAllIfModified;
 				break;
-			case nameof(this.TimingSelf):
-			case nameof(this.TimingExpression):
-			case nameof(this.TimingMinDurationMs):
-				property["usage"] = this.TimingPlayWhen == PlayWhenEnum.ExpressionIsTrue
+			case nameof(this.Animation): {
+				string[] options = this.AnimationPlayer?.GetAnimationList() ?? [];
+				property["hint_string"] = options.Join(",");
+				property["usage"] = (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.UpdateAllIfModified;
+				if (!options.Contains(this.Animation))
+				{
+					this.Animation = "";
+				}
+				break;
+			} case nameof(this.QueueAnimations): {
+				string[] options = this.AnimationPlayer?.GetAnimationList() ?? [];
+				string optionsStr = options.Join(",");
+				property["hint_string"] = $"String/{PropertyHint.Enum:D}:{optionsStr}";
+				this.QueueAnimations = this.QueueAnimations?.Where(a => options.Contains(a)).ToArray() ?? [];
+				return;
+			}
+			case nameof(this.SectioningUseMarkers):
+				property["usage"] = (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.UpdateAllIfModified;
+				break;
+			case nameof(this.SectioningStartTimeSec):
+			case nameof(this.SectioningEndTimeSec):
+				property["usage"] = !this.SectioningUseMarkers
 					? (long) PropertyUsageFlags.Default
 					: (long) PropertyUsageFlags.NoEditor;
 				break;
-			case nameof(this.TimingContextVar):
-				property["usage"] = this.TimingPlayWhen == PlayWhenEnum.ExpressionIsTrue
+			case nameof(this.SectioningStartMarker):
+			case nameof(this.SectioningEndMarker):
+				string[] markerNames = this.AnimationPlayer?.HasAnimation(this.Animation) == true
+					? this.AnimationPlayer.GetAnimation(this.Animation).GetMarkerNames()
+					: [];
+				property["hint"] = markerNames.Length > 0 ? (long) PropertyHint.Enum : (long) PropertyHint.None;
+				property["hint_string"] = markerNames.Join(",");
+				property["usage"] = this.SectioningUseMarkers
+					? (long) PropertyUsageFlags.Default
+					: (long) PropertyUsageFlags.NoEditor;
+				if (
+					markerNames.Length > 0
+					&& !string.IsNullOrEmpty(this.SectioningStartMarker)
+					&& !markerNames.Contains(this.SectioningStartMarker)
+				)
+				{
+					this.SectioningStartMarker = "";
+				}
+				else if (
+					markerNames.Length > 0
+					&& !string.IsNullOrEmpty(this.SectioningEndMarker)
+					&& !markerNames.Contains(this.SectioningEndMarker)
+				)
+				{
+					this.SectioningEndMarker = "";
+				}
+				break;
+			case nameof(this.TimingStrategy):
+				property["usage"] = (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.UpdateAllIfModified;
+				break;
+			case nameof(this.TimingContext):
+			case nameof(this.TimingExpression):
+				property["usage"] = this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue
+					? (long) PropertyUsageFlags.Default
+					: (long) PropertyUsageFlags.NoEditor;
+				break;
+			case nameof(this.TimingParamVar):
+				property["usage"] = this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue
 					? (long) PropertyUsageFlags.Default | (long) PropertyUsageFlags.NilIsVariant
 					: (long) PropertyUsageFlags.NoEditor;
 				break;
@@ -158,22 +220,29 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
 	{
 		base._SuperconEnter(transition);
-		if (this.TimingPlayWhen == PlayWhenEnum.StateEnter)
+		this.AnimationFinished = true; // Must be set *before* Play() because it will set it to false if it's called
+		if (this.TimingStrategy == TimingStrategyEnum.OnStateEnter)
 		{
-			this.Activate();
+			this.Play();
 		}
+		this.AnimationPlayer?.Connect(AnimationMixer.SignalName.AnimationFinished, new Callable(this, MethodName.OnAnimationFinished));
+	}
+
+	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
+	{
+		base._SuperconExit(transition);
+		this.AnimationPlayer?.Disconnect(AnimationMixer.SignalName.AnimationFinished, new Callable(this, MethodName.OnAnimationFinished));
 	}
 
 	public override void _SuperconProcess(double delta)
 	{
 		base._SuperconProcess(delta);
-		if (Engine.IsEditorHint())
+		if (
+			this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue && this.TestTimingExpression((float) delta)
+			|| this.TimingStrategy == TimingStrategyEnum.WhenPlayerIsIdle && this.AnimationPlayer?.IsPlaying() == false
+		)
 		{
-			return;
-		}
-		if (this.TestTimingExpression((float) delta))
-		{
-			this.Activate();
+			this.Play();
 		}
 	}
 
@@ -181,23 +250,55 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public void Activate()
+	public void Play()
 	{
-		if (this.AnimationPlayer?.IsPlaying() == true && this.AnimationPlayer?.CurrentAnimation == this.Animation)
+		if (this.ResetStrategy == ResetStrategyEnum.BeforePlay || this.ResetStrategy == ResetStrategyEnum.Both)
 		{
-			return;
+			this.AnimationPlayer?.Play("RESET");
+			this.AnimationPlayer?.Advance(0f); // Force reset immediately
 		}
-		this.AnimationPlayer?.Play("RESET");
-		this.AnimationPlayer?.Advance(0f); // Force reset immediately
-		this.AnimationPlayer?.Play(
-			this.Animation,
-			this.BlendEnabled ? this.BlendTimeMs * this.PlayBackwardsInt : default,
-			this.SpeedScale * this.PlayBackwardsInt,
-			this.PlayBackwards
-		);
-		if (!Mathf.IsZeroApprox(this.BeginSeekSec))
+
+		// Must set it to false *after* playing RESET animation because RESET animation might end and call OnAnimationFinished
+		this.AnimationFinished = false;
+
+		if (this.SectioningEnabled)
 		{
-			this.AnimationPlayer?.Seek(this.BeginSeekSec, update: true);
+			if (this.SectioningUseMarkers)
+			{
+				this.AnimationPlayer?.PlaySectionWithMarkers(
+					this.Animation,
+					startMarker: this.SectioningStartMarker,
+					endMarker: this.SectioningEndMarker,
+					customBlend: this.BlendEnabled ? this.BlendTimeMs * this.PlayBackwardsInt : default,
+					customSpeed: this.SpeedScale * this.PlayBackwardsInt,
+					fromEnd: this.PlayBackwards
+				);
+			}
+			else
+			{
+				this.AnimationPlayer?.PlaySection(
+					this.Animation,
+					startTime: this.SectioningStartTimeSec,
+					endTime: this.SectioningEndTimeSec,
+					customBlend: this.BlendEnabled ? this.BlendTimeMs * this.PlayBackwardsInt : default,
+					customSpeed: this.SpeedScale * this.PlayBackwardsInt,
+					fromEnd: this.PlayBackwards
+				);
+			}
+		}
+		else
+		{
+			this.AnimationPlayer?.Play(
+				this.Animation,
+				customBlend: this.BlendEnabled ? this.BlendTimeMs * this.PlayBackwardsInt : default,
+				customSpeed: this.SpeedScale * this.PlayBackwardsInt,
+				fromEnd: this.PlayBackwards
+			);
+		}
+
+		foreach (string animation in this.QueueAnimations ?? [])
+		{
+			this.AnimationPlayer?.Queue(animation);
 		}
 	}
 
@@ -210,7 +311,7 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		Variant result;
 		try
 		{
-			result = this.TimingExpressionParser.Execute([this.TimingContextVar], this.TimingSelf);
+			result = this.TimingExpressionParser.Execute([this.TimingParamVar], this.TimingContext);
 		}
 		catch (Exception e)
 		{
@@ -222,25 +323,25 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Timing expression did not evaluate to a boolean. Returned value: {result} ({result.VariantType})");
 			return false;
 		}
-		if (!result.AsBool())
-		{
-			this.TimingDurationAccumulatedTimeMs = 0f;
-			return false;
-		}
-		this.TimingDurationAccumulatedTimeMs += delta * 1000;
-		return this.TimingDurationAccumulatedTimeMs >= this.TimingMinDurationMs;
+		return result.AsBool();
 	}
 
-	private void OnAnimationfinished()
+	private void OnAnimationFinished(string animationName)
 	{
-		if (
-			!this.State.IsActive
-			|| this.AnimationPlayer?.CurrentAnimation != this.Animation
-			|| this.TransitionOnAnimationEnd == null
-		)
+		if (this.AnimationFinished)
 		{
 			return;
 		}
-		this.StateMachine?.QueueTransition(this.TransitionOnAnimationEnd);
+		// Must set to true *before* playing RESET animation because playing RESET might end and call OnAnimationFinished again
+		this.AnimationFinished = true;
+		if (this.ResetStrategy == ResetStrategyEnum.AfterFinished || this.ResetStrategy == ResetStrategyEnum.Both)
+		{
+			this.AnimationPlayer?.Play("RESET");
+			this.AnimationPlayer?.Advance(0f); // Force reset immediately
+		}
+		if (this.TransitionOnAnimationFinished != null)
+		{
+			this.StateMachine.QueueTransition(this.TransitionOnAnimationFinished);
+		}
 	}
 }

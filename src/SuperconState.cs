@@ -82,8 +82,14 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 		{
 			return;
 		}
-		this.ProcessMode = this.ProcessModeWhenInactive;
-		this.EmitSignalStateExited(transition);
+		try
+		{
+			this.EmitSignalStateExited(transition);
+		}
+		finally
+		{
+			this.ProcessMode = this.ProcessModeWhenInactive;
+		}
 	}
 
 	public void QueueTransition(Variant data = default) => this.StateMachine.QueueTransition(this, data);
