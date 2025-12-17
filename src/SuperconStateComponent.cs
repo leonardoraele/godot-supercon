@@ -29,12 +29,20 @@ public abstract partial class SuperconStateComponent : Node2D
 		base._ExitTree();
 		if (Engine.IsEditorHint())
 		{
-			this.SetProcess(false);
-			this.SetPhysicsProcess(false);
 			return;
 		}
 		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateEntered, new Callable(this, MethodName.OnStateEntered));
 		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateExited, new Callable(this, MethodName.OnStateExited));
+	}
+
+	public override void _Ready()
+	{
+		base._Ready();
+		if (Engine.IsEditorHint())
+		{
+			this.SetProcess(false);
+			this.SetPhysicsProcess(false);
+		}
 	}
 
 	public override void _ExitTree()

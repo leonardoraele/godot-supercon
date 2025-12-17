@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Raele.GodotUtils.StateMachine;
@@ -55,7 +57,22 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	private Expression? TimingExpressionParser;
-	private bool AnimationFinished;
+	/// <summary>
+	/// Because AnimationPlayer has no mechanism to track the progress of a specific played animation, we use this flag
+	/// to know whether the currently playing animation is the one started by this component. We set it true when we
+	/// play the animation, and we set it false when the AnimationPlayer changes playing animation.
+	/// </summary>
+	private bool AnimationActive = false;
+	/// <summary>
+	/// This is a support variable for <see cref="AnimationActive"/>. It tracks the queue of animations that were
+	/// started by this component, so that when the AnimationPlayer changes animation we can know whether it's still
+	/// playing one of ours or not.
+	///
+	/// This pair of variables is a workaround for the lack of a proper callback or signal when another animation starts
+	/// playing over ours since AnimationFinished is not emitted when another animation plays over an already playing
+	/// animation.
+	/// </summary>
+	private List<string> ActiveAnimationQueue = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED PROPERTIES
@@ -220,18 +237,19 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
 	{
 		base._SuperconEnter(transition);
-		this.AnimationFinished = true; // Must be set *before* Play() because it will set it to false if it's called
+		this.AnimationActive = false;
+		this.AnimationPlayer?.Connect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 		if (this.TimingStrategy == TimingStrategyEnum.OnStateEnter)
 		{
 			this.Play();
 		}
-		this.AnimationPlayer?.Connect(AnimationMixer.SignalName.AnimationFinished, new Callable(this, MethodName.OnAnimationFinished));
 	}
 
 	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
 	{
 		base._SuperconExit(transition);
-		this.AnimationPlayer?.Disconnect(AnimationMixer.SignalName.AnimationFinished, new Callable(this, MethodName.OnAnimationFinished));
+		this.ActiveAnimationQueue.Clear();
+		this.AnimationPlayer?.Disconnect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 	}
 
 	public override void _SuperconProcess(double delta)
@@ -254,12 +272,12 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	{
 		if (this.ResetStrategy == ResetStrategyEnum.BeforePlay || this.ResetStrategy == ResetStrategyEnum.Both)
 		{
+			// Note: Playing the animation doesn't cause the AnimationPlayer to fire signals immediately — it emits only
+			// a single signal during idle frame. This means CurrentAnimationChanged and AnimationStarted will never be
+			// emitted for this RESET animation, since we immediately play another animation.
 			this.AnimationPlayer?.Play("RESET");
 			this.AnimationPlayer?.Advance(0f); // Force reset immediately
 		}
-
-		// Must set it to false *after* playing RESET animation because RESET animation might end and call OnAnimationFinished
-		this.AnimationFinished = false;
 
 		if (this.SectioningEnabled)
 		{
@@ -300,6 +318,10 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		{
 			this.AnimationPlayer?.Queue(animation);
 		}
+
+		this.AnimationActive = true;
+		this.ActiveAnimationQueue.Clear();
+		this.ActiveAnimationQueue.AddRange([this.Animation, ..this.QueueAnimations ?? []]);
 	}
 
 	private bool TestTimingExpression(float delta)
@@ -326,18 +348,33 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		return result.AsBool();
 	}
 
-	private void OnAnimationFinished(string animationName)
+	private void OnCurrentAnimationChanged(string animationName)
 	{
-		if (this.AnimationFinished)
+		if (!this.AnimationActive)
 		{
 			return;
 		}
-		// Must set to true *before* playing RESET animation because playing RESET might end and call OnAnimationFinished again
-		this.AnimationFinished = true;
+		if (this.ActiveAnimationQueue.Count() > 0)
+		{
+			if (this.ActiveAnimationQueue[0] == animationName)
+			{
+				this.ActiveAnimationQueue.RemoveAt(0);
+				return;
+			}
+			else
+			{
+				this.AnimationActive = false;
+				this.ActiveAnimationQueue.Clear();
+				return;
+			}
+		}
+		this.AnimationActive = false;
+		this.ActiveAnimationQueue.Clear();
 		if (this.ResetStrategy == ResetStrategyEnum.AfterFinished || this.ResetStrategy == ResetStrategyEnum.Both)
 		{
 			this.AnimationPlayer?.Play("RESET");
 			this.AnimationPlayer?.Advance(0f); // Force reset immediately
+			this.AnimationPlayer?.Stop();
 		}
 		if (this.TransitionOnAnimationFinished != null)
 		{
