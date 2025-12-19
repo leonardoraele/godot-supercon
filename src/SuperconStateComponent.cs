@@ -21,9 +21,15 @@ public abstract partial class SuperconStateComponent : Node2D
 	/// </summary>
 	[Export] public float MaxProcessDurationMs = float.PositiveInfinity;
 	/// <summary>
-	/// If set, this component only starts if the character state has switched from the specified state to this one.
+	/// If this array is not empty, this component only starts if the SuperconCharacterBody2D has switched to this state
+	/// from one of the listed ones.
 	/// </summary>
-	[Export] public SuperconState? PreviousState;
+	[Export] public Godot.Collections.Array<SuperconState>? PreviousStateAllowlist;
+	/// <summary>
+	/// This component won't start if the SuperconCharacterBody2D has switched to this state from one of the listed
+	/// ones.
+	/// </summary>
+	[Export] public Godot.Collections.Array<SuperconState>? PreviousStateForbidlist;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
@@ -37,9 +43,13 @@ public abstract partial class SuperconStateComponent : Node2D
 	private bool Started = false;
 	private bool ShouldProcess =>
 		this.Enabled
-		&& (this.PreviousState == null || this.StateMachine.PreviousActiveState == this.PreviousState)
 		&& this.State.ActiveDurationMs >= this.StartDelayMs
-		&& this.State.ActiveDurationMs < this.StartDelayMs + this.MaxProcessDurationMs;
+		&& this.State.ActiveDurationMs < this.StartDelayMs + this.MaxProcessDurationMs
+		&& (
+			this.StateMachine.PreviousActiveState == null
+			|| this.PreviousStateAllowlist?.Contains(this.StateMachine.PreviousActiveState) != false
+			&& this.PreviousStateForbidlist?.Contains(this.StateMachine.PreviousActiveState) != true
+		);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// VIRTUALS & OVERRIDES
