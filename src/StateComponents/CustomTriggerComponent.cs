@@ -3,32 +3,36 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-public partial class CustomTransitionComponent : SuperconStateComponent
+[Tool]
+public partial class CustomTriggerComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Export] public Node? Self;
+	[Export] public Node? Context;
 	/// <summary>
 	/// This value will be available in the expression's context as the 'context' variable.
 	/// </summary>
-	[Export] public Variant ContextVar = new Variant();
+	[Export] public Variant Param = new Variant();
 	[Export(PropertyHint.Expression)] public string Expression = "";
-	[Export] public SuperconState? TransitionOnTrue;
+	[Export] public bool PhysicsProcess = false;
 
-	[ExportGroup("Options")]
-	/// <summary>
-	/// Minimum duration, in milliseconds, that the condition must be true before the transition is triggered.
-	/// </summary>
-	[Export(PropertyHint.None, "suffix:ms")] public uint MinDurationMs = 0;
+	[ExportGroup("State Transition")]
+	[ExportToolButton("Connect State Transition")] public Callable ToolButtonConnectStateTransition
+		=> Callable.From(this.OnToolButtonConnectStateTransitionPressed);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private float ConditionSatisfiedMoment = float.PositiveInfinity;
 	private Expression ExpressionInterpreter = new();
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// SIGNALS
+	// -----------------------------------------------------------------------------------------------------------------
+
+	[Signal] public delegate void TriggeredEventHandler();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// OVERRIDES
@@ -37,6 +41,10 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 	public override void _Ready()
 	{
 		base._Ready();
+		if (Engine.IsEditorHint() && this.Context == null)
+		{
+			this.Context = this.Character;
+		}
 		this.CompileExpression();
 	}
 
@@ -47,26 +55,29 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 		{
 			this.CompileExpression();
 		}
-		this.ConditionSatisfiedMoment = float.PositiveInfinity;
 	}
 
 	public override void _SuperconProcess(double delta)
 	{
-		if (this.TransitionOnTrue == null)
+		if (this.PhysicsProcess)
 		{
 			return;
 		}
 		if (this.TestExpression())
 		{
-			this.ConditionSatisfiedMoment = Math.Min(this.ConditionSatisfiedMoment, Time.GetTicksMsec());
-			if (this.ConditionSatisfiedMoment + this.MinDurationMs <= Time.GetTicksMsec())
-			{
-				this.StateMachine.QueueTransition(this.TransitionOnTrue);
-			}
+			this.EmitSignalTriggered();
 		}
-		else
+	}
+
+	public override void _SuperconPhysicsProcess(double delta)
+	{
+		if (!this.PhysicsProcess)
 		{
-			this.ConditionSatisfiedMoment = float.PositiveInfinity;
+			return;
+		}
+		if (this.TestExpression())
+		{
+			this.EmitSignalTriggered();
 		}
 	}
 
@@ -79,7 +90,7 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 		Error error = this.ExpressionInterpreter.Parse(this.Expression, ["context"]);
 		if (error != Error.Ok)
 		{
-			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
+			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
 		}
 	}
 
@@ -88,21 +99,23 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 		Variant result;
 		try
 		{
-			result = this.ExpressionInterpreter.Execute([this.ContextVar], this.Self ?? this);
+			result = this.ExpressionInterpreter.Execute([this.Param], this.Context ?? this);
 		} catch (Exception e)
 		{
-			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] An exception occured while executing expression. Exception: {e}");
+			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] An exception occured while executing expression. Exception: {e}");
 			result = new Variant();
 		}
 		if (this.ExpressionInterpreter.HasExecuteFailed())
 		{
-			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
+			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
 			return false;
 		} else if (result.VariantType != Variant.Type.Bool)
 		{
-			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {result} ({result.VariantType})");
 			return false;
 		}
 		return result.AsBool();
 	}
+
+	private void OnToolButtonConnectStateTransitionPressed() => this.ConnectStateTransition(SignalName.Triggered);
 }

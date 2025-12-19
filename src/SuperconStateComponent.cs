@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
@@ -156,5 +157,19 @@ public abstract partial class SuperconStateComponent : Node2D
 	{
 		this.Started = false;
 		this._SuperconStop();
+	}
+
+	protected async void ConnectStateTransition(string signalName)
+	{
+		SuperconState selectedState;
+		try {
+			selectedState = await GeneralUtil.RequestSelectNode<SuperconState>();
+		} catch (TaskCanceledException) { return; } // User cancelled the operation. Nothing to do
+		this.Connect(
+			signalName,
+			new Callable(selectedState, SuperconState.MethodName.QueueTransition),
+			(uint) ConnectFlags.Persist
+		);
+		EditorInterface.Singleton.EditNode(this);
 	}
 }
