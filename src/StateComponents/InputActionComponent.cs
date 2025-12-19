@@ -7,17 +7,6 @@ namespace Raele.Supercon2D.StateComponents;
 public partial class InputActionComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
-	// LOCAL TYPES
-	// -----------------------------------------------------------------------------------------------------------------
-
-	public enum AbilityActivationMode
-	{
-		InputIsDown,
-		InputIsJustDown,
-		InputIsReleased,
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
@@ -25,51 +14,27 @@ public partial class InputActionComponent : SuperconStateComponent
 	/// Name of the input action to be read for this ability.
 	/// </summary>
 	[Export] public string InputActionName = "";
-	[Export] public SuperconState? TargetState;
-	[Export] public AbilityActivationMode InputMode = AbilityActivationMode.InputIsJustDown;
+	[Export] public InputModeEnum InputMode = InputModeEnum.InputIsJustDown;
 
-	// [ExportGroup("Activated State End Override")]
-	// /// <summary>
-	// /// This is the this.State the character will be transitioned to when this ability is ended. The ability is ended when
-	// /// it comes to an end by its own logic. For example, the PropelState comes to an end when after it lasts for enough
-	// /// time, according to the configured settings; and the FallState comes to an end when the character touches the
-	// /// ground.
-	// /// </summary>
-	// [Export] public BaseMotionState? OnEnded;
-
-	[ExportGroup("Activation Conditions")]
-	/// <summary>
-	/// Time in seconds from the start of the this.State to enable this ability. This ability can only be triggered
-	/// after the corresponding this.State has been active for at least this amount of time. Activation attempts prior
-	/// to then are ignored.
-	/// </summary>
-	[Export] public float EnabledFromTimeMs = 0f;
-	/// <summary>
-	/// Time in seconds from the start of the this.State to disable this ability. This ability can no longer be triggered
-	/// after the corresponding this.State has been active for this amount of time.
-	/// </summary>
-	[Export] public float DisabledAfterTimeMs = float.PositiveInfinity;
-	/// <summary>
-	/// If set, this ability can only be activated if the previous active this.State was the one specified here.
-	/// </summary>
-	[Export] public SuperconState? PreviousState;
-	// [Export] public SuperconAbility? Ability;
-
-	// [ExportGroup("Action Canceling")]
-	// [Export] public AbilityCancelingMode CancelingInputMode = AbilityCancelingMode.Never;
-	// /// <summary>
-	// /// This is the this.State the character will be transitioned to when this ability is canceled. The ability is canceled
-	// /// when the input is released (if input mode is Hold) or when the input is pressed again (if input mode is Toggle).
-	// /// If the input mode is Trigger, this property is ignored. If this property is null, the character will not be
-	// /// transitioned to another this.State when the ability is canceled.
-	// /// </summary>
-	// [Export] public SuperconState? StateTransitionOnAbilityCanceled;
+	[ExportGroup("Debug", "Debug")]
+	[Export] public bool DebugPrintTriggers = false;
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// FIELDS
+	// SIGNALS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private bool CancelActionCheckActive = false;
+	[Signal] public delegate void InputActionTriggeredEventHandler();
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// LOCAL TYPES
+	// -----------------------------------------------------------------------------------------------------------------
+
+	public enum InputModeEnum
+	{
+		InputIsDown,
+		InputIsJustDown,
+		InputIsReleased,
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// GODOT EVENTS
@@ -78,47 +43,14 @@ public partial class InputActionComponent : SuperconStateComponent
 	public override void _SuperconProcess(double delta)
 	{
 		base._SuperconProcess(delta);
-		if (Engine.IsEditorHint())
+		if (this.TestInput())
 		{
-			this.SetProcess(false);
-			return;
-		}
-		if (this.CheckTransitionConditions(delta))
-		{
-			if (this.TargetState == null)
+			if (this.DebugPrintTriggers)
 			{
-				GD.PushError("Failed to activate input action. Name: ", this.InputActionName, ". Cause: ", this.TargetState, " this.State node is not set.");
-				return;
+				GD.PrintS(Time.GetDatetimeStringFromSystem(), nameof(InputActionComponent), ":", "⚡", "Action triggered:", this.InputActionName);
 			}
-			// if (this.Ability != null)
-			// {
-			// 	this.Ability.AddUseCount();
-			// }
-			GD.PrintS(Time.GetTicksMsec(), nameof(InputActionComponent), ":", "⚡", "Action triggered:", this.InputActionName, "Transition:", this.State.Name, "→", this.TargetState.Name);
-			this.CancelActionCheckActive = true;
-			this.StateMachine.QueueTransition(this.TargetState);
+			this.EmitSignalInputActionTriggered();
 		}
-		// else if (this.CancelActionCheckActive)
-		// {
-		// 	if (this.StateMachine.ActiveState != this.TargetState || !this.State.IsPreviousActiveState)
-		// 	{
-		// 		this.CancelActionCheckActive = false;
-		// 		return;
-		// 	}
-		// 	// this.Ability?.AddUseTime(TimeSpan.FromMilliseconds(delta));
-		// 	if (this.CheckTransitionCancelingConditions())
-		// 	{
-		// 		// if (this.Ability?.TimeLimitExceeded == true)
-		// 		// {
-		// 		// 	GD.PrintS(Time.GetTicksMsec(), nameof(InputActionTransition), ":", "⛔", "Ability time limit exceeded. State:", this.State.Name, "Action:", this.InputActionName);
-		// 		// }
-		// 		// else
-		// 		// {
-		// 			GD.PrintS(Time.GetTicksMsec(), nameof(InputActionComponent), ":", "↩", "Ability canceled:", this.InputActionName, "Transition:", this.State.Name, "←", this.TargetState?.Name ?? "<null>");
-		// 		// }
-		// 		this.StateMachine.QueueTransition(this.StateTransitionOnAbilityCanceled ?? this.State);
-		// 	}
-		// }
 	}
 
 	public override void _ValidateProperty(Dictionary property)
@@ -138,33 +70,12 @@ public partial class InputActionComponent : SuperconStateComponent
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private bool CheckTransitionConditions(double delta)
-		=> this.State.IsActive
-			// && this.Ability?.IsAvailable != false
-			&& this.State.ActiveDuration.TotalMilliseconds >= this.EnabledFromTimeMs
-			&& this.State.ActiveDuration.TotalMilliseconds < this.DisabledAfterTimeMs
-			&& (
-				this.PreviousState == null
-				|| this.StateMachine.PreviousActiveState == this.PreviousState
-			)
-			&& (
-				this.InputMode == AbilityActivationMode.InputIsDown
-				&& !string.IsNullOrEmpty(this.InputActionName)
-				&& Input.IsActionPressed(this.InputActionName)
-				|| this.InputMode == AbilityActivationMode.InputIsJustDown
-				&& !string.IsNullOrEmpty(this.InputActionName)
-				&& this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput()
-				|| this.InputMode == AbilityActivationMode.InputIsReleased
-				&& !string.IsNullOrEmpty(this.InputActionName)
-				&& !Input.IsActionPressed(this.InputActionName)
-			);
-
-	// private bool CheckTransitionCancelingConditions()
-	// 	=> /*this.Ability?.TimeLimitExceeded == true
-	// 		||*/ this.CancelingInputMode == AbilityCancelingMode.OnRelease
-	// 		&& !string.IsNullOrEmpty(this.InputActionName)
-	// 		&& !Input.IsActionPressed(this.InputActionName)
-	// 		|| this.CancelingInputMode == AbilityCancelingMode.OnToggle
-	// 		&& !string.IsNullOrEmpty(this.InputActionName)
-	// 		&& this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput();
+	private bool TestInput()
+		=> !string.IsNullOrWhiteSpace(this.InputActionName) && this.InputMode switch
+		{
+			InputModeEnum.InputIsDown => Input.IsActionPressed(this.InputActionName),
+			InputModeEnum.InputIsJustDown => this.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput(),
+			InputModeEnum.InputIsReleased => !Input.IsActionPressed(this.InputActionName),
+			_ => false,
+		};
 }

@@ -28,7 +28,7 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	private float ConditionSatisfiedMoment = float.PositiveInfinity;
-	private Expression CompiledExpression = new();
+	private Expression ExpressionInterpreter = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// OVERRIDES
@@ -40,9 +40,9 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 		this.CompileExpression();
 	}
 
-	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
+	public override void _SuperconStart()
 	{
-		base._SuperconEnter(transition);
+		base._SuperconStart();
 		if (OS.IsDebugBuild())
 		{
 			this.CompileExpression();
@@ -76,10 +76,10 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 
 	private void CompileExpression()
 	{
-		Error error = this.CompiledExpression.Parse(this.Expression, ["context"]);
+		Error error = this.ExpressionInterpreter.Parse(this.Expression, ["context"]);
 		if (error != Error.Ok)
 		{
-			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.CompiledExpression.GetErrorText()}");
+			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
 		}
 	}
 
@@ -88,15 +88,15 @@ public partial class CustomTransitionComponent : SuperconStateComponent
 		Variant result;
 		try
 		{
-			result = this.CompiledExpression.Execute([this.ContextVar], this.Self ?? this);
+			result = this.ExpressionInterpreter.Execute([this.ContextVar], this.Self ?? this);
 		} catch (Exception e)
 		{
 			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] An exception occured while executing expression. Exception: {e}");
 			result = new Variant();
 		}
-		if (this.CompiledExpression.HasExecuteFailed())
+		if (this.ExpressionInterpreter.HasExecuteFailed())
 		{
-			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.CompiledExpression.GetErrorText()}");
+			GD.PrintErr($"[{nameof(CustomTransitionComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
 			return false;
 		} else if (result.VariantType != Variant.Type.Bool)
 		{

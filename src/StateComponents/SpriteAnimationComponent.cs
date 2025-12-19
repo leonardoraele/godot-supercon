@@ -200,9 +200,9 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
+	public override void _SuperconStart()
 	{
-		base._SuperconEnter(transition);
+		base._SuperconStart();
 		this.OriginalSpeedScale = this.AnimatedSprite?.SpeedScale ?? 1f;
 		if (
 			this.TimingPlayAnimationWhen == PlayWhenEnum.StateEnter
@@ -214,8 +214,9 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 		}
 	}
 
-	public override void _SuperconExit(SuperconStateMachine.Transition transition)
+	public override void _SuperconStop()
 	{
+		base._SuperconStop();
 		this.AnimatedSprite?.SpeedScale = this.OriginalSpeedScale;
 		if (
 			this.TimingPlayAnimationWhen == PlayWhenEnum.StateExit
@@ -225,7 +226,6 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 		{
 			this.Play();
 		}
-		base._SuperconExit(transition);
 	}
 
 	public override void _SuperconProcess(double delta)

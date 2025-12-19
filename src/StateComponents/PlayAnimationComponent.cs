@@ -129,12 +129,7 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		}
 		if (this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue)
 		{
-			this.TimingExpressionParser = new();
-			if (this.TimingExpressionParser.Parse(this.TimingExpression, ["param"]) is Error error && error != Error.Ok)
-			{
-				GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
-				this.TimingExpressionParser = null;
-			}
+			this.CompileTimingExpression();
 		}
 	}
 
@@ -239,9 +234,9 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	// OTHER OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
+	public override void _SuperconStart()
 	{
-		base._SuperconEnter(transition);
+		base._SuperconStart();
 		this.AnimationActive = false;
 		this.AnimationPlayer?.Connect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 		if (this.TimingStrategy == TimingStrategyEnum.OnStateEnter)
@@ -250,9 +245,9 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		}
 	}
 
-	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
+	public override void _SuperconStop()
 	{
-		base._SuperconExit(transition);
+		base._SuperconStop();
 		this.ActiveAnimationQueue.Clear();
 		this.AnimationPlayer?.Disconnect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 	}
@@ -327,6 +322,16 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		this.AnimationActive = true;
 		this.ActiveAnimationQueue.Clear();
 		this.ActiveAnimationQueue.AddRange([this.Animation, ..this.QueueAnimations ?? []]);
+	}
+
+	private void CompileTimingExpression()
+	{
+		this.TimingExpressionParser = new();
+		if (this.TimingExpressionParser.Parse(this.TimingExpression, ["param"]) is Error error && error != Error.Ok)
+		{
+			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
+			this.TimingExpressionParser = null;
+		}
 	}
 
 	private bool TestTimingExpression(float delta)

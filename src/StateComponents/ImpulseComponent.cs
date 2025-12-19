@@ -58,9 +58,9 @@ public partial class ImpulseComponent : SuperconStateComponent
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
+	public override void _SuperconStart()
 	{
-		base._SuperconEnter(transition);
+		base._SuperconStart();
 		switch (this.ImpulseType)
 		{
 			case ImpulseTypeEnum.Add:

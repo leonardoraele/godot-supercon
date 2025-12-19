@@ -75,12 +75,12 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// METHODS
+	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter(SuperconStateMachine.Transition transition)
+	public override void _SuperconStart()
 	{
-		base._SuperconEnter(transition);
+		base._SuperconStart();
 		this.InternalVelocity = Vector2.Zero;
 		this.SetPhysicsProcess(true);
 	}
@@ -136,6 +136,10 @@ public partial class PresetMovementComponent : SuperconStateComponent
 		Vector2 lastFramePosition = this.CalculateExpectedPosition(lastFrameActiveDuration / this.Duration);
 		this.Character.Velocity += this.InternalVelocity = (thisFramePosition - lastFramePosition) / (float) delta;
 	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// METHODS
+	// -----------------------------------------------------------------------------------------------------------------
 
 	private Vector2 CalculateExpectedPosition(double progress)
 	{
