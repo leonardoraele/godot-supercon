@@ -1,5 +1,6 @@
 using System.Linq;
 using Godot;
+using Raele.GodotUtils.StateMachine;
 
 namespace Raele.Supercon2D.StateComponents;
 
@@ -24,7 +25,7 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 	[ExportGroup("Playback Options")]
 	[Export] public float SpeedScale = 1f;
 	[Export] public bool PlayBackwards = false;
-	[Export] public bool StopOnComponentStopped = false;
+	[Export] public StopOptionsEnum Stop = StopOptionsEnum.Never;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -59,6 +60,13 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 		Always,
 		IfFacingLeft,
 		IfFacingRight,
+	}
+
+	public enum StopOptionsEnum
+	{
+		Never,
+		OnDisabled,
+		OnStateExit,
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -127,7 +135,16 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 	public override void _SuperconStop()
 	{
 		base._SuperconStop();
-		if (this.StopOnComponentStopped)
+		if (this.Stop == StopOptionsEnum.OnDisabled)
+		{
+			this.AnimatedSprite?.Stop();
+		}
+	}
+
+	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
+	{
+		base._SuperconExit(transition);
+		if (this.Stop == StopOptionsEnum.OnStateExit)
 		{
 			this.AnimatedSprite?.Stop();
 		}
