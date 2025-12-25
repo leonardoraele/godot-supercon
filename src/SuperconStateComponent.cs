@@ -93,16 +93,6 @@ public abstract partial class SuperconStateComponent : Node2D
 		this.GetParentOrNull<SuperconState>()?.Connect(SuperconState.SignalName.StateExited, new Callable(this, MethodName.OnStateExited));
 	}
 
-	public override void _Ready()
-	{
-		base._Ready();
-		if (Engine.IsEditorHint())
-		{
-			this.SetProcess(false);
-			this.SetPhysicsProcess(false);
-		}
-	}
-
 	public override void _ExitTree()
 	{
 		base._ExitTree();
@@ -116,6 +106,11 @@ public abstract partial class SuperconStateComponent : Node2D
 
 	public override void _Process(double delta)
 	{
+		if (Engine.IsEditorHint())
+		{
+			this.SetProcess(false);
+			return;
+		}
 		if (this.ShouldProcess)
 		{
 			if (!this.Started)
@@ -132,6 +127,11 @@ public abstract partial class SuperconStateComponent : Node2D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Engine.IsEditorHint())
+		{
+			this.SetPhysicsProcess(false);
+			return;
+		}
 		if (this.ShouldProcess)
 		{
 			this._SuperconPhysicsProcess(delta);
@@ -223,7 +223,7 @@ public abstract partial class SuperconStateComponent : Node2D
 
 	private bool TestAllowlist()
 		=> this.StateMachineOwner?.StateMachine.PreviousActiveState == null
-			|| this.ProcessPreviousStateAllowlist.Any()
+			|| this.ProcessPreviousStateAllowlist.Length == 0
 			|| this.ProcessPreviousStateAllowlistResolved.Contains(this.StateMachineOwner.StateMachine.PreviousActiveState);
 
 	private bool TestForbidlist()

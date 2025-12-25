@@ -111,7 +111,7 @@ public partial class CustomTriggerComponent : SuperconStateComponent
 			return false;
 		} else if (result.VariantType != Variant.Type.Bool)
 		{
-			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {Json.Stringify(result)} ({result.VariantType})");
 			return false;
 		}
 		return result.AsBool();

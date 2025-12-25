@@ -48,10 +48,6 @@ public interface ISuperconStateMachineOwner
 			? character
 			: ISuperconStateMachineOwner.GetOrNull(this.AsNode())?.Character;
 
-	public void OnReady()
-	{
-	}
-
 	public void ResetState() => this.StateMachine.QueueTransition(this.RestState);
 	public void QueueTransition(string stateName, Variant data = default)
 	{

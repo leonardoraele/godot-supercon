@@ -6,6 +6,7 @@ using Raele.GodotUtils.StateMachine;
 
 namespace Raele.Supercon2D.StateComponents;
 
+[Tool][GlobalClass]
 public partial class TransitionGateComponent : SuperconStateComponent
 {
 	//------------------------------------------------------------------------------------------------------------------
@@ -19,12 +20,12 @@ public partial class TransitionGateComponent : SuperconStateComponent
 	//------------------------------------------------------------------------------------------------------------------
 
 	[ExportGroup("Allowed Transitions")]
-	[Export] public NodePath?[] NextStateAllowlist = [];
-	[Export] public NodePath?[] PreviousStateAllowlist = [];
+	[Export] public NodePath[] NextStateAllowlist = [];
+	[Export] public NodePath[] PreviousStateAllowlist = [];
 
 	[ExportGroup("Forbidden Transitions")]
-	[Export] public NodePath?[] NextStateForbidlist = [];
-	[Export] public NodePath?[] PreviousStateForbidlist = [];
+	[Export] public NodePath[] NextStateForbidlist = [];
+	[Export] public NodePath[] PreviousStateForbidlist = [];
 
 	//------------------------------------------------------------------------------------------------------------------
 	// FIELDS

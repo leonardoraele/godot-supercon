@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
@@ -42,5 +41,13 @@ public static class GeneralUtil
 			currentValue
 		);
 		return tcs.Task;
+	}
+
+	public static void DebugLog<T>(params object[] items)
+	{
+		GD.PrintS(
+			DateTime.Now.ToString("HH:mm:ss.fff"), $"(#{Time.GetTicksMsec() / (1000 / 60d):0})", $"by {typeof(T).Name}:",
+			"\n\t", string.Join(" ", items)
+		);
 	}
 }

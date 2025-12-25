@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace Raele.Supercon2D;
@@ -70,7 +71,7 @@ public partial class SuperconStateLayer : SuperconState, ISuperconStateMachineOw
 	private void OnStateTransitionCompleted(SuperconStateMachine.Transition transition)
 	{
 		if (this.DebugPrintStateChanges) {
-			GD.PrintS(Time.GetTimeStringFromSystem(), $"[{nameof(SuperconStateLayer)}] 🔀 State changed: {transition.ExitState?.Name ?? "<null>"} → {transition.EnterState?.Name ?? "<null>"}");
+			GeneralUtil.DebugLog<SuperconStateLayer>($"🔀 State changed: {transition.ExitState?.Name ?? "<null>"} → {transition.EnterState?.Name ?? "<null>"}");
 		}
 	}
 }

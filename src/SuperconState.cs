@@ -75,8 +75,17 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 		{
 			return;
 		}
-		this.ProcessMode = this.ProcessModeWhenActive;
-		this.EmitSignalStateEntered(transition);
+		try
+		{
+			this.EmitSignalStateEntered(transition);
+		}
+		finally
+		{
+			if (!transition.IsCanceled)
+			{
+				this.ProcessMode = this.ProcessModeWhenActive;
+			}
+		}
 	}
 
 	void SuperconStateMachine.IState.ExitState(SuperconStateMachine.Transition transition)
@@ -91,7 +100,10 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState
 		}
 		finally
 		{
-			this.ProcessMode = this.ProcessModeWhenInactive;
+			if (!transition.IsCanceled)
+			{
+				this.ProcessMode = this.ProcessModeWhenInactive;
+			}
 		}
 	}
 
