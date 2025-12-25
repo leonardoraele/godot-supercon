@@ -10,8 +10,7 @@ public partial class GravityComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export(PropertyHint.None, "suffix:px/s")] public float MaxFallSpeed = float.PositiveInfinity;
-	[Export] public float AwayFromGravityMultiplier = 5f;
-	[Export] public float TowardGravityMultiplier = 5f;
+	[Export] public float GravityMultiplier = 5f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -23,10 +22,6 @@ public partial class GravityComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
-
-	public float GravityMultiplier => this.Character?.Velocity.Dot(this.GravityDirection) < 0
-		? this.AwayFromGravityMultiplier
-		: this.TowardGravityMultiplier;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// VIRTUALS & OVERRIDES

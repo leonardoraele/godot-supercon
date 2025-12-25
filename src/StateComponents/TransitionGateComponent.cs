@@ -62,6 +62,10 @@ public partial class TransitionGateComponent : SuperconStateComponent
 	public override void _SuperconEnter(StateMachine<SuperconState>.Transition transition)
 	{
 		base._SuperconEnter(transition);
+		if (!this.ShouldProcess)
+		{
+			return;
+		}
 		if (
 			!this.TestPreviousStateForbidList(transition.ExitState)
 			|| !this.TestPreviousStateAllowlist(transition.ExitState)
@@ -74,6 +78,10 @@ public partial class TransitionGateComponent : SuperconStateComponent
 	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
 	{
 		base._SuperconExit(transition);
+		if (!this.ShouldProcess)
+		{
+			return;
+		}
 		if (!this.TestNextStateForbidlist(transition.EnterState) || !this.TestNextStateAllowlist(transition.EnterState))
 		{
 			transition.Cancel();

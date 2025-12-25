@@ -285,9 +285,13 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 				(float) Math.Sin(Math.Atan2(forcePxPSec.Y, forcePxPSec.X))
 			)
 			.Abs();
+		if (Math.Sign(forcePxPSec.Dot(forceParallelVelocity)) < 0)
+		{
+			this.Velocity = addedVelocity;
+			return;
+		}
 		Vector2 forceOrthogonalVelocity = addedVelocity - forceParallelVelocity;
-		this.Velocity = forceParallelVelocity.Normalized()
-			* Math.Min(forceParallelVelocity.Length(), maxSpeedPxPSec)
+		this.Velocity = forceParallelVelocity.Normalized() * Math.Min(forceParallelVelocity.Length(), maxSpeedPxPSec)
 			+ forceOrthogonalVelocity;
 	}
 

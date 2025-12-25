@@ -62,7 +62,7 @@ public abstract partial class SuperconStateComponent : Node2D
 	public ISuperconStateMachineOwner? StateMachineOwner => this.State?.StateMachineOwner;
 	public SuperconBody2D? Character => this.StateMachineOwner?.Character;
 
-	private bool ShouldProcess =>
+	protected bool ShouldProcess =>
 		this.Enabled
 		&& (this.State?.ActiveDurationMs ?? 0f) >= this.ProcessStartDelay
 		&& (this.State?.ActiveDurationMs ?? 0f) < this.ProcessStartDelay + this.ProcessMaxProcessDuration
