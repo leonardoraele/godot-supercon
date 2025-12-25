@@ -330,17 +330,16 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 			this.AnimationPlayer?.Play(this.Animation, customBlend, customSpeed, this.PlayBackwards);
 		}
 
-		this.EmitSignalPlayAnimation(this.Animation, customBlend, customSpeed, this.PlayBackwards);
-
 		foreach (string animation in this.QueueAnimations ?? [])
 		{
 			this.AnimationPlayer?.Queue(animation);
-			this.EmitSignalQueueAnimation(animation);
 		}
+
+		this.EmitSignalPlayAnimation(this.Animation, customBlend, customSpeed, this.PlayBackwards);
 
 		this.AnimationActive = true;
 		this.ActiveAnimationQueue.Clear();
-		this.ActiveAnimationQueue.AddRange([this.Animation, ..this.QueueAnimations ?? []]);
+		this.ActiveAnimationQueue.AddRange(this.QueueAnimations ?? []);
 	}
 
 	private void CompileTimingExpression()
@@ -383,19 +382,10 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		{
 			return;
 		}
-		if (this.ActiveAnimationQueue.Count() > 0)
+		if (this.ActiveAnimationQueue.Count() > 0 && this.ActiveAnimationQueue[0] == animationName)
 		{
-			if (this.ActiveAnimationQueue[0] == animationName)
-			{
-				this.ActiveAnimationQueue.RemoveAt(0);
-				return;
-			}
-			else
-			{
-				this.AnimationActive = false;
-				this.ActiveAnimationQueue.Clear();
-				return;
-			}
+			this.ActiveAnimationQueue.RemoveAt(0);
+			return;
 		}
 		this.AnimationActive = false;
 		this.ActiveAnimationQueue.Clear();
