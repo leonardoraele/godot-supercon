@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
-using Raele.MyProject;
+using Raele.GodotUtils;
 
 namespace Raele.Supercon2D.StateComponents;
 
@@ -59,7 +59,7 @@ public abstract partial class SuperconStateComponent : Node2D
 	// COMPUTED PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public IDiscreteIntervalProcessor? ParentProcessor => this.GetParentOrNull<IDiscreteIntervalProcessor>();
+	public IActivity? ParentProcessor => this.GetParentOrNull<IActivity>();
 	public SuperconState? State => this.GetParentOrNull<SuperconState>();
 	public ISuperconStateMachineOwner? StateMachineOwner => this.State?.StateMachineOwner;
 	public SuperconBody2D? Character => this.StateMachineOwner?.Character;
@@ -71,14 +71,14 @@ public abstract partial class SuperconStateComponent : Node2D
 		&& this.TestAllowlist()
 		&& this.TestForbidlist();
 
-	private IEnumerable<IDiscreteIntervalProcessor> ProcessPreviousStateAllowlistResolved
+	private IEnumerable<IActivity> ProcessPreviousStateAllowlistResolved
 		=> this.ProcessPreviousStateAllowlist
-			.Select(path => this.GetNodeOrNull<IDiscreteIntervalProcessor>(path))
-			.OfType<IDiscreteIntervalProcessor>();
-	private IEnumerable<IDiscreteIntervalProcessor> ProcessPreviousStateForbidlistResolved
+			.Select(path => this.GetNodeOrNull<IActivity>(path))
+			.OfType<IActivity>();
+	private IEnumerable<IActivity> ProcessPreviousStateForbidlistResolved
 		=> this.ProcessPreviousStateForbidlist
-			.Select(path => this.GetNodeOrNull<IDiscreteIntervalProcessor>(path))
-			.OfType<IDiscreteIntervalProcessor>();
+			.Select(path => this.GetNodeOrNull<IActivity>(path))
+			.OfType<IActivity>();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// VIRTUALS & OVERRIDES
@@ -91,8 +91,8 @@ public abstract partial class SuperconStateComponent : Node2D
 		{
 			return;
 		}
-		this.ParentProcessor?.StartedEvent += this.OnStateEntered;
-		this.ParentProcessor?.FinishedEvent += this.OnStateExited;
+		this.ParentProcessor?.EventStarted += this.OnStateEntered;
+		this.ParentProcessor?.EventFinished += this.OnStateExited;
 	}
 
 	public override void _ExitTree()
@@ -102,8 +102,8 @@ public abstract partial class SuperconStateComponent : Node2D
 		{
 			return;
 		}
-		this.ParentProcessor?.StartedEvent -= this.OnStateEntered;
-		this.ParentProcessor?.FinishedEvent += this.OnStateExited;
+		this.ParentProcessor?.EventStarted -= this.OnStateEntered;
+		this.ParentProcessor?.EventFinished += this.OnStateExited;
 	}
 
 	public override void _Process(double delta)
@@ -143,8 +143,8 @@ public abstract partial class SuperconStateComponent : Node2D
 	public override string[] _GetConfigurationWarnings()
 		=> new List<string>()
 			.Concat(
-				this.Owner != this && this.GetParentOrNull<IDiscreteIntervalProcessor>() == null
-					? [$"{this.GetType().Name} must be a direct child of a {nameof(IDiscreteIntervalProcessor)} node."]
+				this.Owner != this && this.GetParentOrNull<IActivity>() == null
+					? [$"{this.GetType().Name} must be a direct child of a {nameof(IActivity)} node."]
 					: []
 			)
 			.ToArray();
@@ -157,7 +157,7 @@ public abstract partial class SuperconStateComponent : Node2D
 			case nameof(this.ProcessPreviousStateAllowlist):
 			case nameof(this.ProcessPreviousStateForbidlist):
 				property["hint"] = (long) PropertyHint.ArrayType;
-				property["hint_string"] = $"{Variant.Type.NodePath:D}/{PropertyHint.NodePathValidTypes:D}:{nameof(IDiscreteIntervalProcessor)}";
+				property["hint_string"] = $"{Variant.Type.NodePath:D}/{PropertyHint.NodePathValidTypes:D}:{nameof(IActivity)}";
 				break;
 		}
 	}
@@ -228,9 +228,13 @@ public abstract partial class SuperconStateComponent : Node2D
 	private bool TestAllowlist()
 		=> this.StateMachineOwner?.StateMachine.PreviousActiveState == null
 			|| this.ProcessPreviousStateAllowlist.Length == 0
-			|| this.ProcessPreviousStateAllowlistResolved.Contains(this.StateMachineOwner.StateMachine.PreviousActiveState);
+			|| this.ProcessPreviousStateAllowlistResolved.Any(state =>
+				state == this.StateMachineOwner.StateMachine.PreviousActiveState
+			);
 
 	private bool TestForbidlist()
 		=> this.StateMachineOwner?.StateMachine.PreviousActiveState == null
-			|| !this.ProcessPreviousStateForbidlistResolved.Contains(this.StateMachineOwner.StateMachine.PreviousActiveState);
+			|| !this.ProcessPreviousStateForbidlistResolved.Any(state =>
+				state == this.StateMachineOwner.StateMachine.PreviousActiveState
+			);
 }

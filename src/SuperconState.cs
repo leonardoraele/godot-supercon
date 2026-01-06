@@ -2,12 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
-using Raele.MyProject;
+using Raele.GodotUtils;
+using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon2D;
 
 [Tool][GlobalClass]
-public partial class SuperconState : Node2D, SuperconStateMachine.IState, IDiscreteIntervalProcessor
+public partial class SuperconState : Node2D, SuperconStateMachine.IState, IActivity
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -37,62 +38,54 @@ public partial class SuperconState : Node2D, SuperconStateMachine.IState, IDiscr
 	// SIGNALS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	[Signal] public delegate void StateWillEnterEventHandler(SuperconStateMachine.Transition transition, GodotCancellationController cancellationController);
 	[Signal] public delegate void StateEnteredEventHandler(SuperconStateMachine.Transition transition);
+	[Signal] public delegate void StateWillExitEventHandler(SuperconStateMachine.Transition transition, GodotCancellationController cancellationController);
 	[Signal] public delegate void StateExitedEventHandler(SuperconStateMachine.Transition transition);
 
-	public event Action<Variant, CancellationTokenSource>? WillStartEvent;
-	event Action<Variant> IDiscreteIntervalProcessor.StartedEvent
+	event Action<Variant, GodotCancellationController> IActivity.EventWillStart
 	{
-		add
-		{
-			if (value.Target is not GodotObject godotObject)
-				throw new NotSupportedException("Only methods on GodotObject targets are supported.");
-			this.Connect(SignalName.StateEntered, new Callable(godotObject, value.Method.Name));
-		}
-		remove
-		{
-			if (value.Target is not GodotObject godotObject)
-				throw new NotSupportedException("Only methods on GodotObject targets are supported.");
-			this.Disconnect(SignalName.StateEntered, new Callable(godotObject, value.Method.Name));
-		}
+		add => this.Connect(SignalName.StateWillEnter, value.ToCallable());
+		remove => this.Disconnect(SignalName.StateWillEnter, value.ToCallable());
 	}
-	public event Action<Variant, CancellationTokenSource>? FinishRequestedEvent;
-	event Action<Variant> IDiscreteIntervalProcessor.FinishedEvent
+	event Action<Variant> IActivity.EventStarted
 	{
-		add
-		{
-			if (value.Target is not GodotObject godotObject)
-				throw new NotSupportedException("Only methods on GodotObject targets are supported.");
-			this.Connect(SignalName.StateExited, new Callable(godotObject, value.Method.Name));
-		}
-		remove
-		{
-			if (value.Target is not GodotObject godotObject)
-				throw new NotSupportedException("Only methods on GodotObject targets are supported.");
-			this.Disconnect(SignalName.StateExited, new Callable(godotObject, value.Method.Name));
-		}
+		add => this.Connect(SignalName.StateEntered, value.ToCallable());
+		remove => this.Disconnect(SignalName.StateEntered, value.ToCallable());
+	}
+	event Action<Variant, GodotCancellationController> IActivity.EventWillFinish
+	{
+		add => this.Connect(SignalName.StateWillExit, value.ToCallable());
+		remove => this.Disconnect(SignalName.StateWillExit, value.ToCallable());
+	}
+	event Action<Variant> IActivity.EventFinished
+	{
+		add => this.Connect(SignalName.StateExited, value.ToCallable());
+		remove => this.Disconnect(SignalName.StateExited, value.ToCallable());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	async Task IDiscreteIntervalProcessor.Start(Variant argument)
+	void IActivity.Start(Variant argument)
 	{
-		CancellationTokenSource cts = new();
-		this.WillStartEvent?.Invoke(argument, cts);
-		if (cts.IsCancellationRequested)
-			throw new TaskCanceledException();
+		if (this.IsActive || argument.AsGodotObject() is not SuperconStateMachine.Transition transition)
+			throw new InvalidOperationException("Cannot start a state that is already active.");
+		GodotCancellationController controller = new();
+		this.EmitSignalStateWillEnter(transition, controller);
+		if (transition.IsCanceled || controller.IsCancellationRequested)
+			return;
 		this.QueueTransition(argument);
 	}
-	async Task IDiscreteIntervalProcessor.Finish(Variant reason)
+	void IActivity.Finish(Variant reason)
 	{
-		if (!this.IsActive)
+		if (!this.IsActive || reason.AsGodotObject() is not SuperconStateMachine.Transition transition)
 			throw new InvalidOperationException("Cannot finish a state that is not active.");
-		CancellationTokenSource cts = new();
-		this.FinishRequestedEvent?.Invoke(reason, cts);
-		if (cts.IsCancellationRequested)
-			throw new TaskCanceledException();
+		GodotCancellationController controller = new();
+		this.EmitSignalStateWillExit(transition, controller);
+		if (transition.IsCanceled || controller.IsCancellationRequested)
+			return;
 		this.StateMachineOwner?.ResetState();
 	}
 

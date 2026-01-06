@@ -20,7 +20,7 @@ public partial class InputActionComponent : SuperconStateComponent
 	[Export] public bool DebugPrintTriggers = false;
 
 	[ExportCategory("🔀 Connect State Transitions")]
-	[ExportToolButton("On Action Triggered")] public Callable ConnectInputActionTriggeredToolButton
+	[ExportToolButton("On Action Triggered", Icon = "MultiplayerSpawner")] public Callable ConnectInputActionTriggeredToolButton
 		=> Callable.From(this.OnConnectInputActionTriggeredToolButtonPressed);
 
 	// -----------------------------------------------------------------------------------------------------------------
