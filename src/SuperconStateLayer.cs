@@ -65,7 +65,7 @@ public partial class SuperconStateLayer : SuperconState, ISuperconStateMachineOw
 	Node ISuperconStateMachineOwner.AsNode() => this;
 	public ISuperconStateMachineOwner AsStateMachineOwner() => this;
 
-	private void OnStateEntered(string mode, Variant argument)
+	private void OnStateEntered(string mode, Variant payload)
 		=> this.AsStateMachineOwner().QueueTransition(this.RestState);
 	private void OnStateExited(string reason, Variant details)
 		=> this.AsStateMachineOwner().Stop();
