@@ -9,7 +9,7 @@ public interface ISuperconStateMachineOwner
 	// STATICS
 	//------------------------------------------------------------------------------------------------------------------
 
-	public static ISuperconStateMachineOwner? Of(Node node)
+	public static ISuperconStateMachineOwner? GetStateMachineOwnerOf(Node node)
 	{
 		for (Node? ancestor = node.GetParent(); ancestor != null; ancestor = ancestor.GetParent())
 		{
@@ -20,9 +20,9 @@ public interface ISuperconStateMachineOwner
 		}
 		return null;
 	}
-	public static bool TryGet(Node node, [NotNullWhen(true)] out ISuperconStateMachineOwner? owner)
+	public static bool TryGetStateMachineOwnerOf(Node node, [NotNullWhen(true)] out ISuperconStateMachineOwner? owner)
 	{
-		owner = Of(node);
+		owner = GetStateMachineOwnerOf(node);
 		return owner != null;
 	}
 
@@ -46,7 +46,7 @@ public interface ISuperconStateMachineOwner
 	public SuperconBody2D? Character
 		=> this is SuperconBody2D character
 			? character
-			: ISuperconStateMachineOwner.Of(this.AsNode())?.Character;
+			: ISuperconStateMachineOwner.GetStateMachineOwnerOf(this.AsNode())?.Character;
 
 	public void ResetState() => this.StateMachine.QueueTransition(this.RestState);
 	public void QueueTransition(string stateName, Variant data = default)
@@ -61,4 +61,12 @@ public interface ISuperconStateMachineOwner
 	}
 	public void QueueTransition(SuperconState? state, Variant data = default) => this.StateMachine.QueueTransition(state, data);
 	public void Stop() => this.StateMachine.Stop();
+}
+
+public static class ISuperconStateMachineOwnerExtensions
+{
+	extension(ISuperconStateMachineOwner self)
+	{
+		public ISuperconStateMachineOwner AsStateMachineOwner() => self;
+	}
 }

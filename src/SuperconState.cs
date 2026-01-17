@@ -14,7 +14,7 @@ public partial class SuperconState : Activity, SuperconStateMachine.IState
 	// FIELDS
 	//==================================================================================================================
 
-	public ISuperconStateMachineOwner? StateMachineOwner => ISuperconStateMachineOwner.Of(this);
+	public ISuperconStateMachineOwner? StateMachineOwner => ISuperconStateMachineOwner.GetStateMachineOwnerOf(this);
 
 	//==================================================================================================================
 	// PROPERTIES

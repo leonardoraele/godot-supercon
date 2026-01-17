@@ -9,15 +9,15 @@ namespace Raele.Supercon2D;
 [Tool][GlobalClass]
 public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwner
 {
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// STATICs
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	public static readonly Vector2 DEFAULT_GROUNDED_FACING_DIRECTION = Vector2.Right;
 
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// EXPORTS
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	[Export] public SuperconInputMapping InputMapping
 	{
@@ -64,9 +64,9 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 	[Export(PropertyHint.InputName)] public string DebugTeleportToMouseInputAction = "ui_home";
 	[Export] public bool DebugTeleportToMouseDraggable = false;
 
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// FIELDS
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	/// <summary>
 	/// Determines the direction the character is facing. Any value lower than 0 means the character is facing left,
@@ -89,9 +89,9 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 	public TimeSpan TimeOnWall { get; private set; } = TimeSpan.Zero;
 	public SuperconStateMachine StateMachine { get; } = new();
 
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// COMPUTED PROPERTIES
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	public SuperconState? ActiveState => this.StateMachine.ActiveState;
 	public bool IsOnSlope => this.IsOnFloor() && Math.Abs(this.GetFloorNormal().AngleTo(Vector2.Up)) > Mathf.Epsilon;
@@ -114,15 +114,15 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 		set => this.Velocity = new Vector2(this.Velocity.X, value);
 	}
 
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// SIGNALS
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	[Signal] public delegate void StateChangedEventHandler(SuperconState? newState, SuperconState? oldState);
 
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// OVERRIDES
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	Node ISuperconStateMachineOwner.AsNode() => this;
 	public ISuperconStateMachineOwner AsStateMachineOwner() => this;
@@ -186,9 +186,9 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 		}
 	}
 
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 	// METHODS
-	// -----------------------------------------------------------------------------------------------------------------
+	//==================================================================================================================
 
 	private void UpdateLastOnFloorPosition()
 	{
@@ -357,4 +357,14 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 				(float) Math.Sin(Math.Atan2(direction.Y, direction.X))
 			)
 			.Abs();
+
+	//==================================================================================================================
+	// STATE MACHINE METHODS
+	//==================================================================================================================
+
+	// TODO // FIXME Causes infinite recursion
+	// public void QueueTransition(string stateName, Variant data = default) => this.AsStateMachineOwner().QueueTransition(stateName, data);
+	// public void QueueTransition(SuperconState? state, Variant data = default) => this.AsStateMachineOwner().QueueTransition(state, data);
+	// public void ResetState() => this.AsStateMachineOwner().ResetState();
+	// public void Stop() => this.AsStateMachineOwner().Stop();
 }
