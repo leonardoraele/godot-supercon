@@ -4,7 +4,7 @@ using Godot;
 using GodotDictionary = Godot.Collections.Dictionary;
 using Raele.GodotUtils.StateMachine;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_t_gate.png")]
 public partial class TransitionGateComponent : SuperconStateComponent

@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_binary.png")]
 public partial class CustomTriggerComponent : SuperconStateComponent

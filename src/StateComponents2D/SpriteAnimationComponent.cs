@@ -2,7 +2,7 @@ using System.Linq;
 using Godot;
 using Raele.GodotUtils.StateMachine;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_animated_sprite_3.png")]
 public partial class SpriteAnimationComponent : SuperconStateComponent

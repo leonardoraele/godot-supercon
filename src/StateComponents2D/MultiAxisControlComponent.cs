@@ -1,6 +1,6 @@
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon2D.StateComponents2D;
 
 // TODO Implement braking behavior when trying to go to the opposite direction
 // TODO Implement angular acceleration when changing direction

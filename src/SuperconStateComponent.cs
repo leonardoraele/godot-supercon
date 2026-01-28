@@ -5,7 +5,7 @@ using Godot;
 using Godot.Collections;
 using Raele.GodotUtils.ActivitySystem;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_bg.png")]
 public abstract partial class SuperconStateComponent : Node

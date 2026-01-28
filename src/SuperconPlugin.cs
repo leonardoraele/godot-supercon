@@ -1,6 +1,6 @@
 #if TOOLS
 using Godot;
-using Raele.Supercon2D.StateComponents;
+using Raele.Supercon2D.StateComponents2D;
 
 namespace Raele.Supercon2D;
 
@@ -9,33 +9,45 @@ public partial class SuperconPlugin : EditorPlugin
 {
 	public override void _EnterTree()
 	{
-		Texture2D multiAxisControlIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_multi_axis_control.png");
-		Texture2D forceIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_force_2.png");
-		Texture2D slopeIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_slope.png");
-		Texture2D impulseIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_impulse.png");
-		Texture2D presetIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_preset.png");
-		Texture2D facingIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_facing.png");
-		Texture2D animationPlayIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_animation_play.png");
-		Texture2D animationParamIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_animation_param.png");
-		Texture2D gateIdon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_t_gate.png");
-		Texture2D velocityResetIcon = GD.Load<Texture2D>($"res://addons/{nameof(Supercon2D)}/icons/character_body_velocity_reset.png");
+		this.AddCustomType(nameof(SuperconState), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconState)}.cs"), null);
+		this.AddCustomType(nameof(SuperconStateLayer), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconStateLayer)}.cs"), null);
 
-		// Core Types
-		this.AddCustomType(nameof(SuperconBody2D), nameof(CharacterBody2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconBody2D)}.cs"), null);
-
-		// State Components
-		this.AddCustomType(nameof(PlayAnimationComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(PlayAnimationComponent)}.cs"), animationPlayIcon);
-		this.AddCustomType(nameof(AnimationParamComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(AnimationParamComponent)}.cs"), animationParamIcon);
-		this.AddCustomType(nameof(ForceComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ForceComponent)}.cs"), forceIcon);
-		this.AddCustomType(nameof(ImpulseComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(ImpulseComponent)}.cs"), impulseIcon);
-		this.AddCustomType(nameof(MultiAxisControlComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(MultiAxisControlComponent)}.cs"), multiAxisControlIcon);
-		this.AddCustomType(nameof(PresetMovementComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(PresetMovementComponent)}.cs"), presetIcon);
-		this.AddCustomType(nameof(SlopeComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(SlopeComponent)}.cs"), slopeIcon);
-		this.AddCustomType(nameof(TransitionGateComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(TransitionGateComponent)}.cs"), gateIdon);
-		this.AddCustomType(nameof(VelocityResetComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents)}/{nameof(VelocityResetComponent)}.cs"), velocityResetIcon);
+		this.AddCustomType(nameof(SuperconStateComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(SuperconStateComponent)}.cs"), null);
+		this.AddCustomType(nameof(PlayAnimationComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(PlayAnimationComponent)}.cs"), null);
+		this.AddCustomType(nameof(AnimationParamComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(AnimationParamComponent)}.cs"), null);
+		this.AddCustomType(nameof(CustomTriggerComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(CustomTriggerComponent)}.cs"), null);
+		this.AddCustomType(nameof(ForceComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(ForceComponent)}.cs"), null);
+		this.AddCustomType(nameof(GravityComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(GravityComponent)}.cs"), null);
+		this.AddCustomType(nameof(ImpulseComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(ImpulseComponent)}.cs"), null);
+		this.AddCustomType(nameof(InputActionComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(InputActionComponent)}.cs"), null);
+		this.AddCustomType(nameof(MultiAxisControlComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(MultiAxisControlComponent)}.cs"), null);
+		this.AddCustomType(nameof(PresetMovementComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(PresetMovementComponent)}.cs"), null);
+		this.AddCustomType(nameof(SingleAxisControlComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(SingleAxisControlComponent)}.cs"), null);
+		this.AddCustomType(nameof(SlopeComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(SlopeComponent)}.cs"), null);
+		this.AddCustomType(nameof(SpriteAnimationComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(SpriteAnimationComponent)}.cs"), null);
+		this.AddCustomType(nameof(TransitionGateComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(TransitionGateComponent)}.cs"), null);
+		this.AddCustomType(nameof(VelocityResetComponent), nameof(Node2D), GD.Load<Script>($"res://addons/{nameof(Supercon2D)}/src/{nameof(StateComponents2D)}/{nameof(VelocityResetComponent)}.cs"), null);
 	}
 
 	public override void _ExitTree()
-	{}
+	{
+		this.RemoveCustomType(nameof(SuperconBody2D));
+		this.RemoveCustomType(nameof(SuperconState));
+
+		this.RemoveCustomType(nameof(PlayAnimationComponent));
+		this.RemoveCustomType(nameof(AnimationParamComponent));
+		this.RemoveCustomType(nameof(CustomTriggerComponent));
+		this.RemoveCustomType(nameof(ForceComponent));
+		this.RemoveCustomType(nameof(GravityComponent));
+		this.RemoveCustomType(nameof(ImpulseComponent));
+		this.RemoveCustomType(nameof(InputActionComponent));
+		this.RemoveCustomType(nameof(MultiAxisControlComponent));
+		this.RemoveCustomType(nameof(PresetMovementComponent));
+		this.RemoveCustomType(nameof(SingleAxisControlComponent));
+		this.RemoveCustomType(nameof(SlopeComponent));
+		this.RemoveCustomType(nameof(SpriteAnimationComponent));
+		this.RemoveCustomType(nameof(TransitionGateComponent));
+		this.RemoveCustomType(nameof(VelocityResetComponent));
+	}
 }
 #endif
