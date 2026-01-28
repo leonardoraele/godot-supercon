@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_gravity.png")]
 public partial class GravityComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

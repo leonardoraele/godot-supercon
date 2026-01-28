@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[GlobalClass]
+[GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_impulse.png"]
 public partial class ImpulseComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

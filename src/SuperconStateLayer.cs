@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_neutral.png")]
 public partial class SuperconStateLayer : SuperconState, ISuperconStateMachineOwner
 {
 	//------------------------------------------------------------------------------------------------------------------

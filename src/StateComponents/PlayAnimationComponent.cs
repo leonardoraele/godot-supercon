@@ -5,7 +5,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_animation_play.png")]
 public partial class PlayAnimationComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

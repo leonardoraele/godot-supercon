@@ -3,7 +3,7 @@ using System.Linq;
 using Godot;
 using Godot.Collections;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon2D.Debugger;
 
 [Tool][GlobalClass]
 public partial class SuperconDebugger : CanvasLayer

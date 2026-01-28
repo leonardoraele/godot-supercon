@@ -3,7 +3,7 @@ using Godot.Collections;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_force_2.png")]
 public partial class ForceComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

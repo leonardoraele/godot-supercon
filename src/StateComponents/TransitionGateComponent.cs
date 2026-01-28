@@ -6,7 +6,7 @@ using Raele.GodotUtils.StateMachine;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_t_gate.png")]
 public partial class TransitionGateComponent : SuperconStateComponent
 {
 	//------------------------------------------------------------------------------------------------------------------

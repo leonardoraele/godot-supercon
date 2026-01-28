@@ -4,7 +4,7 @@ using Raele.GodotUtils.StateMachine;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_animated_sprite_3.png")]
 public partial class SpriteAnimationComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

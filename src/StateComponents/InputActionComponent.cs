@@ -2,7 +2,7 @@ using Godot;
 
 namespace Raele.Supercon2D.StateComponents;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_button.png")]
 public partial class InputActionComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
