@@ -3,7 +3,7 @@
 
 namespace Raele.Supercon.StateComponents2D;
 
-// [GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_slope.png")]
+// [GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_slope.png")]
 public partial class SlopeComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

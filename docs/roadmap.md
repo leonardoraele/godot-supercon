@@ -1,4 +1,4 @@
-# Supercon2D Big TODO Document
+# Supercon Big TODO Document
 
 Brainstorm/ideas/problems:
 X Velocity-based frame selection
