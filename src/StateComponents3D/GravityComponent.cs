@@ -1,4 +1,5 @@
 using Godot;
+using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents3D;
 
@@ -36,7 +37,7 @@ public partial class GravityComponent : SuperconStateComponent3D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForce(
+		this.Character?.ApplyForceWithMaxSpeed(
 			this.GravityDirection * this.GravityMagnitude * (float) delta * this.GravityMultiplier,
 			this.MaxFallSpeed
 		);

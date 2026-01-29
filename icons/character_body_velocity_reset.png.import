@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cbwx1ennavf5v"
-path="res://.godot/imported/character_body_velocity_reset.png-82c83b0bb4682a80262566c267228257.ctex"
+path="res://.godot/imported/character_body_velocity_reset.png-ed4901a6adfe149a5b6e385691896a40.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_velocity_reset.png"
-dest_files=["res://.godot/imported/character_body_velocity_reset.png-82c83b0bb4682a80262566c267228257.ctex"]
+source_file="res://addons/Supercon/icons/character_body_velocity_reset.png"
+dest_files=["res://.godot/imported/character_body_velocity_reset.png-ed4901a6adfe149a5b6e385691896a40.ctex"]
 
 [params]
 

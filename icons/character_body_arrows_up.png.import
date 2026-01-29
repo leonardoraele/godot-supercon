@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bgcrj10umdtoc"
-path="res://.godot/imported/character_body_arrows_up.png-f900fd63cfd702d8db9d6e816002ea93.ctex"
+path="res://.godot/imported/character_body_arrows_up.png-97d38f03fb40b39d7392acdea4752f51.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_arrows_up.png"
-dest_files=["res://.godot/imported/character_body_arrows_up.png-f900fd63cfd702d8db9d6e816002ea93.ctex"]
+source_file="res://addons/Supercon/icons/character_body_arrows_up.png"
+dest_files=["res://.godot/imported/character_body_arrows_up.png-97d38f03fb40b39d7392acdea4752f51.ctex"]
 
 [params]
 

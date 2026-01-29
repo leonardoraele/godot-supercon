@@ -181,15 +181,10 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	}
 
 	/// <summary>
-	/// Applies the given force to the character's velocity.
-	/// </summary>
-	public void ApplyForce(Vector3 forcePxPSec) => this.Velocity += forcePxPSec;
-
-	/// <summary>
 	/// Applies the given force to the character's velocity, then limits the resulting velocity's magnitude along the
 	/// direction of the force to the given maximum speed.
 	/// </summary>
-	public void ApplyForce(Vector3 forcePxPSec, float maxSpeedPxPSec)
+	public void ApplyForceWithMaxSpeed(Vector3 forcePxPSec, float maxSpeedPxPSec)
 	{
 		Vector3 parallelVelocity = this.Velocity.Project(forcePxPSec.Normalized());
 		Vector3 orthogonalVelocity = this.Velocity - parallelVelocity;
@@ -198,31 +193,4 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 			newSpeed = maxSpeedPxPSec * Math.Sign(newSpeed);
 		this.Velocity = orthogonalVelocity + parallelVelocity.Normalized() * newSpeed;
 	}
-
-	/// <summary>
-	/// Accelerates the character toward the given target velocity by rotating its velocity vector and changing its
-	/// magnitude by the given angular and linear acceleration values.
-	/// </summary>
-	public void AccelerateArc(Vector3 targetVelocity, float angularRotationRad, float linearAccelerationPxPSec)
-		=> this.Velocity =
-			GeneralUtil.RotateToward(this.Velocity.Normalized(), targetVelocity.Normalized(), angularRotationRad)
-			* Mathf.MoveToward(this.Velocity.Length(), targetVelocity.Length(), linearAccelerationPxPSec);
-
-	public void AccelerateForward(float targetVelocity, float acceleration)
-		=> this.ForwardSpeed = Mathf.MoveToward(this.ForwardSpeed, targetVelocity, acceleration);
-	public void AccelerateSideways(float targetVelocity, float acceleration)
-		=> this.SidewaySpeed = Mathf.MoveToward(this.SidewaySpeed, targetVelocity, acceleration);
-	public void AccelerateVertically(float targetVelocity, float acceleration)
-		=> this.VerticalSpeed = Mathf.MoveToward(this.VerticalSpeed, targetVelocity, acceleration);
-
-	public void RotateToward(Vector3 globalPosition, float maxRadians)
-	{
-		Vector3 direction = globalPosition - this.GlobalPosition;
-		if (direction.LengthSquared() > Mathf.Epsilon) {
-			this.RotateTowardDirection(direction.Normalized(), maxRadians);
-		}
-	}
-
-	public void RotateTowardDirection(Vector3 globalDirection, float maxRadians)
-		=> this.LookAt(this.GlobalPosition + GeneralUtil.RotateToward(this.GlobalTransform.Basis.Z * -1, globalDirection, maxRadians));
 }

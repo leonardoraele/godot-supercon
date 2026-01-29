@@ -1,4 +1,5 @@
 using Godot;
+using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents3D;
 
@@ -11,12 +12,14 @@ public partial class ForceComponent : SuperconStateComponent3D
 	/// <summary>
 	/// The direction to which the force is applied.
 	/// </summary>
-	[Export] public Vector3 Direction = Vector3.Down;
+	[Export] public Vector3 Direction = Vector3.Up;
 	/// <summary>
 	/// If true, the direction is considered in local space.
 	/// </summary>
 	[Export] public bool LocalDirection = false;
 	[Export(PropertyHint.None, "suffix:m/s²")] public float Magnitude = 1f;
+
+	[ExportGroup("Additional Options")]
 	[Export(PropertyHint.None, "suffix:m/s")] public float MaxSpeed = float.PositiveInfinity;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -38,6 +41,6 @@ public partial class ForceComponent : SuperconStateComponent3D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForce(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
+		this.Character?.ApplyForceWithMaxSpeed(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
 	}
 }

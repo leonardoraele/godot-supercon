@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://buhtd66bpoy6h"
-path="res://.godot/imported/character_body_question_mark_2.png-c17bcc4f435eaf52b461362d29b73c75.ctex"
+path="res://.godot/imported/character_body_question_mark_2.png-98cb82591df78004071cfdb5cc1c2d80.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_question_mark_2.png"
-dest_files=["res://.godot/imported/character_body_question_mark_2.png-c17bcc4f435eaf52b461362d29b73c75.ctex"]
+source_file="res://addons/Supercon/icons/character_body_question_mark_2.png"
+dest_files=["res://.godot/imported/character_body_question_mark_2.png-98cb82591df78004071cfdb5cc1c2d80.ctex"]
 
 [params]
 
