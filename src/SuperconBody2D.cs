@@ -19,7 +19,7 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 	// EXPORTS
 	//==================================================================================================================
 
-	[Export] public SuperconInputMapping InputMapping
+	[Export] public SuperconInputController InputController
 	{
 		get => field ??= new();
 		set;
@@ -144,7 +144,7 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 			return;
 		}
 		base._Process(delta);
-		this.InputMapping.Update();
+		this.InputController.Update();
 		this.UpdateLastOnFloorPosition();
 		this.UpdateFacing();
 		this.UpdateContactTrackers(delta);
@@ -284,9 +284,9 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 	public void AccelerateArc(Vector2 targetVelocity, float angularRotationRad, float linearAccelerationPxPSec)
 		=> this.Velocity =
 			Vector2.Right.Rotated(
-				Mathf.MoveToward(targetVelocity.Angle(), this.Velocity.Angle(), angularRotationRad)
+				Mathf.MoveToward(this.Velocity.Angle(), targetVelocity.Angle(), angularRotationRad)
 			)
-			* Mathf.MoveToward(targetVelocity.Length(), this.Velocity.Length(), linearAccelerationPxPSec);
+			* Mathf.MoveToward(this.Velocity.Length(), targetVelocity.Length(), linearAccelerationPxPSec);
 
 	// /// <summary>
 	// /// Accelerates the character toward the given target velocity. The acceleration is applied to each axis.

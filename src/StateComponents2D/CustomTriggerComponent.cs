@@ -1,10 +1,9 @@
-using System;
 using Godot;
 
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_binary.png")]
-public partial class CustomTriggerComponent : SuperconStateComponent
+public partial class CustomTriggerComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -15,7 +14,9 @@ public partial class CustomTriggerComponent : SuperconStateComponent
 	/// This value will be available in the expression's context as the 'context' variable.
 	/// </summary>
 	[Export] public Variant Param = new Variant();
-	[Export(PropertyHint.Expression)] public string Expression = "";
+	[Export(PropertyHint.Expression)] public string Expression
+		{ get; set { field = value; this.Interpreter = null!; } }
+		= "";
 	[Export] public bool PhysicsProcess = false;
 
 	[ExportCategory("🔀 Connect State Transitions")]
@@ -26,7 +27,19 @@ public partial class CustomTriggerComponent : SuperconStateComponent
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private Expression ExpressionInterpreter = new();
+	private Expression Interpreter
+	{
+		get
+		{
+			if (field == null)
+			{
+				field = new();
+				field.Parse(this.Expression, ["param"]);
+			}
+			return field;
+		}
+		set;
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// SIGNALS
@@ -41,77 +54,44 @@ public partial class CustomTriggerComponent : SuperconStateComponent
 	public override void _Ready()
 	{
 		base._Ready();
-		if (Engine.IsEditorHint() && this.Context == null)
-		{
-			this.Context = this.StateMachineOwner?.Character;
-		}
-		this.CompileExpression();
+		if (Engine.IsEditorHint())
+			this.Context ??= this.Character;
 	}
 
-	public override void _SuperconStart()
+	protected override void _ActivityStarted(string mode, Variant argument)
 	{
-		base._SuperconStart();
-		if (OS.IsDebugBuild())
-		{
-			this.CompileExpression();
-		}
+		base._ActivityStarted(mode, argument);
+		this.SetProcess(!this.PhysicsProcess);
+		this.SetPhysicsProcess(this.PhysicsProcess);
 	}
 
-	public override void _SuperconProcess(double delta)
+	protected override void _ActivityProcess(double delta)
 	{
-		if (this.PhysicsProcess)
-		{
-			return;
-		}
+		base._ActivityProcess(delta);
 		if (this.TestExpression())
-		{
 			this.EmitSignalTriggered();
-		}
 	}
 
-	public override void _SuperconPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		if (!this.PhysicsProcess)
-		{
-			return;
-		}
+		base._ActivityPhysicsProcess(delta);
 		if (this.TestExpression())
-		{
 			this.EmitSignalTriggered();
-		}
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private void CompileExpression()
-	{
-		Error error = this.ExpressionInterpreter.Parse(this.Expression, ["context"]);
-		if (error != Error.Ok)
-		{
-			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to parse expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
-		}
-	}
-
 	private bool TestExpression()
 	{
-		Variant result;
-		try
+		Variant result = this.Interpreter.Execute([this.Param], this.Context);
+		if (result.VariantType != Variant.Type.Bool)
 		{
-			result = this.ExpressionInterpreter.Execute([this.Param], this.Context ?? this);
-		} catch (Exception e)
-		{
-			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] An exception occured while executing expression. Exception: {e}");
-			result = new Variant();
-		}
-		if (this.ExpressionInterpreter.HasExecuteFailed())
-		{
-			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to execute expression. Error: {this.ExpressionInterpreter.GetErrorText()}");
-			return false;
-		} else if (result.VariantType != Variant.Type.Bool)
-		{
-			GD.PrintErr($"[{nameof(CustomTriggerComponent)} at \"{this.GetPath()}\"] Failed to test expression. Cause: Expression did not evaluate to a boolean value. Result: {Json.Stringify(result)} ({result.VariantType})");
+			GD.PushWarning(
+				$"{this.GetPath()} - The expression '{this.Expression}' did not return a boolean value. " +
+				"Make sure the expression is correct."
+			);
 			return false;
 		}
 		return result.AsBool();

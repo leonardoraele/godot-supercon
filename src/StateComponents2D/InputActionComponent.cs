@@ -3,7 +3,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_button.png")]
-public partial class InputActionComponent : SuperconStateComponent
+public partial class InputActionComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -43,9 +43,9 @@ public partial class InputActionComponent : SuperconStateComponent
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconProcess(double delta)
+	protected override void _ActivityProcess(double delta)
 	{
-		base._SuperconProcess(delta);
+		base._ActivityProcess(delta);
 		if (this.TestInput())
 		{
 			if (this.DebugPrintTriggers)
@@ -74,7 +74,7 @@ public partial class InputActionComponent : SuperconStateComponent
 		=> !string.IsNullOrWhiteSpace(this.InputActionName) && this.InputMode switch
 		{
 			InputModeEnum.InputIsDown => Input.IsActionPressed(this.InputActionName),
-			InputModeEnum.InputIsJustDown => this.Character?.InputMapping.GetInputBuffer(this.InputActionName).ConsumeInput() == true,
+			InputModeEnum.InputIsJustDown => this.Character?.InputController.GetInputBuffer(this.InputActionName).ConsumeInput() == true,
 			InputModeEnum.InputIsReleased => !Input.IsActionPressed(this.InputActionName),
 			_ => false,
 		};

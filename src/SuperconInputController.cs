@@ -4,8 +4,8 @@ using Godot;
 
 namespace Raele.Supercon2D;
 
-[Tool]
-public partial class SuperconInputMapping : Resource
+[Tool][GlobalClass]
+public partial class SuperconInputController : Resource
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES

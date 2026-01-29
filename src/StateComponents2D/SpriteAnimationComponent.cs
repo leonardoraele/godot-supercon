@@ -5,7 +5,7 @@ using Raele.GodotUtils.StateMachine;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_animated_sprite_3.png")]
-public partial class SpriteAnimationComponent : SuperconStateComponent
+public partial class SpriteAnimationComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -87,10 +87,7 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 	{
 		base._Ready();
 		if (Engine.IsEditorHint())
-		{
-			this.AnimatedSprite ??= this.StateMachineOwner?.AsNode().GetChildren().OfType<AnimatedSprite2D>().FirstOrDefault();
-				this.Character?.GetChildren().OfType<AnimatedSprite2D>().FirstOrDefault();
-		}
+			this.AnimatedSprite ??= this.Character?.GetChildren().OfType<AnimatedSprite2D>().FirstOrDefault();
 	}
 
 	// public override void _Process(double delta)
@@ -127,28 +124,24 @@ public partial class SpriteAnimationComponent : SuperconStateComponent
 	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconStart()
+	protected override void _ActivityStarted(string mode, Variant argument)
 	{
-		base._SuperconStart();
+		base._ActivityStarted(mode, argument);
 		this.Play();
 	}
 
-	public override void _SuperconStop()
+	protected override void _ActivityFinished(string reason, Variant details)
 	{
-		base._SuperconStop();
+		base._ActivityFinished(reason, details);
 		if (this.Stop == StopOptionsEnum.OnDisabled)
-		{
 			this.AnimatedSprite?.Stop();
-		}
 	}
 
-	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
+	protected override void _ParentActivityFinished(string reason, Variant details)
 	{
-		base._SuperconExit(transition);
+		base._ParentActivityFinished(reason, details);
 		if (this.Stop == StopOptionsEnum.OnStateExit)
-		{
 			this.AnimatedSprite?.Stop();
-		}
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

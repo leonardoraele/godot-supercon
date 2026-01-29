@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Godot;
+using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon2D;
 
@@ -8,23 +9,6 @@ public interface ISuperconStateMachineOwner
 	//------------------------------------------------------------------------------------------------------------------
 	// STATICS
 	//------------------------------------------------------------------------------------------------------------------
-
-	public static ISuperconStateMachineOwner? GetStateMachineOwnerOf(Node node)
-	{
-		for (Node? ancestor = node.GetParent(); ancestor != null; ancestor = ancestor.GetParent())
-		{
-			if (ancestor is ISuperconStateMachineOwner stateMachineOwner)
-			{
-				return stateMachineOwner;
-			}
-		}
-		return null;
-	}
-	public static bool TryGetStateMachineOwnerOf(Node node, [NotNullWhen(true)] out ISuperconStateMachineOwner? owner)
-	{
-		owner = GetStateMachineOwnerOf(node);
-		return owner != null;
-	}
 
 	//------------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -42,11 +26,6 @@ public interface ISuperconStateMachineOwner
 	//------------------------------------------------------------------------------------------------------------------
 	// DEFAULT IMPLEMENTATIONS
 	//------------------------------------------------------------------------------------------------------------------
-
-	public SuperconBody2D? Character
-		=> this is SuperconBody2D character
-			? character
-			: ISuperconStateMachineOwner.GetStateMachineOwnerOf(this.AsNode())?.Character;
 
 	public void ResetState() => this.StateMachine.QueueTransition(this.RestState);
 	public void QueueTransition(string stateName, Variant data = default)

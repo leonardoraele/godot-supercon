@@ -4,7 +4,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_preset.png")]
-public partial class PresetMovementComponent : SuperconStateComponent
+public partial class PresetMovementComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -83,16 +83,16 @@ public partial class PresetMovementComponent : SuperconStateComponent
 	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconStart()
+	protected override void _ActivityStarted(string mode, Variant argument)
 	{
-		base._SuperconStart();
+		base._ActivityStarted(mode, argument);
 		this.InternalVelocity = Vector2.Zero;
 		this.SetPhysicsProcess(true);
 	}
 
-	public override void _SuperconPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._SuperconPhysicsProcess(delta);
+		base._ActivityPhysicsProcess(delta);
 
 		// Remove any previously applied velocity.
 		this.Character?.Velocity -= this.InternalVelocity;
@@ -107,7 +107,7 @@ public partial class PresetMovementComponent : SuperconStateComponent
 		}
 
 		// Handles ending the movement when the duration is exceeded.
-		if (this.Activity?.ActiveTimeSpan >= this.DurationTimeSpan)
+		if (this.ParentActivity?.ActiveTimeSpan >= this.DurationTimeSpan)
 		{
 			this.SetPhysicsProcess(false);
 			this.EmitSignalMovementCompleted();
@@ -123,8 +123,8 @@ public partial class PresetMovementComponent : SuperconStateComponent
 			this.EmitSignalMovementInterrupted(collision);
 		}
 
-		TimeSpan thisFrameActiveDuration = this.Activity?.ActiveTimeSpan ?? TimeSpan.Zero;
-		TimeSpan lastFrameActiveDuration = this.Activity?.ActiveTimeSpan.Subtract(TimeSpan.FromSeconds(delta)) ?? TimeSpan.Zero;
+		TimeSpan thisFrameActiveDuration = this.ParentActivity?.ActiveTimeSpan ?? TimeSpan.Zero;
+		TimeSpan lastFrameActiveDuration = this.ParentActivity?.ActiveTimeSpan.Subtract(TimeSpan.FromSeconds(delta)) ?? TimeSpan.Zero;
 
 		// TODO We could precalculate the jump height curve so that we don't need to read the curve twice every frame.
 		// TODO We could read this.Character.GetPositionDelta and accumulate the movement instead of recalculing the

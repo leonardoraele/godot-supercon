@@ -3,7 +3,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_impulse.png")]
-public partial class ImpulseComponent : SuperconStateComponent
+public partial class ImpulseComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
@@ -59,9 +59,9 @@ public partial class ImpulseComponent : SuperconStateComponent
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconStart()
+	protected override void _ActivityStarted(string mode, Variant argument)
 	{
-		base._SuperconStart();
+		base._ActivityStarted(mode, argument);
 		switch (this.ImpulseType)
 		{
 			case ImpulseTypeEnum.Add:

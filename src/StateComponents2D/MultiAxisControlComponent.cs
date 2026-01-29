@@ -6,7 +6,7 @@ namespace Raele.Supercon2D.StateComponents2D;
 // TODO Implement angular acceleration when changing direction
 // TODO Implement different speeds and acceleration per axis, for isometric perspective
 [GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_multi_axis_control.png")]
-public partial class MultiAxisControlComponent : SuperconStateComponent
+public partial class MultiAxisControlComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -20,11 +20,11 @@ public partial class MultiAxisControlComponent : SuperconStateComponent
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._SuperconPhysicsProcess(delta);
+		base._ActivityPhysicsProcess(delta);
 		float currentVelocityPxPSec = this.Character?.Velocity.Length() ?? 0;
-		float targetVelocityPxPSec = this.Character?.InputMapping.MovementInput.Length() * this.MaxSpeedPxPSec ?? 0;
+		float targetVelocityPxPSec = this.Character?.InputController.MovementInput.Length() * this.MaxSpeedPxPSec ?? 0;
 		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec
 			? this.AccelerationPxPSecSqr
 			: this.DecelerationPxPSecSqr;
@@ -33,6 +33,6 @@ public partial class MultiAxisControlComponent : SuperconStateComponent
 			targetVelocityPxPSec,
 			accelerationPxPSecSqr * (float) delta
 		);
-		this.Character?.Velocity = this.Character?.InputMapping.MovementInput.Normalized() * newVelocity ?? Vector2.Zero;
+		this.Character?.Velocity = this.Character?.InputController.MovementInput.Normalized() * newVelocity ?? Vector2.Zero;
 	}
 }

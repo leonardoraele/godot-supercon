@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using GodotDictionary = Godot.Collections.Dictionary;
-using Raele.GodotUtils.StateMachine;
+using Raele.GodotUtils;
+using Transition = Raele.Supercon2D.SuperconStateMachine.Transition;
 
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_t_gate.png")]
-public partial class TransitionGateComponent : SuperconStateComponent
+public partial class TransitionGateComponent : SuperconStateComponent2D
 {
 	//------------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -59,35 +60,6 @@ public partial class TransitionGateComponent : SuperconStateComponent
 	// OVERRIDES
 	//------------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconEnter(StateMachine<SuperconState>.Transition transition)
-	{
-		base._SuperconEnter(transition);
-		if (!this.ShouldProcess)
-		{
-			return;
-		}
-		if (
-			!this.TestPreviousStateForbidList(transition.ExitState)
-			|| !this.TestPreviousStateAllowlist(transition.ExitState)
-		)
-		{
-			transition.Cancel();
-		}
-	}
-
-	public override void _SuperconExit(StateMachine<SuperconState>.Transition transition)
-	{
-		base._SuperconExit(transition);
-		if (!this.ShouldProcess)
-		{
-			return;
-		}
-		if (!this.TestNextStateForbidlist(transition.EnterState) || !this.TestNextStateAllowlist(transition.EnterState))
-		{
-			transition.Cancel();
-		}
-	}
-
 	// public override string[] _GetConfigurationWarnings()
 	// 	=> new List<string>()
 	// 		.Concat(true ? ["This node is not configured correctly. Is any mandatory property empty?"] : [])
@@ -105,6 +77,39 @@ public partial class TransitionGateComponent : SuperconStateComponent
 				property["hint"] = (long) PropertyHint.ArrayType;
 				property["hint_string"] = $"{Variant.Type.NodePath:D}/{PropertyHint.NodePathValidTypes:D}:{nameof(SuperconState)}";
 				break;
+		}
+	}
+
+	protected override void _ParentActivityWillStart(string mode, Variant argument, GodotCancellationController controller)
+	{
+		base._ParentActivityWillStart(mode, argument, controller);
+		if (
+			mode != $"{nameof(SuperconStateMachine)}.{nameof(Transition)}"
+			|| argument.As<Transition>() is not Transition transition
+		)
+			return;
+		if (
+			!this.TestPreviousStateForbidList(transition.ExitState)
+			|| !this.TestPreviousStateAllowlist(transition.ExitState)
+		)
+		{
+			transition.Cancel();
+			controller.Cancel();
+		}
+	}
+
+	protected override void _ActivityWillFinish(string reason, Variant details, GodotCancellationController controller)
+	{
+		base._ActivityWillFinish(reason, details, controller);
+		if (
+			reason != $"{nameof(SuperconStateMachine)}.{nameof(Transition)}"
+			|| details.As<Transition>() is not Transition transition
+		)
+			return;
+		if (!this.TestNextStateForbidlist(transition.EnterState) || !this.TestNextStateAllowlist(transition.EnterState))
+		{
+			transition.Cancel();
+			controller.Cancel();
 		}
 	}
 

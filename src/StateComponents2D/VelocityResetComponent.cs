@@ -4,7 +4,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_velocity_reset.png")]
-public partial class VelocityResetComponent : SuperconStateComponent
+public partial class VelocityResetComponent : SuperconStateComponent2D
 {
 	//==================================================================================================================
 	// STATICS
@@ -99,17 +99,17 @@ public partial class VelocityResetComponent : SuperconStateComponent
 		}
 	}
 
-	public override void _SuperconStart()
+	protected override void _ActivityStarted(string mode, Variant argument)
 	{
-		base._SuperconStart();
+		base._ActivityStarted(mode, argument);
 		this.InitialVelocity = this.Character?.Velocity ?? Vector2.Zero;
 		this.SetPhysicsProcess(true);
 	}
 
-	public override void _SuperconPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._SuperconPhysicsProcess(delta);
-		if (this.Activity?.ActiveTimeSpan.TotalMilliseconds > this.Duration - Mathf.Epsilon)
+		base._ActivityPhysicsProcess(delta);
+		if (this.ParentActivity?.ActiveTimeSpan.TotalMilliseconds > this.Duration - Mathf.Epsilon)
 		{
 			this.ZeroOutVelocity();
 			return;
@@ -140,12 +140,12 @@ public partial class VelocityResetComponent : SuperconStateComponent
 
 	private void ProcessEase()
 	{
-		if (this.Activity == null)
+		if (this.ParentActivity == null)
 			return;
 		if (this.HorizontalAffected)
-			this.Character?.VelocityX = this.InitialVelocity.X * Mathf.Ease(1 - (float) this.Activity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
+			this.Character?.VelocityX = this.InitialVelocity.X * Mathf.Ease(1 - (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
 		if (this.VerticalAffected)
-			this.Character?.VelocityY = this.InitialVelocity.Y * Mathf.Ease(1 - (float) this.Activity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
+			this.Character?.VelocityY = this.InitialVelocity.Y * Mathf.Ease(1 - (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
 	}
 
 	private void ProcessLerp()
@@ -158,9 +158,9 @@ public partial class VelocityResetComponent : SuperconStateComponent
 
 	private void ProcessCurve()
 	{
-		if (this.Activity == null || this.Curve == null)
+		if (this.ParentActivity == null || this.Curve == null)
 			return;
-		float progress = (float) this.Activity.ActiveTimeSpan.TotalMilliseconds / this.Duration;
+		float progress = (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration;
 		float multiplier = this.Curve.SampleBaked(progress);
 		if (this.HorizontalAffected)
 			this.Character?.VelocityX = this.InitialVelocity.X * multiplier;

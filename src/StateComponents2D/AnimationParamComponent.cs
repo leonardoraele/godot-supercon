@@ -6,7 +6,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_animation_param.png")]
-public partial class AnimationParamComponent : SuperconStateComponent
+public partial class AnimationParamComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -78,15 +78,14 @@ public partial class AnimationParamComponent : SuperconStateComponent
 		base._Ready();
 		if (Engine.IsEditorHint())
 		{
-			this.AnimationTree ??= this.StateMachineOwner?.AsNode().GetChildren().OfType<AnimationTree>().FirstOrDefault()
-				?? this.Character?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
-			this.TargetNode ??= this.StateMachineOwner?.Character;
+			this.AnimationTree ??= this.Character?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
+			this.TargetNode ??= this.Character;
 		}
 	}
 
-	public override void _SuperconProcess(double delta)
+	protected override void _ActivityProcess(double delta)
 	{
-		base._SuperconProcess(delta);
+		base._ActivityProcess(delta);
 
 		if (this.AnimationTree == null || string.IsNullOrWhiteSpace(this.ParameterName))
 		{

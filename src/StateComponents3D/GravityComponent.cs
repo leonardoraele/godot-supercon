@@ -1,9 +1,8 @@
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents2D;
+namespace Raele.Supercon2D.StateComponents3D;
 
-[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_gravity.png")]
-public partial class GravityComponent : SuperconStateComponent2D
+public partial class GravityComponent : SuperconStateComponent3D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -16,8 +15,8 @@ public partial class GravityComponent : SuperconStateComponent2D
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public Vector2 GravityDirection;
-	public float GravityMagnitudePxPSecSq;
+	public Vector3 GravityDirection;
+	public float GravityMagnitude; // m/s²
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED FIELDS
@@ -30,15 +29,15 @@ public partial class GravityComponent : SuperconStateComponent2D
 	public override void _Ready()
 	{
 		base._Ready();
-		this.GravityDirection = ProjectSettings.GetSetting("physics/2d/default_gravity_vector").AsVector2().Normalized();
-		this.GravityMagnitudePxPSecSq = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
+		this.GravityDirection = ProjectSettings.GetSetting("physics/3d/default_gravity_vector").AsVector3().Normalized();
+		this.GravityMagnitude = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 	}
 
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
 		this.Character?.ApplyForce(
-			this.GravityDirection * this.GravityMagnitudePxPSecSq * (float) delta * this.GravityMultiplier,
+			this.GravityDirection * this.GravityMagnitude * (float) delta * this.GravityMultiplier,
 			this.MaxFallSpeed
 		);
 	}

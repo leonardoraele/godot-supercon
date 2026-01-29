@@ -4,7 +4,7 @@ using Godot;
 namespace Raele.Supercon2D.StateComponents2D;
 
 [GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_single_axis_control.png")]
-public partial class SingleAxisControlComponent : SuperconStateComponent
+public partial class SingleAxisControlComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -29,9 +29,9 @@ public partial class SingleAxisControlComponent : SuperconStateComponent
 	// COMPUTED PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	private float AxisInput => this.Character?.InputMapping == null ? 0
-		: this.Axis == AxisEnum.Horizontal ? this.Character.InputMapping.MovementInput.X
-		: this.Axis == AxisEnum.Vertical ? this.Character.InputMapping.MovementInput.Y
+	private float AxisInput => this.Character?.InputController == null ? 0
+		: this.Axis == AxisEnum.Horizontal ? this.Character.InputController.MovementInput.X
+		: this.Axis == AxisEnum.Vertical ? this.Character.InputController.MovementInput.Y
 		: 0f;
 	private float AxisVelocity
 	{
@@ -59,9 +59,9 @@ public partial class SingleAxisControlComponent : SuperconStateComponent
 	// OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._SuperconPhysicsProcess(delta);
+		base._ActivityPhysicsProcess(delta);
 
 		if (this.FaceMovingDirection && Math.Abs(this.AxisVelocity) >= this.FaceMinSpeed)
 		{
