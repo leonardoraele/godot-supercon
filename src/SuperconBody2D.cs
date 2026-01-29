@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
 [Tool][GlobalClass]
 public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwner

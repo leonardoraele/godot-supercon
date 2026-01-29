@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Godot;
 using Raele.GodotUtils.Extensions;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
 public interface ISuperconStateMachineOwner
 {

@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Godot;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
 public static class GeneralUtil
 {

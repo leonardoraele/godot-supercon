@@ -1,6 +1,6 @@
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents3D;
+namespace Raele.Supercon.StateComponents3D;
 
 public partial class GravityComponent : SuperconStateComponent3D
 {

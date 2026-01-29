@@ -1,8 +1,8 @@
 using Godot;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
-[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_neutral.png")]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_neutral.png")]
 public partial class SuperconStateLayer : SuperconState, ISuperconStateMachineOwner
 {
 	//------------------------------------------------------------------------------------------------------------------

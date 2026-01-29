@@ -3,11 +3,11 @@ using System.Linq;
 using Godot;
 using GodotDictionary = Godot.Collections.Dictionary;
 using Raele.GodotUtils;
-using Transition = Raele.Supercon2D.SuperconStateMachine.Transition;
+using Transition = Raele.Supercon.SuperconStateMachine.Transition;
 
-namespace Raele.Supercon2D.StateComponents2D;
+namespace Raele.Supercon.StateComponents2D;
 
-[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_t_gate.png")]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_t_gate.png")]
 public partial class TransitionGateComponent : SuperconStateComponent2D
 {
 	//------------------------------------------------------------------------------------------------------------------

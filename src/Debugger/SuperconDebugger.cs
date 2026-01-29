@@ -3,7 +3,7 @@ using System.Linq;
 using Godot;
 using Godot.Collections;
 
-namespace Raele.Supercon2D.Debugger;
+namespace Raele.Supercon.Debugger;
 
 [Tool][GlobalClass]
 public partial class SuperconDebugger : CanvasLayer
@@ -30,7 +30,7 @@ public partial class SuperconDebugger : CanvasLayer
 	{
 		this.Visible = !Engine.IsEditorHint() && OS.IsDebugBuild();
 		this.ProcessMode = ProcessModeEnum.Always;
-		this.DebuggerInterfaceScene = ResourceLoader.Load<PackedScene>($"res://addons/{nameof(Supercon2D)}/scenes/{nameof(SuperconDebugger)}.tscn");
+		this.DebuggerInterfaceScene = ResourceLoader.Load<PackedScene>($"res://addons/{nameof(Supercon)}/scenes/{nameof(SuperconDebugger)}.tscn");
 		if (!Engine.IsEditorHint())
 		{
 			Node node = this.DebuggerInterfaceScene.Instantiate();

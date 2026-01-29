@@ -1,9 +1,9 @@
 using System.Linq;
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents2D;
+namespace Raele.Supercon.StateComponents2D;
 
-[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_velocity_reset.png")]
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_velocity_reset.png")]
 public partial class VelocityResetComponent : SuperconStateComponent2D
 {
 	//==================================================================================================================

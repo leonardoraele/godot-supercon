@@ -1,9 +1,9 @@
 using System;
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents2D;
+namespace Raele.Supercon.StateComponents2D;
 
-[GlobalClass][Icon($"res://addons/{nameof(Supercon2D)}/icons/character_body_single_axis_control.png")]
+[GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_single_axis_control.png")]
 public partial class SingleAxisControlComponent : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------

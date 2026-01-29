@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
 [Tool][GlobalClass]
 public partial class SuperconInputController : Resource
