@@ -10,14 +10,11 @@ public partial class GravityComponent : SuperconStateComponent2D
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export(PropertyHint.None, "suffix:px/s")] public float MaxFallSpeed = float.PositiveInfinity;
-	[Export] public float GravityMultiplier = 5f;
+	[Export] public float Mass = 1f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
-
-	public Vector2 GravityDirection;
-	public float GravityMagnitudePxPSecSq;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED FIELDS
@@ -27,18 +24,11 @@ public partial class GravityComponent : SuperconStateComponent2D
 	// VIRTUALS & OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _Ready()
-	{
-		base._Ready();
-		this.GravityDirection = ProjectSettings.GetSetting("physics/2d/default_gravity_vector").AsVector2().Normalized();
-		this.GravityMagnitudePxPSecSq = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
-	}
-
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
 		this.Character?.ApplyForce(
-			this.GravityDirection * this.GravityMagnitudePxPSecSq * (float) delta * this.GravityMultiplier,
+			this.Character.GetGravity() * this.Mass * (float) delta,
 			this.MaxFallSpeed
 		);
 	}

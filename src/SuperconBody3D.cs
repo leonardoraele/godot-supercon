@@ -20,8 +20,6 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	// EXPORTS
 	//==================================================================================================================
 
-	[Export] public float Mass = 1f;
-
 	[Export] public SuperconState? RestState
 		{ get; set { field = value; this.UpdateConfigurationWarnings(); } }
 
@@ -72,10 +70,6 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	/// character has left the wall.
 	/// </summary>
 	public float TimeOnWall = float.NegativeInfinity;
-
-	public Vector3 GravityDirection { get; private set; }
-	public float GravityMagniture { get; private set; }
-	public Vector3 GravityForce => this.GravityDirection * this.GravityMagniture;
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
@@ -165,7 +159,6 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	{
 		base._Ready();
 		this.AsStateMachineOwner().ResetState();
-		this.ResetGravity();
 	}
 
 	public override void _Process(double delta)
@@ -195,12 +188,6 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	//==================================================================================================================
 	// METHODS
 	//==================================================================================================================
-
-	private void ResetGravity()
-	{
-		this.GravityDirection = ProjectSettings.GetSetting("physics/3d/default_gravity_vector").AsVector3().Normalized();
-		this.GravityMagniture = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
-	}
 
 	private void UpdateContactTrackers(double delta)
 	{

@@ -246,9 +246,9 @@ public partial class PlaneControlComponent : SuperconStateComponent3D
 		Vector3 alignBack = this.RotationPlaneNormalAlignment.IsZeroApprox()
 			? this.Character.Basis.Back
 			: this.RotationPlaneNormalAlignment.Normalized();
-		Vector3 alignUp = this.Character.GravityDirection.IsZeroApprox()
+		Vector3 alignUp = this.Character.GetGravity() is Vector3 gravity && gravity.IsZeroApprox()
 			? this.Character.Basis.Up
-			: this.Character.GravityDirection * -1;
+			: gravity.Normalized() * -1;
 		Basis alignment = !alignBack.IsParallelTo(alignUp)
 			? Basis.LookingAt(-alignBack, alignUp)
 			: Basis.Identity;

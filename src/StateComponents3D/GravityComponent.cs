@@ -9,7 +9,7 @@ public partial class GravityComponent : SuperconStateComponent3D
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export(PropertyHint.None, "suffix:px/s")] public float MaxFallSpeed = float.PositiveInfinity;
-	[Export] public float MassMultiplier = 1f;
+	[Export] public float Mass = 1f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -27,7 +27,7 @@ public partial class GravityComponent : SuperconStateComponent3D
 	{
 		base._ActivityPhysicsProcess(delta);
 		this.Character?.ApplyForceAndLimitSpeed(
-			this.Character.GravityForce * this.Character.Mass * this.MassMultiplier * (float) delta,
+			this.Character.GetGravity() * this.Mass * (float) delta,
 			this.MaxFallSpeed
 		);
 	}
