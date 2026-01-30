@@ -1,4 +1,5 @@
 using Godot;
+using Raele.GodotUtils.Debug;
 using Raele.GodotUtils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -45,6 +46,10 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		get => this.StateMachine.DebugPrintContext != null;
 		set => this.StateMachine.DebugPrintContext = value ? this : null;
 	}
+	[ExportSubgroup("3D Drawings", "Debug")]
+	[Export] public bool DebugDrawInput = false;
+	[Export] public bool DebugDrawVelocity = false;
+	[Export] public bool DebugDrawCollisions = false;
 
 	//==================================================================================================================
 	// FIELDS
@@ -52,9 +57,21 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 
 	public readonly SuperconStateMachine StateMachine = new();
 
-	public TimeSpan TimeOnFloor { get; private set; } = TimeSpan.Zero;
-	public TimeSpan TimeOnCeiling { get; private set; } = TimeSpan.Zero;
-	public TimeSpan TimeOnWall { get; private set; } = TimeSpan.Zero;
+	/// <summary>
+	/// Number of seconds the character has been on the floor. If negative, then it's the number of seconds since the
+	/// character has left the floor.
+	/// </summary>
+	public float TimeOnFloor = float.NegativeInfinity;
+	/// <summary>
+	/// Number of seconds the character has been on the ceiling. If negative, then it's the number of seconds since the
+	/// character has left the ceiling.
+	/// </summary>
+	public float TimeOnCeiling = float.NegativeInfinity;
+	/// <summary>
+	/// Number of seconds the character has been on a wall. If negative, then it's the number of seconds since the
+	/// character has left the wall.
+	/// </summary>
+	public float TimeOnWall = float.NegativeInfinity;
 
 	public Vector3 GravityDirection { get; private set; }
 	public float GravityMagniture { get; private set; }
@@ -101,7 +118,7 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		/// if the camera moves, rotates, or another camera becomes active, the input direction will be updated every
 		/// frame based to the new camera parameters.
 		///
-		/// For example, if the player is pressing input Forward while the camrea rotates, the input will point to the
+		/// For example, if the player is pressing input Forward while the camera rotates, the input will point to the
 		/// forward direction of the camera at every frame as it rotates. Likewise, if a camera cut happens, the input
 		/// will point toward the forward direction of the new active camera.
 		///
@@ -160,6 +177,7 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		}
 		base._Process(delta);
 		this.InputController?.Update();
+		this.DebugDraw();
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -186,29 +204,45 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 
 	private void UpdateContactTrackers(double delta)
 	{
-		this.TimeOnFloor = this.IsOnFloor() ? this.TimeOnFloor + TimeSpan.FromSeconds(delta) : TimeSpan.Zero;
-		this.TimeOnCeiling = this.IsOnCeiling() ? this.TimeOnCeiling + TimeSpan.FromSeconds(delta) : TimeSpan.Zero;
-		this.TimeOnWall = this.IsOnWall() ? this.TimeOnWall + TimeSpan.FromSeconds(delta) : TimeSpan.Zero;
+		this.TimeOnFloor = this.IsOnFloor()
+			? this.TimeOnFloor.AtLeast(0) + (float) delta
+			: this.TimeOnFloor.AtMost(0) - (float) delta;
+		this.TimeOnCeiling = this.IsOnCeiling()
+			? this.TimeOnCeiling.AtLeast(0) + (float) delta
+			: this.TimeOnCeiling.AtMost(0) - (float) delta;
+		this.TimeOnWall = this.IsOnWall()
+			? this.TimeOnWall.AtLeast(0) + (float) delta
+			: this.TimeOnWall.AtMost(0) - (float) delta;
+	}
+
+	private void DebugDraw()
+	{
+		if (this.DebugDrawInput)
+			Draw3D.AddText(nameof(this.InputController.RawDirectionalInput), this.InputController?.RawDirectionalInput ?? Variant.NULL);
+		if (this.DebugDrawVelocity)
+			Draw3D.DrawArrow(this.GlobalPosition, this.GlobalPosition + this.Velocity, Colors.Green);
+		if (this.DebugDrawCollisions && this.GetLastSlideCollision() is KinematicCollision3D collision)
+			Draw3D.DrawArrow(collision.GetPosition(), collision.GetPosition() + collision.GetNormal(), Colors.Red);
 	}
 
 	/// <summary>
 	/// Applies the given force to the character's velocity, then limits the resulting velocity's magnitude along the
 	/// direction of the force to the given maximum speed.
 	/// </summary>
-	public void ApplyForceWithMaxSpeed(Vector3 force, float maxSpeedPxPSec)
+	/// <param name="force">The force to apply to the character's velocity.</param>
+	/// <param name="maxSpeed">The maximum speed along the direction of the force, in meters per second.</param>
+	public void ApplyForceAndLimitSpeed(Vector3 force, float maxSpeed)
 	{
 		if (force.IsZeroApprox())
 			return;
 		if (this.Velocity.IsZeroApprox())
 		{
-			this.Velocity = force.LimitLength(maxSpeedPxPSec);
+			this.Velocity = force.LimitLength(maxSpeed);
 			return;
 		}
 		Vector3 parallelVelocity = this.Velocity.Project(force.Normalized());
 		Vector3 orthogonalVelocity = this.Velocity - parallelVelocity;
-		float newSpeed = parallelVelocity.Length() + force.Length();
-		if (Mathf.Abs(newSpeed) > maxSpeedPxPSec)
-			newSpeed = maxSpeedPxPSec * Math.Sign(newSpeed);
-		this.Velocity = orthogonalVelocity + parallelVelocity.Normalized() * newSpeed;
+		Vector3 newParallelVelocity = (parallelVelocity + force).LimitLength(maxSpeed);
+		this.Velocity = orthogonalVelocity + newParallelVelocity;
 	}
 }

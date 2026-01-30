@@ -1,4 +1,5 @@
 using Godot;
+using Raele.GodotUtils.Debug;
 using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents3D;
@@ -125,8 +126,6 @@ public partial class PlaneControlComponent : SuperconStateComponent3D
 		#region FIELDS
 	//==================================================================================================================
 
-
-
 	//==================================================================================================================
 		#endregion
 	//==================================================================================================================
@@ -139,7 +138,7 @@ public partial class PlaneControlComponent : SuperconStateComponent3D
 		#region EVENTS & SIGNALS
 	//==================================================================================================================
 
-	// [Signal] public delegate void EventHandler();
+	[Signal] public delegate void SurfaceExitEventHandler();
 
 	//==================================================================================================================
 		#endregion
@@ -196,22 +195,29 @@ public partial class PlaneControlComponent : SuperconStateComponent3D
 		if (this.Character == null)
 			return;
 		if (this.ResolveGlobalMovementPlane() is not Plane plane)
+		{
+			if (this.TestSurfaceExit())
+				this.EmitSignalSurfaceExit();
 			return;
-		Vector3 currentVelocity = this.Character.Velocity.Project(plane);
-		float currentSpeed = currentVelocity.Length();
+		}
+		if (this.Character.GetViewport().GetCamera3D() is not Camera3D camera)
+			return;
+		Vector3 projectedVelocity = this.Character.Velocity.Project(plane);
+		float currentSpeed = projectedVelocity.Length();
 		bool isMoving = currentSpeed > Mathf.Epsilon;
 		Vector3 currentDirection = isMoving
-			? currentVelocity.Normalized()
+			? projectedVelocity.Normalized()
 			: this.Character.GlobalBasis.Forward;
-		Vector2 inputNormalized = this.Character.InputController?.RawMovementInput.Normalized() ?? Vector2.Zero;
-		float inputStrength = inputNormalized.Length();
+		Vector2 normalInput = this.Character.InputController?.NormalDirectionalInput ?? Vector2.Zero;
+		float inputStrength = normalInput.Length();
 		bool hasInput = inputStrength > Mathf.Epsilon;
-		// TODO // FIXME This crashes if plane.Normal is Vector3.Zero, Vector3.Up, or Vector3.Down. Fix it.
 		Vector3 inputDirection = hasInput
-			? Basis.LookingAt(plane.Normal * -1) * new Vector3(inputNormalized.X, inputNormalized.Y, 0)
+			? camera.GlobalBasis.RotateToward(plane.Normal * -1)
+				* new Vector3(normalInput.X, normalInput.Y * -1, 0)
+				* plane.Normal.Dot(camera.GlobalBasis.Back).Sign()
 			: Vector3.Zero;
 		Vector3 newGlobalDirection = isMoving && hasInput
-				? currentDirection.MoveToward(inputDirection, this.AngularVelocity * delta)
+				? currentDirection.RotateToward(inputDirection, this.AngularVelocity * delta)
 			: isMoving ? currentDirection
 			: hasInput ? inputDirection
 			: this.Character.Basis.Forward;
@@ -281,6 +287,17 @@ public partial class PlaneControlComponent : SuperconStateComponent3D
 			PlaneOptionsEnum.NegativePlaneXY => new Plane(Vector3.Forward, this.Character?.GlobalPosition ?? Vector3.Zero),
 			PlaneOptionsEnum.NegativePlaneYZ => new Plane(Vector3.Left, this.Character?.GlobalPosition ?? Vector3.Zero),
 			_ => null,
+		};
+
+	private bool TestSurfaceExit()
+		// Note: We assume that if this method is being called, then the character is not on the surface anymore. This
+		// method only tests if the character has exit the surface this frame.
+		=> this.Character != null && this.MovementPlane switch
+		{
+			PlaneOptionsEnum.Floor => this.Character.TimeOnFloor > this.Character.GetPhysicsProcessDeltaTime() * -1 - Mathf.Epsilon,
+			PlaneOptionsEnum.Wall => this.Character.TimeOnWall > this.Character.GetPhysicsProcessDeltaTime() * -1 - Mathf.Epsilon,
+			PlaneOptionsEnum.Ceiling => this.Character.TimeOnCeiling > this.Character.GetPhysicsProcessDeltaTime() * -1 - Mathf.Epsilon,
+			_ => false,
 		};
 
 	//==================================================================================================================

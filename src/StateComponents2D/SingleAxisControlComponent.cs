@@ -30,8 +30,8 @@ public partial class SingleAxisControlComponent : SuperconStateComponent2D
 	//==================================================================================================================
 
 	private float AxisInput => this.Character?.InputController == null ? 0
-		: this.Axis == AxisEnum.Horizontal ? this.Character.InputController.RawMovementInput.X
-		: this.Axis == AxisEnum.Vertical ? this.Character.InputController.RawMovementInput.Y
+		: this.Axis == AxisEnum.Horizontal ? this.Character.InputController.RawDirectionalInput.X
+		: this.Axis == AxisEnum.Vertical ? this.Character.InputController.RawDirectionalInput.Y
 		: 0f;
 	private float AxisVelocity
 	{

@@ -41,6 +41,6 @@ public partial class ForceComponent : SuperconStateComponent3D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForceWithMaxSpeed(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
+		this.Character?.ApplyForceAndLimitSpeed(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
 	}
 }

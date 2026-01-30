@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Raele.GodotUtils.Debug;
 
 namespace Raele.Supercon;
 
@@ -57,7 +58,21 @@ public partial class SuperconInputController : Resource
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public Vector2 RawMovementInput { get; private set; }
+	/// <summary>
+	/// +---------------------------+
+	/// | Directional input vector: |
+	/// |                           |
+	/// |            -Y             |
+	/// |             ┃             |
+	/// |      -X ━━━━╋━━━━ +X      |
+	/// |             ┃             |
+	/// |            +Y             |
+	/// |                           |
+	/// +---------------------------+
+	/// </summary>
+	public Vector2 RawDirectionalInput
+		{ get; private set { field = value; NormalDirectionalInput = value.Normalized(); } }
+	public Vector2 NormalDirectionalInput { get; private set; }
 	private Dictionary<string, InputBuffer> InputBuffers = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -89,19 +104,15 @@ public partial class SuperconInputController : Resource
 	public void Update()
 	{
 		if (!this.Enabled)
-		{
 			return;
-		}
-		this.RawMovementInput = Input.GetVector(
+		this.RawDirectionalInput = Input.GetVector(
 			this.MoveLeftAction,
 			this.MoveRightAction,
 			this.MoveUpAction,
 			this.MoveDownAction
 		);
 		foreach (InputBuffer buffer in this.InputBuffers.Values)
-		{
 			buffer.Update();
-		}
 	}
 	public InputBuffer GetInputBuffer(string name)
 	{
@@ -121,7 +132,7 @@ public partial class SuperconInputController : Resource
 		this.Enabled = enabled;
 		if (!enabled)
 		{
-			this.RawMovementInput = Vector2.Zero;
+			this.RawDirectionalInput = Vector2.Zero;
 			foreach (InputBuffer buffer in this.InputBuffers.Values)
 			{
 				buffer.ConsumeInput();
