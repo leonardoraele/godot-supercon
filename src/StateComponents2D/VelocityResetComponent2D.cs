@@ -4,7 +4,7 @@ using Godot;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_velocity_reset.png")]
-public partial class VelocityResetComponent : SuperconStateComponent2D
+public partial class VelocityResetComponent2D : SuperconStateComponent2D
 {
 	//==================================================================================================================
 	// STATICS

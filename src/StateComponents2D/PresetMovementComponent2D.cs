@@ -4,7 +4,7 @@ using Godot;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_preset.png")]
-public partial class PresetMovementComponent : SuperconStateComponent2D
+public partial class PresetMovementComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

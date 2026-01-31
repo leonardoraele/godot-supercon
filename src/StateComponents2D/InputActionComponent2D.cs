@@ -3,7 +3,7 @@ using Godot;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_button.png")]
-public partial class InputActionComponent : SuperconStateComponent2D
+public partial class InputActionComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -50,7 +50,7 @@ public partial class InputActionComponent : SuperconStateComponent2D
 		{
 			if (this.DebugPrintTriggers)
 			{
-				GD.PrintS(Time.GetTimeStringFromSystem(), nameof(InputActionComponent), ":", "⚡", "Action triggered:", this.InputActionName);
+				GD.PrintS(Time.GetTimeStringFromSystem(), nameof(InputActionComponent2D), ":", "⚡", "Action triggered:", this.InputActionName);
 			}
 			this.EmitSignalInputActionTriggered();
 		}

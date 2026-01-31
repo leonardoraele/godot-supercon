@@ -6,7 +6,7 @@ namespace Raele.Supercon.StateComponents2D;
 // TODO Implement angular acceleration when changing direction
 // TODO Implement different speeds and acceleration per axis, for isometric perspective
 [GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_multi_axis_control.png")]
-public partial class MultiAxisControlComponent : SuperconStateComponent2D
+public partial class MultiAxisControlComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

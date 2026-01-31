@@ -6,7 +6,7 @@ using Godot;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_animation_param.png")]
-public partial class AnimationParamComponent : SuperconStateComponent2D
+public partial class AnimationParamComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS

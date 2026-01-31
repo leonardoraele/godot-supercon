@@ -3,7 +3,7 @@ using Godot;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_binary.png")]
-public partial class CustomTriggerComponent : SuperconStateComponent2D
+public partial class CustomTriggerComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

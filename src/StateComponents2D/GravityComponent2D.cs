@@ -1,26 +1,16 @@
 using Godot;
 
-namespace Raele.Supercon.StateComponents3D;
+namespace Raele.Supercon.StateComponents2D;
 
-[GlobalClass]
-public partial class ForceComponent : SuperconStateComponent3D
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_gravity.png")]
+public partial class GravityComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	/// <summary>
-	/// The direction to which the force is applied.
-	/// </summary>
-	[Export] public Vector3 Direction = Vector3.Up;
-	/// <summary>
-	/// If true, the direction is considered in local space.
-	/// </summary>
-	[Export] public bool LocalDirection = false;
-	[Export(PropertyHint.None, "suffix:m/s²")] public float Magnitude = 1f;
-
-	[ExportGroup("Additional Options")]
-	[Export(PropertyHint.None, "suffix:m/s")] public float MaxSpeed = float.PositiveInfinity;
+	[Export(PropertyHint.None, "suffix:px/s")] public float MaxFallSpeed = float.PositiveInfinity;
+	[Export] public float Mass = 1f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -30,10 +20,6 @@ public partial class ForceComponent : SuperconStateComponent3D
 	// COMPUTED FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public Vector3 GlobalDirection => this.LocalDirection && this.Character != null
-		? (this.Character.GlobalBasis * this.Direction).Normalized()
-		: this.Direction.Normalized();
-
 	// -----------------------------------------------------------------------------------------------------------------
 	// VIRTUALS & OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
@@ -41,6 +27,9 @@ public partial class ForceComponent : SuperconStateComponent3D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForceAndLimitSpeed(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
+		this.Character?.ApplyForce(
+			this.Character.GetGravity() * this.Mass * (float) delta,
+			this.MaxFallSpeed
+		);
 	}
 }

@@ -1,9 +1,8 @@
 using Godot;
 
-namespace Raele.Supercon.StateComponents2D;
+namespace Raele.Supercon.StateComponents3D;
 
-[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_gravity.png")]
-public partial class GravityComponent : SuperconStateComponent2D
+public partial class GravityComponent3D : SuperconStateComponent3D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
@@ -27,7 +26,7 @@ public partial class GravityComponent : SuperconStateComponent2D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForce(
+		this.Character?.ApplyForceAndLimitSpeed(
 			this.Character.GetGravity() * this.Mass * (float) delta,
 			this.MaxFallSpeed
 		);

@@ -1,11 +1,10 @@
 using System.Linq;
 using Godot;
-using Raele.GodotUtils.StateMachine;
 
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_animated_sprite_3.png")]
-public partial class SpriteAnimationComponent : SuperconStateComponent2D
+public partial class SpriteAnimationComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS

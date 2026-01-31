@@ -6,7 +6,7 @@ using Godot;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_animation_play.png")]
-public partial class PlayAnimationComponent : SuperconStateComponent2D
+public partial class PlayAnimationComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -348,7 +348,7 @@ public partial class PlayAnimationComponent : SuperconStateComponent2D
 		this.TimingExpressionParser = new();
 		if (this.TimingExpressionParser.Parse(this.TimingExpression, ["param"]) is Error error && error != Error.Ok)
 		{
-			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
+			GD.PrintErr($"[{nameof(PlayAnimationComponent2D)} at {this.GetPath()}] Error parsing expression. Error: {error}");
 			this.TimingExpressionParser = null;
 		}
 	}
@@ -366,12 +366,12 @@ public partial class PlayAnimationComponent : SuperconStateComponent2D
 		}
 		catch (Exception e)
 		{
-			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Exception while evaluating timing expression. Exception: {e}");
+			GD.PrintErr($"[{nameof(PlayAnimationComponent2D)} at {this.GetPath()}] Exception while evaluating timing expression. Exception: {e}");
 			return false;
 		}
 		if (result.VariantType != Variant.Type.Bool)
 		{
-			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Timing expression did not evaluate to a boolean. Returned value: {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(PlayAnimationComponent2D)} at {this.GetPath()}] Timing expression did not evaluate to a boolean. Returned value: {result} ({result.VariantType})");
 			return false;
 		}
 		return result.AsBool();

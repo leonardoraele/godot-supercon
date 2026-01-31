@@ -8,7 +8,7 @@ using Transition = Raele.Supercon.SuperconStateMachine.Transition;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_t_gate.png")]
-public partial class TransitionGateComponent : SuperconStateComponent2D
+public partial class TransitionGateComponent2D : SuperconStateComponent2D
 {
 	//------------------------------------------------------------------------------------------------------------------
 	// STATICS
