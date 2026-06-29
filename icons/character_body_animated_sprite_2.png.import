@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://wgsskq71rmmp"
-path="res://.godot/imported/character_body_animated_sprite_2.png-a6ea25ee67b94f09fa225f5141d92dc2.ctex"
+path="res://.godot/imported/character_body_animated_sprite_2.png-046076b77c2b1c3d44e215b2fa2a6745.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_animated_sprite_2.png"
-dest_files=["res://.godot/imported/character_body_animated_sprite_2.png-a6ea25ee67b94f09fa225f5141d92dc2.ctex"]
+source_file="res://addons/Supercon/icons/character_body_animated_sprite_2.png"
+dest_files=["res://.godot/imported/character_body_animated_sprite_2.png-046076b77c2b1c3d44e215b2fa2a6745.ctex"]
 
 [params]
 

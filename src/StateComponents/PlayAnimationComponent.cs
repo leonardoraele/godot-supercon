@@ -210,7 +210,7 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 				break;
 			case nameof(this.SectioningStartTimeSec):
 			case nameof(this.SectioningEndTimeSec):
-				float? length = this.AnimationPlayer?.HasAnimation(this.Animation) == true
+				double? length = this.AnimationPlayer?.HasAnimation(this.Animation) == true
 					? this.AnimationPlayer.GetAnimation(this.Animation).GetLength()
 					: null;
 				property["hint"] = length.HasValue ? (long) PropertyHint.Range : (long) PropertyHint.None;

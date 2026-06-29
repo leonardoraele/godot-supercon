@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://gbg6dlfwdbge"
-path="res://.godot/imported/character_body_dual_axis_control.png-307dd7e69738ab552f73d0689f924f58.ctex"
+path="res://.godot/imported/character_body_dual_axis_control.png-3ed56c9f8fd527b445a8fb9393aa6603.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_dual_axis_control.png"
-dest_files=["res://.godot/imported/character_body_dual_axis_control.png-307dd7e69738ab552f73d0689f924f58.ctex"]
+source_file="res://addons/Supercon/icons/character_body_dual_axis_control.png"
+dest_files=["res://.godot/imported/character_body_dual_axis_control.png-3ed56c9f8fd527b445a8fb9393aa6603.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cqvynvclvmpv5"
-path="res://.godot/imported/character_body_t_gate.png-7f9dfec7df5b57b12d43aa31dd11f62c.ctex"
+path="res://.godot/imported/character_body_t_gate.png-6309b2b9ef6f2350a501e37378016442.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_t_gate.png"
-dest_files=["res://.godot/imported/character_body_t_gate.png-7f9dfec7df5b57b12d43aa31dd11f62c.ctex"]
+source_file="res://addons/Supercon/icons/character_body_t_gate.png"
+dest_files=["res://.godot/imported/character_body_t_gate.png-6309b2b9ef6f2350a501e37378016442.ctex"]
 
 [params]
 

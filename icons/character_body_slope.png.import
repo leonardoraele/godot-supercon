@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://du1miijdfv224"
-path="res://.godot/imported/character_body_slope.png-a5e1bb43fdad71ef4e4e666a3384b361.ctex"
+path="res://.godot/imported/character_body_slope.png-10e38d3a722b505f02d85a0b5c4422dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_slope.png"
-dest_files=["res://.godot/imported/character_body_slope.png-a5e1bb43fdad71ef4e4e666a3384b361.ctex"]
+source_file="res://addons/Supercon/icons/character_body_slope.png"
+dest_files=["res://.godot/imported/character_body_slope.png-10e38d3a722b505f02d85a0b5c4422dd.ctex"]
 
 [params]
 

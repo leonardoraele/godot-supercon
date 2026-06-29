@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://xuacryodsfd"
-path="res://.godot/imported/character_body_gravity.png-95819d5e66c70e0ddea443c0bd32b476.ctex"
+path="res://.godot/imported/character_body_gravity.png-6f651be6c679679bb6874b61c24137a2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Supercon2D/icons/character_body_gravity.png"
-dest_files=["res://.godot/imported/character_body_gravity.png-95819d5e66c70e0ddea443c0bd32b476.ctex"]
+source_file="res://addons/Supercon/icons/character_body_gravity.png"
+dest_files=["res://.godot/imported/character_body_gravity.png-6f651be6c679679bb6874b61c24137a2.ctex"]
 
 [params]
 
