@@ -15,7 +15,7 @@ public partial class SuperconState : Activity, SuperconStateMachine.IState
 	// FIELDS
 	//==================================================================================================================
 
-	public ISuperconStateMachineOwner? StateMachineOwner => this.GetAncestorOrDefault<ISuperconStateMachineOwner>();
+	public ISuperconStateMachineOwner? StateMachineOwner => this.GetFirstAncestorOrDefault<ISuperconStateMachineOwner>();
 
 	//==================================================================================================================
 	// PROPERTIES
@@ -23,8 +23,8 @@ public partial class SuperconState : Activity, SuperconStateMachine.IState
 
 	public bool IsPreviousActiveState => this.StateMachineOwner?.StateMachine.PreviousActiveState == this;
 	// TOOD Do we really need this class here?
-	public SuperconInputController? InputController => this.GetAncestorOrDefault<SuperconBody2D>()?.InputController
-		?? this.GetAncestorOrDefault<SuperconBody3D>()?.InputController;
+	public SuperconInputController? InputController => this.GetFirstAncestorOrDefault<SuperconBody2D>()?.InputController
+		?? this.GetFirstAncestorOrDefault<SuperconBody3D>()?.InputController;
 
 	//==================================================================================================================
 	// SIGNALS

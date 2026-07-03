@@ -19,7 +19,7 @@ public partial class SuperconDebugger : CanvasLayer
 	// COMPUTED PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public SuperconBody2D Character => this.GetParent<SuperconBody2D>();
+	public SuperconBody3D Character => this.GetParent<SuperconBody3D>();
 	public string StateDescription => string.Join("/", this.GetActiveStates());
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ public partial class SuperconDebugger : CanvasLayer
 
 	private IEnumerable<string> GetActiveStates()
 	{
-		SuperconState? state = this.Character.ActiveState;
+		SuperconState? state = this.Character.StateMachine.ActiveState;
 		while (state != null)
 		{
 			yield return state.Name;
@@ -80,4 +80,3 @@ public partial class SuperconDebugger : CanvasLayer
 		}
 	}
 }
-

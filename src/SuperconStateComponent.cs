@@ -13,8 +13,8 @@ public abstract partial class SuperconStateComponent : ActivityComponent
 	// COMPUTED PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public SuperconState? ParentState => this.GetAncestorOrDefault<SuperconState>();
-	public SuperconStateMachine? StateMachine => this.GetAncestorOrDefault<ISuperconStateMachineOwner>()?.StateMachine;
+	public SuperconState? ParentState => this.GetFirstAncestorOrDefault<SuperconState>();
+	public SuperconStateMachine? StateMachine => this.GetFirstAncestorOrDefault<ISuperconStateMachineOwner>()?.StateMachine;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// VIRTUALS & OVERRIDES

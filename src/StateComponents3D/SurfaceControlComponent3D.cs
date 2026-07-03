@@ -37,6 +37,9 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 	[Export(PropertyHint.None, "suffix:m/s²")] public float Deceleration
 		{ get; set { if (value != field) field = /*this.DragDeceleration =*/ value.Clamped(0f, value); } }
 		= 15f;
+
+	// TODO Implement velocity-based angular velocity, so that the character turns faster when moving faster, and slower
+	// when moving slower.
 	[Export(PropertyHint.Range, "0,1080,5,radians_as_degrees,or_greater,suffix:°/s")] public float AngularVelocity
 	{
 		get;
@@ -51,11 +54,29 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		= Mathf.Pi * 2;
 	[Export] public bool PreserveOrthogonalVelocity = true;
 
+	/// <summary>
+	/// If true, the character will be forced to start moving forward when it starts moving from the idle position. The
+	/// character will then be able to turn toward any other direction after that, according to the
+	/// <see cref="AngularVelocity"/> property. If false, the character immediately starts moving in the direction of
+	/// the input.
+	///
+	/// This option is particularly useful for vehicles like cars and airplanes, that cannot move sideways. When used
+	/// for humanoid characters, it might make the movement feel less responsive or harder to control, but perhaps the
+	/// character animation will look more natural.
+	/// </summary>
+	// [Export] public bool MustStartMovingForward = false; // TODO Not implemented yet
+
 	[ExportGroup("Rotate Character", "Rotation")]
 	[Export(PropertyHint.GroupEnable)] public bool RotationEnabled = false;
-	[Export] public AlignmentOptionsEnum RotationForwardAlignment = AlignmentOptionsEnum.MovementDirection;
+	[Export] public AlignmentOptionsEnum RotationForwardAlignment
+		{ get; set { field = value; this.NotifyPropertyListChanged(); } }
+		= AlignmentOptionsEnum.MovementDirection;
+	[Export] public Vector3 RotationGlobalForwardDirection = Vector3.Forward;
 	[Export] public Vector3 RotationLocalForwardDirection = Vector3.Forward;
-	[Export] public AlignmentOptionsEnum RotationUpAlignment = AlignmentOptionsEnum.SurfaceNormal;
+	[Export] public AlignmentOptionsEnum RotationUpAlignment
+		{ get; set { field = value; this.NotifyPropertyListChanged(); } }
+		= AlignmentOptionsEnum.SurfaceNormal;
+	[Export] public Vector3 RotationGlobalUpDirection = Vector3.Up;
 	[Export] public Vector3 RotationLocalUpDirection = Vector3.Up;
 
 	// [ExportGroup("Break MaxSpeed")]
@@ -182,6 +203,12 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 				if (this.RotationLocalForwardDirection.IsZeroApprox())
 					property["error"] = "The Forward direction cannot be a zero vector.";
 				break;
+			case nameof(this.RotationGlobalForwardDirection):
+				if (this.RotationForwardAlignment != AlignmentOptionsEnum.Global)
+					property["usage"] = (long) PropertyUsageFlags.None;
+				if (this.RotationGlobalForwardDirection.IsZeroApprox())
+					property["error"] = "The Forward direction cannot be a zero vector.";
+				break;
 			case nameof(this.RotationLocalUpDirection):
 				if (this.RotationUpAlignment == AlignmentOptionsEnum.NoAlignment)
 				{
@@ -190,6 +217,12 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 					break;
 				}
 				if (this.RotationLocalUpDirection.IsZeroApprox())
+					property["error"] = "The Up direction cannot be a zero vector.";
+				break;
+			case nameof(this.RotationGlobalUpDirection):
+				if (this.RotationUpAlignment != AlignmentOptionsEnum.Global)
+					property["usage"] = (long) PropertyUsageFlags.None;
+				if (this.RotationGlobalUpDirection.IsZeroApprox())
 					property["error"] = "The Up direction cannot be a zero vector.";
 				break;
 		}
@@ -211,17 +244,17 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		Vector3 projectedVelocity = this.Character.Velocity.Project(plane with { D = 0 });
 		float currentSpeed = projectedVelocity.Length();
 		bool isMoving = currentSpeed > Mathf.Epsilon;
-		Vector3 currentDirection = projectedVelocity.Normalized().DefaultIfZero(this.Character.GlobalBasis.Forward);
-		Vector2 normalInput = this.Character.InputController?.NormalizedDirectionalInput ?? Vector2.Zero;
-		float inputStrength = normalInput.Length();
+		Vector3 rawInput = projectedVelocity.Normalized().DefaultIfZero(this.Character.GlobalBasis.Forward);
+		Vector2 normalizedInput = this.Character.InputController?.NormalizedDirectionalInput ?? Vector2.Zero;
+		float inputStrength = normalizedInput.Length();
 		bool hasInput = inputStrength > Mathf.Epsilon;
-		Vector3 inputDirection = normalInput.IsZeroApprox()
+		Vector3 inputDirection = normalizedInput.IsZeroApprox()
 			? Vector3.Zero
 			: Basis.LookingAt(plane.Normal * -1, camera.GlobalBasis.Up)
-				* new Vector3(normalInput.X, normalInput.Y * -1, 0);
+				* new Vector3(normalizedInput.X, normalizedInput.Y * -1, 0);
 		Vector3 newGlobalDirection = isMoving && hasInput
-				? currentDirection.RotateToward(inputDirection, this.AngularVelocity * delta)
-			: isMoving ? currentDirection
+				? rawInput.RotateToward(inputDirection, this.AngularVelocity * delta)
+			: isMoving ? rawInput
 			: hasInput ? inputDirection
 			: this.Character.Basis.Forward;
 		float targetSpeed = this.MaxSpeed * inputStrength;
@@ -242,7 +275,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 				AlignmentOptionsEnum.SurfaceNormal => plane.Normal,
 				AlignmentOptionsEnum.CameraForward => camera.GlobalBasis.Forward.Normalized(),
 				AlignmentOptionsEnum.Gravity => this.Character.GetGravity().Normalized(),
-				AlignmentOptionsEnum.Global => this.RotationLocalForwardDirection,
+				AlignmentOptionsEnum.Global => this.RotationGlobalForwardDirection,
 				_ => this.Character.GlobalBasis.Forward,
 			};
 		Vector3 up = this.RotationUpAlignment switch
@@ -251,7 +284,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 				AlignmentOptionsEnum.SurfaceNormal => plane.Normal,
 				AlignmentOptionsEnum.CameraForward => camera.GlobalBasis.Forward.Normalized(),
 				AlignmentOptionsEnum.Gravity => this.Character.GetGravity().Normalized(),
-				AlignmentOptionsEnum.Global => this.RotationLocalUpDirection,
+				AlignmentOptionsEnum.Global => this.RotationGlobalUpDirection,
 				_ => this.Character.GlobalBasis.Up,
 			};
 		Basis globalBasis = new Basis(forward.Cross(up), up, forward);

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://bc4ft8kivco61"]
+[gd_scene format=3 uid="uid://bc4ft8kivco61"]
 
 [ext_resource type="Script" uid="uid://dewfdcqrkjauk" path="res://addons/Supercon/src/SuperconState.cs" id="1_fpan4"]
 
@@ -6,7 +6,7 @@
 script/source = "extends Control
 
 var debugger: SuperconDebugger
-var character: SuperconBody2D:
+var character: SuperconBody3D:
 	get:
 		return debugger.Character
 "
@@ -14,7 +14,7 @@ var character: SuperconBody2D:
 [sub_resource type="GDScript" id="GDScript_a4l51"]
 script/source = "extends Label
 
-@onready var character: SuperconBody2D = $\"../../../..\".character
+@onready var character: SuperconBody3D = $\"../../../..\".character
 @onready var text_format: String = text
 
 func _process(delta: float) -> void:
@@ -26,22 +26,23 @@ func _process(delta: float) -> void:
 [sub_resource type="GDScript" id="GDScript_foyp6"]
 script/source = "extends Label
 
-@onready var character: SuperconBody2D = $\"../../../..\".character
+@onready var character: SuperconBody3D = $\"../../../..\".character
 @onready var text_format: String = text
 
 func _process(delta: float) -> void:
-	text = text_format.format({
-		\"facing\": \"left\" if character.HorizontalFacingDirection < 0 \\
-			else \"right\" if character.HorizontalFacingDirection > 0 \\
-			else \"neutral\"
-	})
+	pass
+	#text = text_format.format({
+		#\"facing\": \"left\" if character.HorizontalFacingDirection < 0 \\
+			#else \"right\" if character.HorizontalFacingDirection > 0 \\
+			#else \"neutral\"
+	#})
 "
 
 [sub_resource type="GDScript" id="GDScript_hhesw"]
 script/source = "extends Label
 
 @onready var debugger = $\"../../../..\".debugger
-@onready var character: SuperconBody2D = $\"../../../..\".character
+@onready var character: SuperconBody3D = $\"../../../..\".character
 @onready var text_format: String = text
 
 func _process(delta: float) -> void:
@@ -58,10 +59,10 @@ extends Control
 
 @onready var supercon_debugger_interface = $\"../../../..\"
 
-var velocity: Vector2:
+var velocity: Vector3:
 	get:
 		if Engine.is_editor_hint():
-			return Vector2.ZERO
+			return Vector3.ZERO
 		return supercon_debugger_interface.character.velocity
 
 func _process(delta: float) -> void:
@@ -71,7 +72,7 @@ func _draw() -> void:
 	var center: Vector2 = size / 2
 	var radius: float = min(size.x, size.y) / 2
 	var max_velocity: float = 900
-	var end: Vector2 = center + velocity * radius / max_velocity
+	var end: Vector2 = center + Vector2(velocity.x, velocity.z) * radius / max_velocity
 	draw_circle(center, radius, Color.WHITE, true)
 	draw_circle(center, radius * 3/4, Color.LIGHT_GRAY, false)
 	draw_circle(center, radius * 1/4, Color.LIGHT_GRAY, false)
@@ -100,17 +101,16 @@ func _draw() -> void:
 [sub_resource type="GDScript" id="GDScript_cfi8b"]
 script/source = "extends Label
 
-@onready var character: CharacterBody2D = $\"../../../..\".character
+@onready var character: CharacterBody3D = $\"../../../..\".character
 @onready var text_format: String = text
 
 func _process(delta: float) -> void:
 	text = text_format.format({
 		\"velocity\": \"%.0f\" % character.velocity.length(),
-		\"angle\": \"%.0f\" % rad_to_deg(character.velocity.angle()),
 	})
 "
 
-[node name="Control <SuperconDebuggerInterface>" type="Control"]
+[node name="Control <SuperconDebuggerInterface>" type="Control" unique_id=1794433633]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -119,71 +119,71 @@ grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_6wsn2")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=779408018]
 layout_mode = 0
 offset_right = 319.0
 offset_bottom = 141.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=984495292]
 layout_mode = 2
 
-[node name="HBoxContainer <Position>" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+[node name="HBoxContainer <Position>" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=326979961]
 layout_mode = 2
 
-[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Position>"]
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Position>" unique_id=353874229]
 layout_mode = 2
 text = "Position:"
 
-[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Position>"]
+[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Position>" unique_id=1619666308]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 1, 1)
 text = "{position}"
 script = SubResource("GDScript_a4l51")
 
-[node name="HBoxContainer <Facing>" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+[node name="HBoxContainer <Facing>" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=1266478920]
 layout_mode = 2
 
-[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Facing>"]
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Facing>" unique_id=2121400297]
 layout_mode = 2
 text = "Facing:"
 
-[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Facing>"]
+[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <Facing>" unique_id=900143578]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 1, 1)
 text = "{facing}"
 script = SubResource("GDScript_foyp6")
 
-[node name="HBoxContainer <State>" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+[node name="HBoxContainer <State>" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=1602550342]
 layout_mode = 2
 
-[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <State>"]
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <State>" unique_id=1667039500]
 layout_mode = 2
 text = "State:"
 
-[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <State>"]
+[node name="Label <Value>" type="Label" parent="PanelContainer/VBoxContainer/HBoxContainer <State>" unique_id=450821562]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 1, 1)
 text = "{state}"
 script = SubResource("GDScript_hhesw")
 
-[node name="VBoxContainer <Velocity>" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
+[node name="VBoxContainer <Velocity>" type="VBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=609329600]
 layout_mode = 2
 
-[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>"]
+[node name="Label <Label>" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>" unique_id=802183614]
 layout_mode = 2
 text = "Velocity:"
 
-[node name="Control <Velocity Meter>" type="Control" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>"]
+[node name="Control <Velocity Meter>" type="Control" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>" unique_id=1207876349]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 script = SubResource("GDScript_fpan4")
 
-[node name="Label <Velocity Monitor>" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>"]
+[node name="Label <Velocity Monitor>" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer <Velocity>" unique_id=1243382145]
 layout_mode = 2
 text = "{velocity} px/s ({angle}º)"
 horizontal_alignment = 1
 script = SubResource("GDScript_cfi8b")
 
-[node name="SuperconState" type="Node2D" parent="."]
+[node name="SuperconState" type="Node2D" parent="." unique_id=959197290]
 script = ExtResource("1_fpan4")
 metadata/_custom_type_script = "uid://dewfdcqrkjauk"

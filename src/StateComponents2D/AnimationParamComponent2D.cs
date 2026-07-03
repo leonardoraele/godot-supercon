@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents2D;
 
@@ -125,6 +126,14 @@ public partial class AnimationParamComponent2D : SuperconStateComponent2D
 				break;
 			case nameof(this.Property):
 				List<string> properties = this.TargetNode?.GetPropertyList()
+					.Where(prop => !prop["usage"].AsInt64()
+						.BitIntersection((long) (
+							PropertyUsageFlags.Category
+							| PropertyUsageFlags.Group
+							| PropertyUsageFlags.Subgroup
+						))
+						.HasAnyBitSet()
+					)
 					.Select(prop => prop["name"].AsString())
 					.Where(prop => !prop.StartsWith("_"))
 					.ToList()

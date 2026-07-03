@@ -45,10 +45,10 @@ public partial class SuperconInputController : Resource
 
 	[Export] public bool Enabled { get; private set; } = true;
 
-	[Export(PropertyHint.InputName)] public string MoveLeftAction = "character_move_left";
-	[Export(PropertyHint.InputName)] public string MoveRightAction = "character_move_right";
-	[Export(PropertyHint.InputName)] public string MoveUpAction = "character_move_up";
-	[Export(PropertyHint.InputName)] public string MoveDownAction = "character_move_down";
+	[Export(PropertyHint.InputName)] public string MoveLeftAction = "ui_left";
+	[Export(PropertyHint.InputName)] public string MoveRightAction = "ui_right";
+	[Export(PropertyHint.InputName)] public string MoveUpAction = "ui_up";
+	[Export(PropertyHint.InputName)] public string MoveDownAction = "ui_down";
 
 	[ExportGroup("Buffer Inputs")]
 	[Export(PropertyHint.GroupEnable)] public bool BufferInputsEnabled = true;
