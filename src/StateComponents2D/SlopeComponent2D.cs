@@ -1,12 +1,10 @@
 // using System;
 // using Godot;
 
-using Godot;
+namespace Raele.Supercon.StateComponents2D;
 
-namespace Raele.Supercon2D.StateComponents;
-
-[GlobalClass]
-public partial class SlopeComponent : SuperconStateComponent
+// [GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_slope.png")]
+public partial class SlopeComponent2D : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS

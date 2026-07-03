@@ -1,23 +1,19 @@
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon.StateComponents3D;
 
-[Tool][GlobalClass]
-public partial class GravityComponent : SuperconStateComponent
+public partial class GravityComponent3D : SuperconStateComponent3D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Export(PropertyHint.None, "suffix:px/s")] public float MaxFallSpeed = float.PositiveInfinity;
-	[Export] public float GravityMultiplier = 5f;
+	[Export] public float Mass = 1f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
-
-	public Vector2 GravityDirection;
-	public float GravityMagnitudePxPSecSq;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// COMPUTED FIELDS
@@ -27,18 +23,11 @@ public partial class GravityComponent : SuperconStateComponent
 	// VIRTUALS & OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _Ready()
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._Ready();
-		this.GravityDirection = ProjectSettings.GetSetting("physics/2d/default_gravity_vector").AsVector2().Normalized();
-		this.GravityMagnitudePxPSecSq = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
-	}
-
-	public override void _SuperconPhysicsProcess(double delta)
-	{
-		base._SuperconPhysicsProcess(delta);
-		this.Character?.ApplyForce(
-			this.GravityDirection * this.GravityMagnitudePxPSecSq * (float) delta * this.GravityMultiplier,
+		base._ActivityPhysicsProcess(delta);
+		this.Character?.ApplyForceAndLimitSpeed(
+			this.Character.GetGravity() * this.Mass * (float) delta,
 			this.MaxFallSpeed
 		);
 	}

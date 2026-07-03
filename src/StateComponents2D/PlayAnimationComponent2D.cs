@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon.StateComponents2D;
 
-[Tool][GlobalClass]
-public partial class PlayAnimationComponent : SuperconStateComponent
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_animation_play.png")]
+public partial class PlayAnimationComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -88,8 +88,7 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 
 	public AnimationPlayer? AnimationPlayer => this.CustomAnimationPlayerEnabled
 		? this.CustomAnimationPlayer
-		: this.StateMachineOwner?.AsNode().GetChildren().OfType<AnimationPlayer>().FirstOrDefault()
-			?? this.Character?.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
+		: this.Character?.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
 	private int PlayBackwardsInt => this.PlayBackwards ? -1 : 1;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -254,9 +253,9 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 	// OTHER OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconStart()
+	protected override void _ActivityStarted(string mode, Variant argument)
 	{
-		base._SuperconStart();
+		base._ActivityStarted(mode, argument);
 		this.AnimationActive = false;
 		this.AnimationPlayer?.Connect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 		if (this.TimingStrategy == TimingStrategyEnum.OnStateEnter)
@@ -265,16 +264,16 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		}
 	}
 
-	public override void _SuperconStop()
+	protected override void _ActivityFinished(string reason, Variant details)
 	{
-		base._SuperconStop();
+		base._ActivityFinished(reason, details);
 		this.ActiveAnimationQueue.Clear();
 		this.AnimationPlayer?.Disconnect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 	}
 
-	public override void _SuperconProcess(double delta)
+	protected override void _ActivityProcess(double delta)
 	{
-		base._SuperconProcess(delta);
+		base._ActivityProcess(delta);
 		if (
 			this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue && this.TestTimingExpression((float) delta)
 			|| this.TimingStrategy == TimingStrategyEnum.WhenPlayerIsIdle && this.AnimationPlayer?.IsPlaying() == false
@@ -349,7 +348,7 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		this.TimingExpressionParser = new();
 		if (this.TimingExpressionParser.Parse(this.TimingExpression, ["param"]) is Error error && error != Error.Ok)
 		{
-			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Error parsing expression. Error: {error}");
+			GD.PrintErr($"[{nameof(PlayAnimationComponent2D)} at {this.GetPath()}] Error parsing expression. Error: {error}");
 			this.TimingExpressionParser = null;
 		}
 	}
@@ -367,12 +366,12 @@ public partial class PlayAnimationComponent : SuperconStateComponent
 		}
 		catch (Exception e)
 		{
-			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Exception while evaluating timing expression. Exception: {e}");
+			GD.PrintErr($"[{nameof(PlayAnimationComponent2D)} at {this.GetPath()}] Exception while evaluating timing expression. Exception: {e}");
 			return false;
 		}
 		if (result.VariantType != Variant.Type.Bool)
 		{
-			GD.PrintErr($"[{nameof(PlayAnimationComponent)} at {this.GetPath()}] Timing expression did not evaluate to a boolean. Returned value: {result} ({result.VariantType})");
+			GD.PrintErr($"[{nameof(PlayAnimationComponent2D)} at {this.GetPath()}] Timing expression did not evaluate to a boolean. Returned value: {result} ({result.VariantType})");
 			return false;
 		}
 		return result.AsBool();

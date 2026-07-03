@@ -1,10 +1,10 @@
 using Godot;
 using Godot.Collections;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon.StateComponents2D;
 
-[Tool][GlobalClass]
-public partial class ForceComponent : SuperconStateComponent
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_force_2.png")]
+public partial class ForceComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
@@ -49,9 +49,9 @@ public partial class ForceComponent : SuperconStateComponent
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _SuperconPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._SuperconPhysicsProcess(delta);
+		base._ActivityPhysicsProcess(delta);
 		switch (this.ForceType)
 		{
 			case ForceTypeEnum.Drag when this.Character?.Velocity.Length() < this.AccelerationPxPSecSq * (float) delta:

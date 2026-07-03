@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Raele.GodotUtils.Debug;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
-[Tool]
-public partial class SuperconInputMapping : Resource
+[Tool][GlobalClass]
+public partial class SuperconInputController : Resource
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
@@ -57,7 +58,21 @@ public partial class SuperconInputMapping : Resource
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public Vector2 MovementInput { get; private set; }
+	/// <summary>
+	/// +---------------------------+
+	/// | Directional input vector: |
+	/// |                           |
+	/// |            -Y             |
+	/// |             ┃             |
+	/// |      -X ━━━━╋━━━━ +X      |
+	/// |             ┃             |
+	/// |            +Y             |
+	/// |                           |
+	/// +---------------------------+
+	/// </summary>
+	public Vector2 RawDirectionalInput
+		{ get; private set { field = value; NormalizedDirectionalInput = value.Normalized(); } }
+	public Vector2 NormalizedDirectionalInput { get; private set; }
 	private Dictionary<string, InputBuffer> InputBuffers = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -89,19 +104,15 @@ public partial class SuperconInputMapping : Resource
 	public void Update()
 	{
 		if (!this.Enabled)
-		{
 			return;
-		}
-		this.MovementInput = Input.GetVector(
+		this.RawDirectionalInput = Input.GetVector(
 			this.MoveLeftAction,
 			this.MoveRightAction,
 			this.MoveUpAction,
 			this.MoveDownAction
 		);
 		foreach (InputBuffer buffer in this.InputBuffers.Values)
-		{
 			buffer.Update();
-		}
 	}
 	public InputBuffer GetInputBuffer(string name)
 	{
@@ -121,7 +132,7 @@ public partial class SuperconInputMapping : Resource
 		this.Enabled = enabled;
 		if (!enabled)
 		{
-			this.MovementInput = Vector2.Zero;
+			this.RawDirectionalInput = Vector2.Zero;
 			foreach (InputBuffer buffer in this.InputBuffers.Values)
 			{
 				buffer.ConsumeInput();

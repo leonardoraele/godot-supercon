@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-namespace Raele.Supercon2D.StateComponents;
+namespace Raele.Supercon.StateComponents2D;
 
-[Tool][GlobalClass]
-public partial class AnimationParamComponent : SuperconStateComponent
+[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_animation_param.png")]
+public partial class AnimationParamComponent2D : SuperconStateComponent2D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -78,15 +78,14 @@ public partial class AnimationParamComponent : SuperconStateComponent
 		base._Ready();
 		if (Engine.IsEditorHint())
 		{
-			this.AnimationTree ??= this.StateMachineOwner?.AsNode().GetChildren().OfType<AnimationTree>().FirstOrDefault()
-				?? this.Character?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
-			this.TargetNode ??= this.StateMachineOwner?.Character;
+			this.AnimationTree ??= this.Character?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
+			this.TargetNode ??= this.Character;
 		}
 	}
 
-	public override void _SuperconProcess(double delta)
+	protected override void _ActivityProcess(double delta)
 	{
-		base._SuperconProcess(delta);
+		base._ActivityProcess(delta);
 
 		if (this.AnimationTree == null || string.IsNullOrWhiteSpace(this.ParameterName))
 		{

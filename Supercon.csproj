@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <RootNamespace>Raele.Supercon2D</RootNamespace>
+    <RootNamespace>Raele.Supercon</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 using Godot;
 using Raele.GodotUtils.Extensions;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
 public partial class SuperconStateMachine : Raele.GodotUtils.StateMachine.StateMachine<SuperconState>
 {

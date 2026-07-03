@@ -1,6 +1,6 @@
 using Godot;
 
-namespace Raele.Supercon2D;
+namespace Raele.Supercon;
 
 [GlobalClass]
 public partial class Platformer2DMovementSettings : Resource
