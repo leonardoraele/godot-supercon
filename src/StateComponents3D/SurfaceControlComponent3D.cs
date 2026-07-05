@@ -316,9 +316,11 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		if (!this.RotationEnabled)
 			return;
 
-		Vector3 localUp = this.RotationLocalUpDirection.Normalized();
 		Vector3 localBack = this.RotationLocalForwardDirection.Normalized() * -1;
-		Basis localTargetBasis = new Basis(localUp.Cross(localBack), localUp, localBack);
+		Vector3 localUp = this.RotationLocalUpDirection.Normalized();
+		Vector3 localRight = localUp.Cross(localBack);
+		localUp = localBack.Cross(localRight);
+		Basis localTargetBasis = new Basis(localRight, localUp, localBack);
 
 		Vector3 forward = this.RotationForwardAlignment switch
 			{
@@ -340,12 +342,13 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 			};
 		Vector3 back = forward * -1;
 		Vector3 right = up.Cross(back).Normalized();
+		up = back.Cross(right);
 		Basis globalTargetBasis = new Basis(right, up, back);
 
 		if (!globalTargetBasis.IsOrthonormalized())
 			return;
 
-		Basis targetBasis = (globalTargetBasis * localTargetBasis).Orthonormalized();
+		Basis targetBasis = globalTargetBasis * localTargetBasis;
 
 		if (this.RotationLimitEnabled)
 		{
