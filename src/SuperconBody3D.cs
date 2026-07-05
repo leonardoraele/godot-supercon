@@ -58,17 +58,17 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	/// Number of seconds the character has been on the floor. If negative, then it's the number of seconds since the
 	/// character has left the floor.
 	/// </summary>
-	public float TimeOnFloor = float.NegativeInfinity;
+	public float TimeOnFloorSec = float.NegativeInfinity;
 	/// <summary>
 	/// Number of seconds the character has been on the ceiling. If negative, then it's the number of seconds since the
 	/// character has left the ceiling.
 	/// </summary>
-	public float TimeOnCeiling = float.NegativeInfinity;
+	public float TimeOnCeilingSec = float.NegativeInfinity;
 	/// <summary>
 	/// Number of seconds the character has been on a wall. If negative, then it's the number of seconds since the
 	/// character has left the wall.
 	/// </summary>
-	public float TimeOnWall = float.NegativeInfinity;
+	public float TimeOnWallSec = float.NegativeInfinity;
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
@@ -81,18 +81,22 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		get => this.ToLocal(this.Velocity);
 		set => this.Velocity = this.ToGlobal(value);
 	}
-	public float ForwardSpeed {
-		get => this.LocalVelocity.Z * -1;
-		set => this.LocalVelocity = this.LocalVelocity with { Z = value * -1 };
-	}
 	public float LateralSpeed {
 		get => this.LocalVelocity.X;
 		set => this.LocalVelocity = this.LocalVelocity with { X = value };
 	}
 	public float VerticalSpeed {
-		get => this.Velocity.Y;
-		set => this.Velocity = this.Velocity with { Y = value };
+		get => this.LocalVelocity.Y;
+		set => this.LocalVelocity = this.LocalVelocity with { Y = value };
 	}
+	public float FrontalSpeed {
+		get => this.LocalVelocity.Z * -1;
+		set => this.LocalVelocity = this.LocalVelocity with { Z = value * -1 };
+	}
+
+	public float TimeAwayFromFloorSec => this.TimeOnFloorSec * -1;
+	public float TimeAwayFromCeilingSec => this.TimeOnCeilingSec * -1;
+	public float TimeAwayFromWallSec => this.TimeOnWallSec * -1;
 
 	//==================================================================================================================
 	// SIGNALS
@@ -190,15 +194,15 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 
 	private void UpdateContactTrackers(double delta)
 	{
-		this.TimeOnFloor = this.IsOnFloor()
-			? this.TimeOnFloor.AtLeast(0) + (float) delta
-			: this.TimeOnFloor.AtMost(0) - (float) delta;
-		this.TimeOnCeiling = this.IsOnCeiling()
-			? this.TimeOnCeiling.AtLeast(0) + (float) delta
-			: this.TimeOnCeiling.AtMost(0) - (float) delta;
-		this.TimeOnWall = this.IsOnWall()
-			? this.TimeOnWall.AtLeast(0) + (float) delta
-			: this.TimeOnWall.AtMost(0) - (float) delta;
+		this.TimeOnFloorSec = this.IsOnFloor()
+			? this.TimeOnFloorSec.AtLeast(0) + (float) delta
+			: this.TimeOnFloorSec.AtMost(0) - (float) delta;
+		this.TimeOnCeilingSec = this.IsOnCeiling()
+			? this.TimeOnCeilingSec.AtLeast(0) + (float) delta
+			: this.TimeOnCeilingSec.AtMost(0) - (float) delta;
+		this.TimeOnWallSec = this.IsOnWall()
+			? this.TimeOnWallSec.AtLeast(0) + (float) delta
+			: this.TimeOnWallSec.AtMost(0) - (float) delta;
 	}
 
 	private void DebugDraw()

@@ -37,7 +37,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 	[Export(PropertyHint.None, "suffix:m/s²")] public float Deceleration
 		{ get; set { if (value != field) field = /*this.DragDeceleration =*/ value.Clamped(0f, value); } }
 		= 15f;
-	[Export] public bool PreserveOrthogonalVelocity = true;
+	[Export] public bool PreserveOrthogonalVelocity = true; // TODO Is this option really needed? Is there a use case to disable it?
 
 	[ExportGroup("Use Smooth Turning")]
 	/// <summary>
@@ -62,7 +62,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 	}
 		= Mathf.Pi * 2;
 
-	[ExportSubgroup("Additional Options")]
+	[ExportSubgroup("Require Forward Start")]
 	/// <summary>
 	/// If true, the character will be forced to start moving forward when it starts moving from the idle position. The
 	/// character will then be able to turn toward any other direction after that, according to the
@@ -73,7 +73,8 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 	/// as cars and other land vehicles. When used for humanoid characters, it might make the movement feel less
 	/// responsive or harder to control, but perhaps the character animation will look more natural.
 	/// </summary>
-	[Export] public bool RequireForwardStart = false;
+	[Export(PropertyHint.GroupEnable)] public bool RequireForwardStart = false;
+	[Export] public Vector3 LocalForwardDirection = Vector3.Forward;
 
 	[ExportGroup("Rotate Character", "Rotation")]
 	[Export(PropertyHint.GroupEnable)] public bool RotationEnabled = false;
@@ -81,19 +82,29 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		{ get; set { field = value; this.NotifyPropertyListChanged(); } }
 		= AlignmentOptionsEnum.MovementDirection;
 	[Export] public Vector3 RotationGlobalForwardDirection = Vector3.Forward;
-	// [Export] public Vector3 RotationLocalForwardDirection = Vector3.Forward;
+	[Export] public Vector3 RotationLocalForwardDirection = Vector3.Forward;
 	[Export] public AlignmentOptionsEnum RotationUpAlignment
 		{ get; set { field = value; this.NotifyPropertyListChanged(); } }
 		= AlignmentOptionsEnum.SurfaceNormal;
 	[Export] public Vector3 RotationGlobalUpDirection = Vector3.Up;
-	// [Export] public Vector3 RotationLocalUpDirection = Vector3.Up;
+	[Export] public Vector3 RotationLocalUpDirection = Vector3.Up;
 
 	[ExportSubgroup("Limits Directions", "RotationLimit")]
 	[Export(PropertyHint.GroupEnable)] public bool RotationLimitEnabled = false;
 	[Export] public int RotationLimitDirections
-		{ get; set { field = Mathf.Max(4, value); } }
+		{ get; set { field = value.AtLeast(4); } }
 		= 8;
 	[Export] public bool RotationLimitAlignWithWorldAxis = false;
+
+	[ExportGroup("Additional Options")]
+	[Export(PropertyHint.Range, "0,2,0.05,or_greater")] public float LaterialSpeedMultiplier
+		{ get; set { field = value.AtLeast(0f); } }
+		= 1f;
+	[Export(PropertyHint.Range, "0,2,0.05,or_greater")] public float BackwardSpeedMultiplier
+		{ get; set { field = value.AtLeast(0f); } }
+		= 1f;
+	[Export(PropertyHint.Range, "0,1080,5,radians_as_degrees,or_greater,suffix:°/s")]
+	public float RotationAngularVelocity = float.PositiveInfinity;
 
 	// [ExportGroup("Break MaxSpeed")]
 	// [Export(PropertyHint.GroupEnable)] public bool MaxSpeedOptionsEnabled
@@ -241,6 +252,10 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 				if (this.RotationGlobalUpDirection.IsZeroApprox())
 					property["error"] = "The Up direction cannot be a zero vector.";
 				break;
+			case nameof(this.LocalForwardDirection):
+				if (this.LocalForwardDirection.IsZeroApprox())
+					property["error"] = "The Forward direction cannot be a zero vector.";
+				break;
 		}
 	}
 
@@ -249,84 +264,108 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		base._ActivityPhysicsProcess(delta);
 		if (this.Character3D == null)
 			return;
-		if (this.ResolveGlobalMovementPlane() is not Plane plane)
+
+		// Should not control the character if it is not on the surface.
+		if (this.ResolveGlobalMovementPlane() is not Plane movementPlane)
 		{
-			if (this.TestSurfaceExit())
+			if (this.TestJustExitSurface())
 				this.EmitSignalSurfaceExit();
 			return;
 		}
+
+		// Cannot control the character if there is no active camrea, since the character control is based on the camera
+		// orientation.
 		if (this.Character3D.GetViewport().GetCamera3D() is not Camera3D camera)
 			return;
 
-		Vector3 projectedVelocity = this.Character3D.Velocity.Project(plane with { D = 0 });
+		Vector3 projectedVelocity = this.Character3D.Velocity.Project(movementPlane with { D = 0 });
 		float currentSpeed = projectedVelocity.Length();
 		bool isMoving = currentSpeed > Mathf.Epsilon;
-		Vector3 currentDirection = projectedVelocity.Normalized().DefaultIfZero(this.Character3D.GlobalBasis.Forward);
+		Vector3 currentDirection = projectedVelocity.Normalized();
 		Vector2 normalizedInput = this.Character3D.InputController?.NormalizedDirectionalInput ?? Vector2.Zero;
 		float inputStrength = normalizedInput.Length();
 		bool hasInput = inputStrength > Mathf.Epsilon;
 		Vector3 inputDirection = normalizedInput.IsZeroApprox()
 			? Vector3.Zero
-			: Basis.LookingAt(plane.Normal * -1, camera.GlobalBasis.Up)
+			: Basis.LookingAt(movementPlane.Normal * -1, camera.GlobalBasis.Up)
 				* new Vector3(normalizedInput.X, normalizedInput.Y * -1, 0);
-		Vector3 newGlobalDirection = isMoving
-			? hasInput
-				? this.UseSmoothTurning
+		Vector3 newDirection = hasInput
+			? isMoving && this.UseSmoothTurning
 					? currentDirection.RotateToward(inputDirection, this.AngularVelocity * delta)
-					: inputDirection
-				: currentDirection
-			: hasInput && !this.RequireForwardStart
-				? inputDirection
-				: this.Character3D.Basis.Forward;
+				: !isMoving && this.RequireForwardStart
+					? movementPlane.Project(this.Character3D.GlobalBasis * this.LocalForwardDirection).Normalized()
+				: inputDirection
+			: currentDirection;
+		// Vector3 newDirection = isMoving
+		// 	? hasInput
+		// 		? this.UseSmoothTurning
+		// 			? currentDirection.RotateToward(inputDirection, this.AngularVelocity * delta)
+		// 			: inputDirection
+		// 		: currentDirection
+		// 	: hasInput && !this.RequireForwardStart
+		// 		? inputDirection
+		// 		: this.Character3D.Basis.Forward;
 		float targetSpeed = this.MaxSpeed * inputStrength;
 		float acceleration = targetSpeed > currentSpeed - Mathf.Epsilon
 			? this.Acceleration
 			: this.Deceleration;
 		float newSpeed = currentSpeed.MoveToward(targetSpeed, acceleration * (float) delta);
-		this.Character3D.Velocity = newGlobalDirection * newSpeed
-			+ (this.PreserveOrthogonalVelocity ? this.Character3D.Velocity.Project(plane.Normal) : Vector3.Zero);
+		this.Character3D.Velocity = newDirection * newSpeed
+			+ (this.PreserveOrthogonalVelocity ? this.Character3D.Velocity.Project(movementPlane.Normal) : Vector3.Zero);
 
 		if (!this.RotationEnabled)
 			return;
 
+		Vector3 localUp = this.RotationLocalUpDirection.Normalized();
+		Vector3 localBack = this.RotationLocalForwardDirection.Normalized() * -1;
+		Basis localTargetBasis = new Basis(localUp.Cross(localBack), localUp, localBack);
+
 		Vector3 forward = this.RotationForwardAlignment switch
 			{
-				AlignmentOptionsEnum.MovementDirection => newGlobalDirection,
-				AlignmentOptionsEnum.SurfaceNormal => plane.Normal,
+				AlignmentOptionsEnum.MovementDirection when !newDirection.IsZeroApprox() => newDirection,
+				AlignmentOptionsEnum.SurfaceNormal => movementPlane.Normal,
 				AlignmentOptionsEnum.CameraForward => camera.GlobalBasis.Forward.Normalized(),
 				AlignmentOptionsEnum.Gravity => this.Character3D.GetGravity().Normalized(),
-				AlignmentOptionsEnum.Global => this.RotationGlobalForwardDirection,
-				_ => this.Character3D.GlobalBasis.Forward,
+				AlignmentOptionsEnum.Global => this.RotationGlobalForwardDirection.Normalized(),
+				_ => Vector3.Zero,
 			};
 		Vector3 up = this.RotationUpAlignment switch
 			{
-				AlignmentOptionsEnum.MovementDirection => newGlobalDirection,
-				AlignmentOptionsEnum.SurfaceNormal => plane.Normal,
+				AlignmentOptionsEnum.MovementDirection when !newDirection.IsZeroApprox() => newDirection,
+				AlignmentOptionsEnum.SurfaceNormal => movementPlane.Normal,
 				AlignmentOptionsEnum.CameraForward => camera.GlobalBasis.Forward.Normalized(),
 				AlignmentOptionsEnum.Gravity => this.Character3D.GetGravity().Normalized(),
-				AlignmentOptionsEnum.Global => this.RotationGlobalUpDirection,
-				_ => this.Character3D.GlobalBasis.Up,
+				AlignmentOptionsEnum.Global => this.RotationGlobalUpDirection.Normalized(),
+				_ => Vector3.Zero,
 			};
 		Vector3 back = forward * -1;
-		Vector3 right = up.Cross(back).DefaultIfZero(Vector3.Right).Normalized();
-		Basis globalBasis = new Basis(right, up, back);
-		Basis newBasis = globalBasis.Orthonormalized();
+		Vector3 right = up.Cross(back).Normalized();
+		Basis globalTargetBasis = new Basis(right, up, back);
+
+		if (!globalTargetBasis.IsOrthonormalized())
+			return;
+
+		Basis targetBasis = (globalTargetBasis * localTargetBasis).Orthonormalized();
 
 		if (this.RotationLimitEnabled)
 		{
 			float stepAngle = Mathf.Pi * 2f / this.RotationLimitDirections;
 			Vector3 originForward = this.RotationLimitAlignWithWorldAxis
 				? Vector3.Forward
-				: camera.GlobalBasis.Forward;
+				: camera.GlobalBasis.Forward.Normalized();
 			Plane surfacePlane = new Plane(up, Vector3.Zero);
 			Vector3 originDirection = originForward.Project(surfacePlane).Normalized();
 			float currentAngle = originDirection.SignedAngleTo(forward, up);
 			float targetAngle = Mathf.Round(currentAngle / stepAngle) * stepAngle;
 			float rotationAngle = targetAngle - currentAngle;
-			newBasis = newBasis.Rotated(newBasis.Up, rotationAngle);
+			targetBasis = targetBasis.Rotated(targetBasis.Up, rotationAngle);
 		}
 
-		this.Character3D.GlobalBasis = newBasis;
+		this.Character3D.GlobalBasis = this.Character3D.GlobalBasis.Orthonormalized()
+			.RotateToward(
+				targetBasis,
+				this.RotationAngularVelocity * delta
+			);
 	}
 
 	//==================================================================================================================
@@ -353,6 +392,11 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 	// 	}
 	// }
 
+	/// <summary>
+	/// Returns the global movement plane of the character, based on the surface type and the last collision normal.
+	///
+	/// Returns null if the character is not on the surface.
+	/// </summary>
 	public Plane? ResolveGlobalMovementPlane()
 		=> this.Surface switch
 		{
@@ -368,14 +412,24 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 			_ => null,
 		};
 
-	private bool TestSurfaceExit()
-		// Note: We assume that if this method is being called, then the character is not on the surface anymore. This
-		// method only tests if the character has exit the surface this frame.
+	/// <summary>
+	/// Return true if the character has exited the surface in the last physics frame.
+	/// </summary>
+	private bool TestJustExitSurface()
 		=> this.Character3D != null && this.Surface switch
 		{
-			SurfaceTypeEnum.Floor => this.Character3D.TimeOnFloor > this.Character3D.GetPhysicsProcessDeltaTime() * -1 - Mathf.Epsilon,
-			SurfaceTypeEnum.Wall => this.Character3D.TimeOnWall > this.Character3D.GetPhysicsProcessDeltaTime() * -1 - Mathf.Epsilon,
-			SurfaceTypeEnum.Ceiling => this.Character3D.TimeOnCeiling > this.Character3D.GetPhysicsProcessDeltaTime() * -1 - Mathf.Epsilon,
+			SurfaceTypeEnum.Floor =>
+				this.Character3D.TimeAwayFromFloorSec >= 0
+				&& this.Character3D.TimeAwayFromFloorSec
+					< this.Character3D.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
+			SurfaceTypeEnum.Wall =>
+				this.Character3D.TimeAwayFromWallSec >= 0
+				&& this.Character3D.TimeAwayFromWallSec
+					< this.Character3D.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
+			SurfaceTypeEnum.Ceiling =>
+				this.Character3D.TimeAwayFromCeilingSec >= 0
+				&& this.Character3D.TimeAwayFromCeilingSec
+					< this.Character3D.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
 			_ => false,
 		};
 
