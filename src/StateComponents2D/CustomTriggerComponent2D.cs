@@ -55,7 +55,7 @@ public partial class CustomTriggerComponent2D : SuperconStateComponent2D
 	{
 		base._Ready();
 		if (Engine.IsEditorHint())
-			this.Context ??= this.Character;
+			this.Context ??= this.Character2D;
 	}
 
 	protected override void _ActivityStarted(string mode, Variant argument)

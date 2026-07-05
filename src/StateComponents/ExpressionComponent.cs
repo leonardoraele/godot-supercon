@@ -1,5 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
-using Godot.Collections;
 using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents;
@@ -17,13 +19,16 @@ public partial class ExpressionComponent : SuperconStateComponent
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	[Export] public Node? Context { get => field ??= this.Owner; set; }
-	[Export(PropertyHint.Expression)] public string Expression = "";
-	[Export] public FrequencyEnum Frequency = FrequencyEnum.OnProcess;
+	[Export] public Node? Context { get => field ??= this; set; }
+	[Export] public Godot.Collections.Dictionary Variables = [];
+	[Export(PropertyHint.Expression)] public string Expression
+		{ get; set { field = value; this.Interpreter = null!; } }
+		= "";
+	[Export] public FrequencyEnum AutoExecute = FrequencyEnum.OnProcess;
 
-	[ExportGroup("Options")]
-	[Export] public Variant Argument = new Variant();
-	[Export] public Variant.Type ExpectedType = Variant.Type.Nil;
+	[ExportGroup("Additional Options")]
+	[Export] public Variant.Type ExpectedResultType = Variant.Type.Nil;
+	[Export] public Godot.Collections.Dictionary Parameters = [];
 
 	[ExportSubgroup("Debug")]
 	[Export] public bool RunInEditor = false;
@@ -42,13 +47,17 @@ public partial class ExpressionComponent : SuperconStateComponent
 	{
 		get
 		{
-			if (field == null || Engine.IsEditorHint() && this.RunInEditor)
+			if (field == null)
 			{
 				field = new();
-				field.Parse(this.Expression, ["argument"]);
+				string[] parameters = this.Variables.Keys.Concat(this.Parameters.Keys)
+					.Select(key => key.AsString())
+					.ToArray();
+				field.Parse(this.Expression, parameters);
 			}
 			return field;
 		}
+		set;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -56,6 +65,8 @@ public partial class ExpressionComponent : SuperconStateComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	[Signal] public delegate void ExecutedEventHandler(Variant result);
+	[Signal] public delegate void TruthyResultEventHandler();
+	[Signal] public delegate void FalsyResultEventHandler();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// INTERNAL TYPES
@@ -68,6 +79,8 @@ public partial class ExpressionComponent : SuperconStateComponent
 		OnTreeExit,
 		OnTreeEnterOrExit,
 		OnReady,
+		OnActivityStarted,
+		OnActivityFinished,
 		Never,
 	}
 
@@ -75,15 +88,20 @@ public partial class ExpressionComponent : SuperconStateComponent
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public override void _ValidateProperty(Dictionary property)
+	public override void _ValidateProperty(Godot.Collections.Dictionary property)
 	{
 		base._ValidateProperty(property);
 		switch (property["name"].AsString())
 		{
-			case nameof(Argument):
-				property["type"] = Variant.Type.Nil.As<long>();
-				property["usage"] = PropertyUsageFlags.NilIsVariant
-					.Union(PropertyUsageFlags.Default).As<long>();
+			case nameof(this.Variables):
+				property["type"] = Variant.Type.Dictionary.As<long>();
+				property["hint"] = PropertyHint.DictionaryType.As<long>();
+				property["hint_string"] = $"String;Nil";
+				break;
+			case nameof(this.Parameters):
+				property["type"] = Variant.Type.Dictionary.As<long>();
+				property["hint"] = PropertyHint.DictionaryType.As<long>();
+				property["hint_string"] = $"String;{Variant.Type.Int:D}/{PropertyHint.Enum:D}:{Enum.GetNames<Variant.Type>().Join(",")}";
 				break;
 		}
 	}
@@ -93,7 +111,7 @@ public partial class ExpressionComponent : SuperconStateComponent
 		base._EnterTree();
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
-		if (this.Frequency == FrequencyEnum.OnTreeEnter || this.Frequency == FrequencyEnum.OnTreeEnterOrExit)
+		if (this.AutoExecute == FrequencyEnum.OnTreeEnter || this.AutoExecute == FrequencyEnum.OnTreeEnterOrExit)
 			this.Execute();
 	}
 
@@ -102,7 +120,7 @@ public partial class ExpressionComponent : SuperconStateComponent
 		base._ExitTree();
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
-		if (this.Frequency == FrequencyEnum.OnTreeExit || this.Frequency == FrequencyEnum.OnTreeEnterOrExit)
+		if (this.AutoExecute == FrequencyEnum.OnTreeExit || this.AutoExecute == FrequencyEnum.OnTreeEnterOrExit)
 			this.Execute();
 	}
 
@@ -111,51 +129,80 @@ public partial class ExpressionComponent : SuperconStateComponent
 		base._Ready();
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
-		if (this.Frequency == FrequencyEnum.OnReady)
+		if (this.AutoExecute == FrequencyEnum.OnReady)
 			this.Execute();
 	}
 
-	public override void _Process(double delta)
+	protected override void _ActivityProcess(double delta)
 	{
-		base._Process(delta);
+		base._ActivityProcess(delta);
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
-		if (this.Frequency == FrequencyEnum.OnProcess)
+		if (this.AutoExecute == FrequencyEnum.OnProcess)
 			this.Execute();
 	}
 
-	public override void _PhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcess(double delta)
 	{
-		base._PhysicsProcess(delta);
+		base._ActivityPhysicsProcess(delta);
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
-		if (this.Frequency == FrequencyEnum.OnPhysicsProcess)
+		if (this.AutoExecute == FrequencyEnum.OnPhysicsProcess)
 			this.Execute();
 	}
 
-	// public override string[] _GetConfigurationWarnings()
-	// 	=> base._PhysicsProcess(delta);
+	protected override void _ActivityStarted(string mode, Variant argument)
+	{
+		base._ActivityStarted(mode, argument);
+		if (Engine.IsEditorHint() && !this.RunInEditor)
+			return;
+		if (this.AutoExecute == FrequencyEnum.OnActivityStarted)
+			this.Execute();
+	}
+
+	protected override void _ActivityFinished(string reason, Variant details)
+	{
+		base._ActivityFinished(reason, details);
+		if (Engine.IsEditorHint() && !this.RunInEditor)
+			return;
+		if (this.AutoExecute == FrequencyEnum.OnActivityFinished)
+			this.Execute();
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public void Execute()
-		=> this.Execute(this.Argument);
+		=> this.Execute([]);
 
-	public void Execute(Variant argumentOverride)
+	public void Execute(Godot.Collections.Dictionary @params)
 	{
-		Variant result = this.Interpreter.Execute([argumentOverride], this.Context);
+		IEnumerable<Variant> paramValues = this.Parameters.Select(pair =>
+		{
+			if (!@params.ContainsKey(pair.Key))
+				return new Variant();
+			Variant value = @params[pair.Key];
+			if (!value.VariantType.IsConvertibleTo(pair.Value.As<Variant.Type>()))
+				return new Variant();
+			return @params[pair.Key];
+		});
+		Godot.Collections.Array arguments = this.Variables.Values.Concat(paramValues).ToGodotArray();
+		Variant result = this.Interpreter.Execute(arguments, this.Context);
 		if (this.Interpreter.HasExecuteFailed())
 		{
-			GD.PushWarning(this.Interpreter.GetErrorText());
+			GD.PushWarning($"Failed to execute expression. Cause: Execution errored. Error: {this.Interpreter.GetErrorText()}");
 			return;
 		}
-		if (this.ExpectedType != Variant.Type.Nil && !result.VariantType.IsConvertibleTo(this.ExpectedType))
+		if (this.ExpectedResultType != Variant.Type.Nil && !result.VariantType.IsConvertibleTo(this.ExpectedResultType))
 		{
-			GD.PushWarning($"Expression result type mismatch: expected {this.ExpectedType}, got {result.VariantType}");
+			GD.PushWarning($"Failed to execute expression. Cause: Expression result type mismatch. Expected type: {this.ExpectedResultType}. Result: {result} (type '{result.VariantType}').");
 			return;
 		}
+		if (result.IsTruthy())
+			this.EmitSignal(SignalName.TruthyResult);
+		else
+			this.EmitSignal(SignalName.FalsyResult);
 		this.EmitSignal(SignalName.Executed, result);
 	}
 }

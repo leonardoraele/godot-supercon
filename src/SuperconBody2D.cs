@@ -7,7 +7,7 @@ using System.Linq;
 namespace Raele.Supercon;
 
 [Tool][GlobalClass]
-public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwner
+public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwner, ISuperconBody
 {
 	//==================================================================================================================
 	// STATICs

@@ -95,12 +95,12 @@ public partial class PresetMovementComponent2D : SuperconStateComponent2D
 		base._ActivityPhysicsProcess(delta);
 
 		// Remove any previously applied velocity.
-		this.Character?.Velocity -= this.InternalVelocity;
+		this.Character2D?.Velocity -= this.InternalVelocity;
 
 		// Handles instant movement when the duration is zero and prevents division by zero.
 		if (Mathf.IsZeroApprox(this.DurationMs))
 		{
-			this.Character?.MoveAndCollide(this.Destination);
+			this.Character2D?.MoveAndCollide(this.Destination);
 			this.SetPhysicsProcess(false);
 			this.EmitSignalMovementCompleted();
 			return;
@@ -117,7 +117,7 @@ public partial class PresetMovementComponent2D : SuperconStateComponent2D
 		// Handles movement interruption on collision.
 		if (
 			!this.InternalVelocity.IsEqualApprox(Vector2.Zero)
-			&& this.Character?.GetLastSlideCollision() is KinematicCollision2D collision
+			&& this.Character2D?.GetLastSlideCollision() is KinematicCollision2D collision
 		)
 		{
 			this.EmitSignalMovementInterrupted(collision);
@@ -131,7 +131,7 @@ public partial class PresetMovementComponent2D : SuperconStateComponent2D
 		// previous frame every time.
 		Vector2 thisFramePosition = this.CalculateExpectedPosition(thisFrameActiveDuration / this.DurationTimeSpan);
 		Vector2 lastFramePosition = this.CalculateExpectedPosition(lastFrameActiveDuration / this.DurationTimeSpan);
-		this.Character?.Velocity += this.InternalVelocity = (thisFramePosition - lastFramePosition) / (float) delta;
+		this.Character2D?.Velocity += this.InternalVelocity = (thisFramePosition - lastFramePosition) / (float) delta;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -148,7 +148,7 @@ public partial class PresetMovementComponent2D : SuperconStateComponent2D
 	private Vector2 SamplePath(double distanceProgress)
 	{
 		return this.Destination * (float) distanceProgress
-			* (this.UseFacing ? new Vector2(this.Character?.HorizontalFacingDirection ?? 0, 1) : Vector2.One);
+			* (this.UseFacing ? new Vector2(this.Character2D?.HorizontalFacingDirection ?? 0, 1) : Vector2.One);
 	}
 
 	private void OnConnectMovementCompleteToolButtonPressed()

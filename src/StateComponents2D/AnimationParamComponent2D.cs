@@ -79,8 +79,8 @@ public partial class AnimationParamComponent2D : SuperconStateComponent2D
 		base._Ready();
 		if (Engine.IsEditorHint())
 		{
-			this.AnimationTree ??= this.Character?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
-			this.TargetNode ??= this.Character;
+			this.AnimationTree ??= this.Character2D?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
+			this.TargetNode ??= this.Character2D;
 		}
 	}
 

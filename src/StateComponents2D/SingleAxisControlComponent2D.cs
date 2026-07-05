@@ -29,15 +29,15 @@ public partial class SingleAxisControlComponent2D : SuperconStateComponent2D
 	// COMPUTED PROPERTIES
 	//==================================================================================================================
 
-	private float AxisInput => this.Character?.InputController == null ? 0
-		: this.Axis == AxisEnum.Horizontal ? this.Character.InputController.RawDirectionalInput.X
-		: this.Axis == AxisEnum.Vertical ? this.Character.InputController.RawDirectionalInput.Y
+	private float AxisInput => this.Character2D?.InputController == null ? 0
+		: this.Axis == AxisEnum.Horizontal ? this.Character2D.InputController.RawDirectionalInput.X
+		: this.Axis == AxisEnum.Vertical ? this.Character2D.InputController.RawDirectionalInput.Y
 		: 0f;
 	private float AxisVelocity
 	{
-		get => this.Character == null ? 0f
-			: this.Axis == AxisEnum.Horizontal ? this.Character.Velocity.X
-			: this.Axis == AxisEnum.Vertical ? this.Character.Velocity.Y
+		get => this.Character2D == null ? 0f
+			: this.Axis == AxisEnum.Horizontal ? this.Character2D.Velocity.X
+			: this.Axis == AxisEnum.Vertical ? this.Character2D.Velocity.Y
 			: 0f;
 	}
 
@@ -65,7 +65,7 @@ public partial class SingleAxisControlComponent2D : SuperconStateComponent2D
 
 		if (this.FaceMovingDirection && Math.Abs(this.AxisVelocity) >= this.FaceMinSpeed)
 		{
-			this.Character?.FacingDirection = this.Axis == AxisEnum.Horizontal
+			this.Character2D?.FacingDirection = this.Axis == AxisEnum.Horizontal
 				? Vector2.Right * Math.Sign(this.AxisVelocity)
 				: Vector2.Up * Math.Sign(this.AxisVelocity);
 		}
@@ -88,11 +88,11 @@ public partial class SingleAxisControlComponent2D : SuperconStateComponent2D
 	{
 		if (this.Axis == AxisEnum.Horizontal)
 		{
-			this.Character?.AccelerateX(targetVelocity, acceleration * delta);
+			this.Character2D?.AccelerateX(targetVelocity, acceleration * delta);
 		}
 		else if (this.Axis == AxisEnum.Vertical)
 		{
-			this.Character?.AccelerateY(targetVelocity, acceleration * delta);
+			this.Character2D?.AccelerateY(targetVelocity, acceleration * delta);
 		}
 	}
 }

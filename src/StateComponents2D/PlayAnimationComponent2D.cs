@@ -88,7 +88,7 @@ public partial class PlayAnimationComponent2D : SuperconStateComponent2D
 
 	public AnimationPlayer? AnimationPlayer => this.CustomAnimationPlayerEnabled
 		? this.CustomAnimationPlayer
-		: this.Character?.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
+		: this.Character2D?.GetChildren().OfType<AnimationPlayer>().FirstOrDefault();
 	private int PlayBackwardsInt => this.PlayBackwards ? -1 : 1;
 
 	// -----------------------------------------------------------------------------------------------------------------

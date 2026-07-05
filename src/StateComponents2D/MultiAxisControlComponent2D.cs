@@ -23,8 +23,8 @@ public partial class MultiAxisControlComponent2D : SuperconStateComponent2D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		float currentVelocityPxPSec = this.Character?.Velocity.Length() ?? 0;
-		float targetVelocityPxPSec = this.Character?.InputController.RawDirectionalInput.Length() * this.MaxSpeedPxPSec ?? 0;
+		float currentVelocityPxPSec = this.Character2D?.Velocity.Length() ?? 0;
+		float targetVelocityPxPSec = this.Character2D?.InputController.RawDirectionalInput.Length() * this.MaxSpeedPxPSec ?? 0;
 		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec
 			? this.AccelerationPxPSecSqr
 			: this.DecelerationPxPSecSqr;
@@ -33,6 +33,6 @@ public partial class MultiAxisControlComponent2D : SuperconStateComponent2D
 			targetVelocityPxPSec,
 			accelerationPxPSecSqr * (float) delta
 		);
-		this.Character?.Velocity = this.Character?.InputController.RawDirectionalInput.Normalized() * newVelocity ?? Vector2.Zero;
+		this.Character2D?.Velocity = this.Character2D?.InputController.RawDirectionalInput.Normalized() * newVelocity ?? Vector2.Zero;
 	}
 }

@@ -40,8 +40,8 @@ public partial class ForceComponent2D : SuperconStateComponent2D
 	public Vector2 ForceDirection => this.ForceType switch
 	{
 		ForceTypeEnum.FixedDirection => this.Direction.Normalized(),
-		ForceTypeEnum.AlignedToFacingDirection => Vector2.Right * (this.Character?.HorizontalFacingDirection ?? 0),
-		ForceTypeEnum.Drag => this.Character?.Velocity.Normalized() * -1 ?? Vector2.Zero,
+		ForceTypeEnum.AlignedToFacingDirection => Vector2.Right * (this.Character2D?.HorizontalFacingDirection ?? 0),
+		ForceTypeEnum.Drag => this.Character2D?.Velocity.Normalized() * -1 ?? Vector2.Zero,
 		_ => Vector2.Zero,
 	};
 
@@ -54,14 +54,14 @@ public partial class ForceComponent2D : SuperconStateComponent2D
 		base._ActivityPhysicsProcess(delta);
 		switch (this.ForceType)
 		{
-			case ForceTypeEnum.Drag when this.Character?.Velocity.Length() < this.AccelerationPxPSecSq * (float) delta:
-				this.Character.Velocity = Vector2.Zero;
+			case ForceTypeEnum.Drag when this.Character2D?.Velocity.Length() < this.AccelerationPxPSecSq * (float) delta:
+				this.Character2D.Velocity = Vector2.Zero;
 				break;
 			case ForceTypeEnum.Drag:
-				this.Character?.ApplyForce(this.ForceDirection * this.AccelerationPxPSecSq * (float) delta);
+				this.Character2D?.ApplyForce(this.ForceDirection * this.AccelerationPxPSecSq * (float) delta);
 				break;
 			default:
-				this.Character?.ApplyForce(
+				this.Character2D?.ApplyForce(
 					this.ForceDirection * this.AccelerationPxPSecSq * (float) delta,
 					this.MaxSpeedPxPSec
 				);

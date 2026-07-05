@@ -7,7 +7,7 @@ using System.Linq;
 namespace Raele.Supercon;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body-3d.png")]
-public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwner
+public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwner, ISuperconBody
 {
 	//==================================================================================================================
 	// STATICs
@@ -35,7 +35,7 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	/// </summary>
 	[Export] public CameraModeEnum CameraMode = CameraModeEnum.DynamicCamera;
 
-	[Export] public SuperconInputController? InputController;
+	[Export] public SuperconInputController? InputController { get; set; }
 
 	[ExportGroup("Debug", "Debug")]
 	[Export] public bool DebugPrintStateChanges

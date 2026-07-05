@@ -114,6 +114,10 @@ public partial class SuperconInputController : Resource
 		foreach (InputBuffer buffer in this.InputBuffers.Values)
 			buffer.Update();
 	}
+
+	public bool ConsumeInput(string name)
+		=> this.GetInputBuffer(name).ConsumeInput();
+
 	public InputBuffer GetInputBuffer(string name)
 	{
 		if (!this.InputBuffers.ContainsKey(name))

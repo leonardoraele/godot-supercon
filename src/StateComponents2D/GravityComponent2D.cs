@@ -27,8 +27,8 @@ public partial class GravityComponent2D : SuperconStateComponent2D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForce(
-			this.Character.GetGravity() * this.Mass * (float) delta,
+		this.Character2D?.ApplyForce(
+			this.Character2D.GetGravity() * this.Mass * (float) delta,
 			this.MaxFallSpeed
 		);
 	}

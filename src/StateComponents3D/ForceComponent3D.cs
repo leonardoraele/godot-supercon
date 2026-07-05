@@ -30,8 +30,8 @@ public partial class ForceComponent3D : SuperconStateComponent3D
 	// COMPUTED FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public Vector3 GlobalDirection => this.LocalDirection && this.Character != null
-		? (this.Character.GlobalBasis * this.Direction).Normalized()
+	public Vector3 GlobalDirection => this.LocalDirection && this.Character3D != null
+		? (this.Character3D.GlobalBasis * this.Direction).Normalized()
 		: this.Direction.Normalized();
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -41,6 +41,6 @@ public partial class ForceComponent3D : SuperconStateComponent3D
 	protected override void _ActivityPhysicsProcess(double delta)
 	{
 		base._ActivityPhysicsProcess(delta);
-		this.Character?.ApplyForceAndLimitSpeed(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
+		this.Character3D?.ApplyForceAndLimitSpeed(this.GlobalDirection * this.Magnitude * (float) delta, this.MaxSpeed);
 	}
 }

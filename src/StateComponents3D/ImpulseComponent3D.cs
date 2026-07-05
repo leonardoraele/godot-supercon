@@ -45,8 +45,8 @@ public partial class ImpulseComponent3D : SuperconStateComponent3D
 	// COMPUTED FIELDS
 	//==================================================================================================================
 
-	public Vector3 GlobalDirection => this.LocalDirection && this.Character != null
-		? (this.Character.GlobalBasis * this.Direction).Normalized()
+	public Vector3 GlobalDirection => this.LocalDirection && this.Character3D != null
+		? (this.Character3D.GlobalBasis * this.Direction).Normalized()
 		: this.Direction.Normalized();
 
 	//==================================================================================================================
@@ -96,14 +96,14 @@ public partial class ImpulseComponent3D : SuperconStateComponent3D
 		switch (this.ImpulseType)
 		{
 			case ImpulseTypeEnum.Add:
-				this.Character?.Velocity += this.GlobalDirection * this.Magnitude;
+				this.Character3D?.Velocity += this.GlobalDirection * this.Magnitude;
 				break;
 			case ImpulseTypeEnum.Set:
-				this.Character?.Velocity = this.GlobalDirection * this.Magnitude;
+				this.Character3D?.Velocity = this.GlobalDirection * this.Magnitude;
 				break;
 			case ImpulseTypeEnum.SetAxis:
-				this.Character?.Velocity =
-					this.Character.Velocity.Project(new Plane(this.GlobalDirection))
+				this.Character3D?.Velocity =
+					this.Character3D.Velocity.Project(new Plane(this.GlobalDirection))
 					+ this.GlobalDirection * this.Magnitude;
 				break;
 		}

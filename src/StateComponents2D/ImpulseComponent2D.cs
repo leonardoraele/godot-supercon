@@ -53,7 +53,7 @@ public partial class ImpulseComponent2D : SuperconStateComponent2D
 	// -----------------------------------------------------------------------------------------------------------------
 
 	private Vector2 ImpulseDirection => Vector2.Right.Rotated(this.Angle)
-		* (this.UseFacingDirection ? new Vector2(this.Character?.HorizontalFacingDirection ?? 0, 1f) : Vector2.One);
+		* (this.UseFacingDirection ? new Vector2(this.Character2D?.HorizontalFacingDirection ?? 0, 1f) : Vector2.One);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
@@ -65,13 +65,13 @@ public partial class ImpulseComponent2D : SuperconStateComponent2D
 		switch (this.ImpulseType)
 		{
 			case ImpulseTypeEnum.Add:
-				this.Character?.Velocity = this.Character.Velocity + this.ImpulseDirection * this.MagnitudePxPSec;
+				this.Character2D?.Velocity = this.Character2D.Velocity + this.ImpulseDirection * this.MagnitudePxPSec;
 				break;
 			case ImpulseTypeEnum.OverrideSingleAxis:
-				this.Character?.SetDirectionalVelocity(this.ImpulseDirection * this.MagnitudePxPSec);
+				this.Character2D?.SetDirectionalVelocity(this.ImpulseDirection * this.MagnitudePxPSec);
 				break;
 			case ImpulseTypeEnum.OverrideBothAxis:
-				this.Character?.Velocity = this.ImpulseDirection * this.MagnitudePxPSec;
+				this.Character2D?.Velocity = this.ImpulseDirection * this.MagnitudePxPSec;
 				break;
 		}
 	}

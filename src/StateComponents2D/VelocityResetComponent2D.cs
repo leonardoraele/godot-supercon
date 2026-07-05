@@ -102,7 +102,7 @@ public partial class VelocityResetComponent2D : SuperconStateComponent2D
 	protected override void _ActivityStarted(string mode, Variant argument)
 	{
 		base._ActivityStarted(mode, argument);
-		this.InitialVelocity = this.Character?.Velocity ?? Vector2.Zero;
+		this.InitialVelocity = this.Character2D?.Velocity ?? Vector2.Zero;
 		this.SetPhysicsProcess(true);
 	}
 
@@ -143,17 +143,17 @@ public partial class VelocityResetComponent2D : SuperconStateComponent2D
 		if (this.ParentActivity == null)
 			return;
 		if (this.HorizontalAffected)
-			this.Character?.VelocityX = this.InitialVelocity.X * Mathf.Ease(1 - (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
+			this.Character2D?.VelocityX = this.InitialVelocity.X * Mathf.Ease(1 - (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
 		if (this.VerticalAffected)
-			this.Character?.VelocityY = this.InitialVelocity.Y * Mathf.Ease(1 - (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
+			this.Character2D?.VelocityY = this.InitialVelocity.Y * Mathf.Ease(1 - (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration, this.Easing);
 	}
 
 	private void ProcessLerp()
 	{
 		if (this.HorizontalAffected)
-			this.Character?.VelocityX = Mathf.Lerp(this.Character.VelocityX, 0f, this.LerpWeight);
+			this.Character2D?.VelocityX = Mathf.Lerp(this.Character2D.VelocityX, 0f, this.LerpWeight);
 		if (this.VerticalAffected)
-			this.Character?.VelocityY = Mathf.Lerp(this.Character.VelocityY, 0f, this.LerpWeight);
+			this.Character2D?.VelocityY = Mathf.Lerp(this.Character2D.VelocityY, 0f, this.LerpWeight);
 	}
 
 	private void ProcessCurve()
@@ -163,17 +163,17 @@ public partial class VelocityResetComponent2D : SuperconStateComponent2D
 		float progress = (float) this.ParentActivity.ActiveTimeSpan.TotalMilliseconds / this.Duration;
 		float multiplier = this.Curve.SampleBaked(progress);
 		if (this.HorizontalAffected)
-			this.Character?.VelocityX = this.InitialVelocity.X * multiplier;
+			this.Character2D?.VelocityX = this.InitialVelocity.X * multiplier;
 		if (this.VerticalAffected)
-			this.Character?.VelocityY = this.InitialVelocity.Y * multiplier;
+			this.Character2D?.VelocityY = this.InitialVelocity.Y * multiplier;
 	}
 
 	private void ZeroOutVelocity()
 	{
 		if (this.HorizontalAffected)
-			this.Character?.VelocityX = 0f;
+			this.Character2D?.VelocityX = 0f;
 		if (this.VerticalAffected)
-			this.Character?.VelocityY = 0f;
+			this.Character2D?.VelocityY = 0f;
 		this.SetPhysicsProcess(false);
 	}
 }

@@ -6,5 +6,5 @@ namespace Raele.Supercon;
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_bg.png")]
 public abstract partial class SuperconStateComponent2D : SuperconStateComponent
 {
-	public SuperconBody2D? Character => field ??= this.GetFirstAncestorOrDefault<SuperconBody2D>();
+	public SuperconBody2D? Character2D => field ??= this.GetFirstAncestorOrDefault<SuperconBody2D>();
 }
