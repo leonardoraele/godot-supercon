@@ -7,7 +7,7 @@ using Raele.GodotUtils.Extensions;
 namespace Raele.Supercon.StateComponents2D;
 
 [Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body_animation_param.png")]
-public partial class AnimationParamComponent2D : SuperconStateComponent2D
+public partial class AnimationParamComponent2D : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -79,8 +79,8 @@ public partial class AnimationParamComponent2D : SuperconStateComponent2D
 		base._Ready();
 		if (Engine.IsEditorHint())
 		{
-			this.AnimationTree ??= this.Character2D?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
-			this.TargetNode ??= this.Character2D;
+			this.AnimationTree ??= this.Character?.GetChildren().OfType<AnimationTree>().FirstOrDefault();
+			this.TargetNode ??= this.Character?.AsNode();
 		}
 	}
 
@@ -155,21 +155,13 @@ public partial class AnimationParamComponent2D : SuperconStateComponent2D
 	private Variant ProcessValue(Variant value)
 	{
 		if (this.Absolute)
-		{
 			value = Math.Abs(value.AsSingle());
-		}
 		if (this.RadToDeg)
-		{
 			value = Mathf.RadToDeg(value.AsSingle());
-		}
 		if (this.WrapEnabled)
-		{
 			value = Mathf.Wrap(value.AsSingle(), this.WrapMin, this.WrapMax);
-		}
 		if (this.RemapEnabled)
-		{
 			value = Mathf.Remap(value.AsSingle(), this.RemapFromStart, this.RemapFromEnd, this.RemapToStart, this.RemapToEnd);
-		}
 		return value;
 	}
 }

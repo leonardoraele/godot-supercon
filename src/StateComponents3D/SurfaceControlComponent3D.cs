@@ -96,16 +96,6 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		= 8;
 	[Export] public bool RotationLimitAlignWithWorldAxis = false;
 
-	[ExportGroup("Additional Options")]
-	[Export(PropertyHint.Range, "0,2,0.05,or_greater")] public float LaterialSpeedMultiplier
-		{ get; set { field = value.AtLeast(0f); } }
-		= 1f;
-	[Export(PropertyHint.Range, "0,2,0.05,or_greater")] public float BackwardSpeedMultiplier
-		{ get; set { field = value.AtLeast(0f); } }
-		= 1f;
-	[Export(PropertyHint.Range, "0,1080,5,radians_as_degrees,or_greater,suffix:°/s")]
-	public float RotationAngularVelocity = float.PositiveInfinity;
-
 	// [ExportGroup("Break MaxSpeed")]
 	// [Export(PropertyHint.GroupEnable)] public bool MaxSpeedOptionsEnabled
 	// 	{ get; set { field = value; this.NotifyPropertyListChanged(); } }
@@ -296,15 +286,6 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 					? movementPlane.Project(this.Character3D.GlobalBasis * this.LocalForwardDirection).Normalized()
 				: inputDirection
 			: currentDirection;
-		// Vector3 newDirection = isMoving
-		// 	? hasInput
-		// 		? this.UseSmoothTurning
-		// 			? currentDirection.RotateToward(inputDirection, this.AngularVelocity * delta)
-		// 			: inputDirection
-		// 		: currentDirection
-		// 	: hasInput && !this.RequireForwardStart
-		// 		? inputDirection
-		// 		: this.Character3D.Basis.Forward;
 		float targetSpeed = this.MaxSpeed * inputStrength;
 		float acceleration = targetSpeed > currentSpeed - Mathf.Epsilon
 			? this.Acceleration
@@ -318,9 +299,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 
 		Vector3 localBack = this.RotationLocalForwardDirection.Normalized() * -1;
 		Vector3 localUp = this.RotationLocalUpDirection.Normalized();
-		Vector3 localRight = localUp.Cross(localBack);
-		localUp = localBack.Cross(localRight);
-		Basis localTargetBasis = new Basis(localRight, localUp, localBack);
+		Basis localTargetBasis = new Basis(localUp.Cross(localBack), localUp, localBack).Orthonormalized();
 
 		Vector3 forward = this.RotationForwardAlignment switch
 			{
@@ -343,7 +322,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		Vector3 back = forward * -1;
 		Vector3 right = up.Cross(back).Normalized();
 		up = back.Cross(right);
-		Basis globalTargetBasis = new Basis(right, up, back);
+		Basis globalTargetBasis = new Basis(right, up, back).Orthonormalized();
 
 		if (!globalTargetBasis.IsOrthonormalized())
 			return;
@@ -364,11 +343,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 			targetBasis = targetBasis.Rotated(targetBasis.Up, rotationAngle);
 		}
 
-		this.Character3D.GlobalBasis = this.Character3D.GlobalBasis.Orthonormalized()
-			.RotateToward(
-				targetBasis,
-				this.RotationAngularVelocity * delta
-			);
+		this.Character3D.GlobalBasis = targetBasis;
 	}
 
 	//==================================================================================================================

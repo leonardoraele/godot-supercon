@@ -1,6 +1,8 @@
+using Raele.GodotUtils.Adapters;
+
 namespace Raele.Supercon;
 
-public interface ISuperconBody
+public interface ISuperconBody : INode
 {
 	public SuperconState? RestState { get; }
 	public SuperconInputController? InputController { get; }
