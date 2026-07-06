@@ -12,7 +12,7 @@ namespace Raele.Supercon.StateComponents3D;
 ///
 /// This component does not not update the character's rotation direction. For that, use the FacingComponent.
 /// </summary>
-[Tool][GlobalClass]
+[GlobalClass]
 public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 {
 	//==================================================================================================================

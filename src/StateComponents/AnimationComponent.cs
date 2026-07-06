@@ -4,7 +4,7 @@ using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents;
 
-[Tool][GlobalClass]
+[GlobalClass]
 public partial class AnimationComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
