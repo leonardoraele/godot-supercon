@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents;
 
-[GlobalClass]
+[Tool][GlobalClass]
 public partial class AnimationComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------
@@ -24,20 +25,25 @@ public partial class AnimationComponent : SuperconStateComponent
 
 	[Export] public string[] PlayAnimations = [];
 
-	[Export] public Godot.Collections.Dictionary<string, string> Parameters = [];
-	[Export] public bool UnsetConditionsOnExit = true;
+	[ExportGroup("Set Parameters", "Expression")]
+	[Export] public Node? ExpressionContext
+		{ get => field ??= this.Owner; set; }
+	[Export] public Godot.Collections.Dictionary ExpressionParameters = [];
+	[ExportSubgroup("Expression Options")]
+	[Export(PropertyHint.DictionaryType, "String;Variant")] public Godot.Collections.Dictionary ExpressionVariables = [];
+	[Export] public bool ExpressionUnsetConditionsOnExit = false;
 
-	[ExportGroup("Additional Options")]
+	[ExportGroup("Debug")]
 	[Export] public bool RunInEditor = false;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-
+	private Dictionary<string, Expression> Interpreters = new();
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// PROPERTIES
+	// COMPUTED PROPERTIES
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public AnimationPlayer? AnimationPlayer => this.PlayerOrTree as AnimationPlayer;
@@ -47,8 +53,10 @@ public partial class AnimationComponent : SuperconStateComponent
 	// SIGNALS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	// TODO Relay animations from the animation mixer while this activity is active
-	// [Signal] public delegate void EventHandler()
+	[Signal] public delegate void AnimationFinishedEventHandler(string animationName);
+	[Signal] public delegate void AnimationStartedEventHandler(string animationName);
+	[Signal] public delegate void AnimationChangedEventHandler(string oldAnimation, string newAnimation);
+	[Signal] public delegate void CurrentAnimationChangedEventHandler(string animationName);
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// INTERNAL TYPES
@@ -71,20 +79,6 @@ public partial class AnimationComponent : SuperconStateComponent
 		base._ValidateProperty(property);
 		switch (property["name"].AsString())
 		{
-			case nameof(this.Parameters):
-				if (this.AnimationTree == null)
-				{
-					property["usage"] = (ulong) PropertyUsageFlags.None;
-					break;
-				}
-				string conditions = this.AnimationTree.GetPropertyList()
-					.Where(prop => prop["name"].AsString().StartsWith("parameters/"))
-					.Select(prop => prop["name"].AsString().Replace("parameters/", ""))
-					.JoinIntoString(",");
-				property["type"] = Variant.Type.Dictionary.As<long>();
-				property["hint"] = PropertyHint.DictionaryType.As<long>();
-				property["hint_string"] = $"String/{PropertyHint.Enum:D}:{conditions};String/{PropertyHint.Expression:D}";
-				break;
 			case nameof(this.PlayAnimations):
 				if (this.AnimationPlayer == null)
 				{
@@ -96,16 +90,39 @@ public partial class AnimationComponent : SuperconStateComponent
 				property["hint"] = PropertyHint.ArrayType.As<long>();
 				property["hint_string"] = $"String/{PropertyHint.EnumSuggestion:D}:{animations}";
 				break;
+			case nameof(this.ExpressionParameters):
+				if (this.AnimationTree == null)
+				{
+					property["usage"] = (ulong) PropertyUsageFlags.None;
+					break;
+				}
+				string parameters = this.AnimationTree.GetPropertyList()
+					.Select(prop => prop["name"].AsString())
+					.Where(propName => propName.StartsWith("parameters/"))
+					.JoinIntoString(",");
+				property["type"] = Variant.Type.Dictionary.As<long>();
+				property["hint"] = PropertyHint.DictionaryType.As<long>();
+				property["hint_string"] = $"{Variant.Type.String:D}/{PropertyHint.EnumSuggestion:D}:{parameters};String";
+				break;
 		}
 	}
 
 	// public override string[] _GetConfigurationWarnings()
 	// 	=> base._PhysicsProcess(delta);
 
-	// public override void _EnterTree()
-	// {
-	// 	base._EnterTree();
-	// }
+	public override void _EnterTree()
+	{
+		base._EnterTree();
+		if (this.PlayerOrTree == null)
+			return;
+		this.PlayerOrTree.AnimationFinished += this.OnAnimationFinished;
+		this.PlayerOrTree.AnimationStarted += this.OnAnimationStarted;
+		if (this.AnimationPlayer != null)
+		{
+			this.AnimationPlayer.AnimationChanged += this.OnAnimationChanged;
+			this.AnimationPlayer.CurrentAnimationChanged += this.OnCurrentAnimationChanged;
+		}
+	}
 
 	// public override void _ExitTree()
 	// {
@@ -161,11 +178,22 @@ public partial class AnimationComponent : SuperconStateComponent
 			return;
 		if (this.UpdateStrategy == UpdateStrategyEnum.OnActivityFinished)
 			this.UpdateAnimation();
+		if (this.ExpressionUnsetConditionsOnExit)
+			this.UnsetConditions();
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 	// -----------------------------------------------------------------------------------------------------------------
+
+	private void OnAnimationFinished(StringName animationName)
+		=> this.EmitSignalAnimationFinished(animationName);
+	private void OnAnimationStarted(StringName animationName)
+		=> this.EmitSignalAnimationStarted(animationName);
+	private void OnAnimationChanged(StringName oldAnimation, StringName newAnimation)
+		=> this.EmitSignalAnimationChanged(oldAnimation, newAnimation);
+	private void OnCurrentAnimationChanged(StringName animationName)
+		=> this.EmitSignalCurrentAnimationChanged(animationName);
 
 	private void UpdateAnimation()
 	{
@@ -189,13 +217,22 @@ public partial class AnimationComponent : SuperconStateComponent
 
 	private void UpdateAnimationTree(AnimationTree tree)
 	{
-		foreach ((string? parameter, string? expression) in this.Parameters)
-			if (!string.IsNullOrWhiteSpace(parameter) && !string.IsNullOrWhiteSpace(expression))
-				this.UpdateCondition(tree, parameter, expression);
+		foreach ((Variant parameter, Variant expression) in this.ExpressionParameters)
+			this.UpdateCondition(tree, parameter.AsString(), expression.AsString());
 	}
 
 	private void UpdateCondition(AnimationTree tree, string parameter, string expression)
 	{
-
+		if (Engine.IsEditorHint() || !this.Interpreters.TryGetValue(parameter, out Expression? interpreter))
+		{
+			this.Interpreters[parameter] = interpreter = new();
+			interpreter.Parse(expression, this.ExpressionVariables.Keys.Select(key => key.AsString()).ToArray());
+		}
+		interpreter.Execute(this.ExpressionVariables.Values.ToGodotArray(), this.ExpressionContext);
 	}
+
+	private void UnsetConditions()
+		=> this.ExpressionParameters.Keys.Select(key => key.AsString())
+			.Where(parameter => parameter.Contains("/conditions"))
+			.ForEach(condition => this.AnimationTree?.Set(condition, false));
 }

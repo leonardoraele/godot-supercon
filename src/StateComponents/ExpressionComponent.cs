@@ -6,7 +6,7 @@ using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents;
 
-[GlobalClass]
+[Tool][GlobalClass]
 public partial class ExpressionComponent : SuperconStateComponent
 {
 	// -----------------------------------------------------------------------------------------------------------------

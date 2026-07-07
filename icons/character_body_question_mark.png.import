@@ -17,6 +17,7 @@ dest_files=["res://.godot/imported/character_body_question_mark.png-1c5b7e6a5b61
 
 compress/mode=0
 compress/high_quality=false
+compress/high_quality_mode=0
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
