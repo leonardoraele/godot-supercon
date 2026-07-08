@@ -84,9 +84,9 @@ public partial class InputActionComponent : SuperconStateComponent
 		}
 	}
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 		if (!this.TestInput() || !this.TestCondition())
 			return;
 		if (this.DebugPrintTriggers)

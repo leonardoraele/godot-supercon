@@ -84,9 +84,9 @@ public partial class AnimationParamComponent2D : SuperconStateComponent
 		}
 	}
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 
 		if (this.AnimationTree == null || string.IsNullOrWhiteSpace(this.ParameterName))
 		{

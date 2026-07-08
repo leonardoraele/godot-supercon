@@ -135,18 +135,18 @@ public partial class ExpressionComponent : SuperconStateComponent
 		}
 	}
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
 		if (this.AutoExecute == FrequencyEnum.OnProcess)
 			this.Execute();
 	}
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
 		if (this.AutoExecute == FrequencyEnum.OnPhysicsProcess)

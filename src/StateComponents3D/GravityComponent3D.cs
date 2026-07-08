@@ -23,9 +23,9 @@ public partial class GravityComponent3D : SuperconStateComponent3D
 	// VIRTUALS & OVERRIDES
 	// -----------------------------------------------------------------------------------------------------------------
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		this.Character3D?.ApplyForceAndLimitSpeed(
 			this.Character3D.GetGravity() * this.Mass * (float) delta,
 			this.MaxFallSpeed

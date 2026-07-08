@@ -49,9 +49,9 @@ public partial class ForceComponent2D : SuperconStateComponent2D
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		switch (this.ForceType)
 		{
 			case ForceTypeEnum.Drag when this.Character2D?.Velocity.Length() < this.AccelerationPxPSecSq * (float) delta:

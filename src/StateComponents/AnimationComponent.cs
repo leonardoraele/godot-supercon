@@ -144,18 +144,18 @@ public partial class AnimationComponent : SuperconStateComponent
 	// 	base._PhysicsProcess(delta);
 	// }
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
 		if (this.UpdateStrategy == UpdateStrategyEnum.OnProcess)
 			this.UpdateAnimation();
 	}
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		if (Engine.IsEditorHint() && !this.RunInEditor)
 			return;
 		if (this.UpdateStrategy == UpdateStrategyEnum.OnPhysicsProcess)

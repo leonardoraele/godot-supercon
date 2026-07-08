@@ -90,9 +90,9 @@ public partial class PresetMovementComponent2D : SuperconStateComponent2D
 		this.SetPhysicsProcess(true);
 	}
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 
 		// Remove any previously applied velocity.
 		this.Character2D?.Velocity -= this.InternalVelocity;

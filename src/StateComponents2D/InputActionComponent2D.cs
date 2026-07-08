@@ -43,9 +43,9 @@ public partial class InputActionComponent2D : SuperconStateComponent2D
 	// GODOT EVENTS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 		if (this.TestInput())
 		{
 			if (this.DebugPrintTriggers)

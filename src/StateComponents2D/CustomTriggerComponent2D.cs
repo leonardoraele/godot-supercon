@@ -65,16 +65,16 @@ public partial class CustomTriggerComponent2D : SuperconStateComponent2D
 		this.SetPhysicsProcess(this.PhysicsProcess);
 	}
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 		if (this.TestExpression())
 			this.EmitSignalTriggered();
 	}
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		if (this.TestExpression())
 			this.EmitSignalTriggered();
 	}

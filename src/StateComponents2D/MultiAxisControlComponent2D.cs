@@ -20,9 +20,9 @@ public partial class MultiAxisControlComponent2D : SuperconStateComponent2D
 	// LIFECYCLE METHODS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		float currentVelocityPxPSec = this.Character2D?.Velocity.Length() ?? 0;
 		float targetVelocityPxPSec = this.Character2D?.InputController.RawDirectionalInput.Length() * this.MaxSpeedPxPSec ?? 0;
 		float accelerationPxPSecSqr = targetVelocityPxPSec > currentVelocityPxPSec

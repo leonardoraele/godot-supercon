@@ -249,9 +249,9 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		}
 	}
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		if (this.Character3D == null)
 			return;
 

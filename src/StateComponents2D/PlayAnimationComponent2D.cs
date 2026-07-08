@@ -259,9 +259,7 @@ public partial class PlayAnimationComponent2D : SuperconStateComponent2D
 		this.AnimationActive = false;
 		this.AnimationPlayer?.Connect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 		if (this.TimingStrategy == TimingStrategyEnum.OnStateEnter)
-		{
 			this.Play();
-		}
 	}
 
 	protected override void _ActivityFinished(string reason, Variant details)
@@ -271,9 +269,9 @@ public partial class PlayAnimationComponent2D : SuperconStateComponent2D
 		this.AnimationPlayer?.Disconnect(AnimationPlayer.SignalName.CurrentAnimationChanged, new Callable(this, MethodName.OnCurrentAnimationChanged));
 	}
 
-	protected override void _ActivityProcess(double delta)
+	protected override void _ActivityProcessActive(double delta)
 	{
-		base._ActivityProcess(delta);
+		base._ActivityProcessActive(delta);
 		if (
 			this.TimingStrategy == TimingStrategyEnum.WhenExpressionIsTrue && this.TestTimingExpression((float) delta)
 			|| this.TimingStrategy == TimingStrategyEnum.WhenPlayerIsIdle && this.AnimationPlayer?.IsPlaying() == false

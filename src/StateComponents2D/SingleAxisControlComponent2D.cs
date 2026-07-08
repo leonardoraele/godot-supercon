@@ -59,9 +59,9 @@ public partial class SingleAxisControlComponent2D : SuperconStateComponent2D
 	// OVERRIDES
 	//==================================================================================================================
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 
 		if (this.FaceMovingDirection && Math.Abs(this.AxisVelocity) >= this.FaceMinSpeed)
 		{

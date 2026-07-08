@@ -106,9 +106,9 @@ public partial class VelocityResetComponent2D : SuperconStateComponent2D
 		this.SetPhysicsProcess(true);
 	}
 
-	protected override void _ActivityPhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._ActivityPhysicsProcess(delta);
+		base._ActivityPhysicsProcessActive(delta);
 		if (this.ParentActivity?.ActiveTimeSpan.TotalMilliseconds > this.Duration - Mathf.Epsilon)
 		{
 			this.ZeroOutVelocity();

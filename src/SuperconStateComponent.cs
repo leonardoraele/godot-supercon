@@ -14,12 +14,7 @@ public abstract partial class SuperconStateComponent : ActivityComponent
 	// -----------------------------------------------------------------------------------------------------------------
 
 	public ISuperconBody? Character => this.GetFirstAncestorOrDefault<ISuperconBody>();
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// COMPUTED PROPERTIES
-	// -----------------------------------------------------------------------------------------------------------------
-
-	public SuperconState? ParentState => this.GetFirstAncestorOrDefault<SuperconState>();
+	public SuperconState? ParentState => this.ParentActivity as SuperconState;
 	public SuperconStateMachine? StateMachine => this.GetFirstAncestorOrDefault<ISuperconStateMachineOwner>()?.StateMachine;
 
 	// -----------------------------------------------------------------------------------------------------------------

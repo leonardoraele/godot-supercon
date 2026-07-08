@@ -41,9 +41,9 @@ public partial class SuperconState : Activity, SuperconStateMachine.IState
 	// TODO Change the return of this.AsActivity().Start() to bool to indicate whether the start was successful, and[
 	// cancel the transition if not. Also do the same for Finish.
 	void SuperconStateMachine.IState.EnterState(SuperconStateMachine.Transition transition)
-		=> this.AsActivity().Start($"{nameof(SuperconStateMachine)}.{nameof(SuperconStateMachine.Transition)}", transition);
+		=> this.Start($"{nameof(SuperconStateMachine)}.{nameof(SuperconStateMachine.Transition)}", transition);
 	void SuperconStateMachine.IState.ExitState(SuperconStateMachine.Transition transition)
-		=> this.AsActivity().Finish($"{nameof(SuperconStateMachine)}.{nameof(SuperconStateMachine.Transition)}", transition);
+		=> this.Finish($"{nameof(SuperconStateMachine)}.{nameof(SuperconStateMachine.Transition)}", transition);
 
 	public void QueueTransition() => this.StateMachineOwner?.StateMachine.QueueTransition(this);
 	public void QueueTransition(Variant data) => this.StateMachineOwner?.StateMachine.QueueTransition(this, data);
