@@ -1,6 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
 using Godot;
-using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon;
 
@@ -21,7 +19,7 @@ public interface ISuperconStateMachineOwner
 	// ABSTRACT METHODS
 	//------------------------------------------------------------------------------------------------------------------
 
-	public Node AsNode();
+	public Node AsNode() => (Node) this;
 
 	//------------------------------------------------------------------------------------------------------------------
 	// DEFAULT IMPLEMENTATIONS

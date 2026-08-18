@@ -1,21 +1,17 @@
 using Godot;
 using Raele.GodotUtils.Debug;
 using Raele.GodotUtils.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Raele.Supercon;
 
-[Tool][GlobalClass][Icon($"res://addons/{nameof(Supercon)}/icons/character_body-3d.png")]
-[Obsolete("Use a combination of CharacterBody3D and FreakController3D instead.")]
-public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwner, ISuperconBody
+[Tool][GlobalClass][Icon($"res://{Consts.IconsDir}/character_body_neutral.png")]
+public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 {
 	//==================================================================================================================
 	// STATICs
 	//==================================================================================================================
-
-	public static readonly Vector3 DEFAULT_FACING_DIRECTION = Vector3.Forward;
 
 	//==================================================================================================================
 	// EXPORTS
@@ -23,6 +19,8 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 
 	[Export] public SuperconState? RestState
 		{ get; set { field = value; this.UpdateConfigurationWarnings(); } }
+
+	[Export] public SuperconInputController InputController = new();
 
 	/// <summary>
 	/// Determines how directional inputs are handled when there are changes in camera angle.
@@ -36,8 +34,6 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	/// where the camera is static and then set it to DynamicCameraCut when the camera becomes dynamic again.
 	/// </summary>
 	[Export] public CameraModeEnum CameraMode = CameraModeEnum.DynamicCamera;
-
-	[Export] public SuperconInputController? InputController { get; set; }
 
 	[ExportGroup("Debug", "Debug")]
 	[Export] public bool DebugPrintStateChanges
@@ -54,27 +50,37 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	// FIELDS
 	//==================================================================================================================
 
-	public readonly SuperconStateMachine StateMachine = new();
+	public SuperconStateMachine StateMachine { get; } = new();
 
 	/// <summary>
-	/// Number of seconds the character has been on the floor. If negative, then it's the number of seconds since the
-	/// character has left the floor.
+	/// Number of seconds the character has been on the floor. If negative, then it's the number of seconds
+	/// since the character has left the floor.
 	/// </summary>
-	public float TimeOnFloorSec = float.NegativeInfinity;
+	public double TimeOnFloorSec = double.NegativeInfinity;
+
 	/// <summary>
-	/// Number of seconds the character has been on the ceiling. If negative, then it's the number of seconds since the
-	/// character has left the ceiling.
+	/// Number of seconds the character has been on the ceiling. If negative, then it's the number of seconds
+	/// since the character has left the ceiling.
 	/// </summary>
-	public float TimeOnCeilingSec = float.NegativeInfinity;
+	public double TimeOnCeilingSec = double.NegativeInfinity;
+
 	/// <summary>
-	/// Number of seconds the character has been on a wall. If negative, then it's the number of seconds since the
-	/// character has left the wall.
+	/// Number of seconds the character has been on a wall. If negative, then it's the number of seconds since
+	/// the character has left the wall.
 	/// </summary>
-	public float TimeOnWallSec = float.NegativeInfinity;
+	public double TimeOnWallSec = double.NegativeInfinity;
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
 	//==================================================================================================================
+
+	public CharacterBody3D Character => this.GetParent<CharacterBody3D>();
+
+	public Vector3 Velocity
+	{
+		get => this.Character.Velocity;
+		set => this.Character.Velocity = value;
+	}
 
 	/// <summary>
 	/// This is the character's velocity relative to their basis of rotation.
@@ -83,23 +89,30 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		get => this.ToLocal(this.Velocity);
 		set => this.Velocity = this.ToGlobal(value);
 	}
+
 	public float LateralSpeed {
 		get => this.LocalVelocity.X;
 		set => this.LocalVelocity = this.LocalVelocity with { X = value };
 	}
+
 	public float VerticalSpeed {
 		get => this.LocalVelocity.Y;
 		set => this.LocalVelocity = this.LocalVelocity with { Y = value };
 	}
+
 	public float FrontalSpeed {
 		get => this.LocalVelocity.Z * -1;
 		set => this.LocalVelocity = this.LocalVelocity with { Z = value * -1 };
 	}
 
-	public float TimeAwayFromFloorSec => this.TimeOnFloorSec * -1;
-	public float TimeAwayFromCeilingSec => this.TimeOnCeilingSec * -1;
-	public float TimeAwayFromWallSec => this.TimeOnWallSec * -1;
+	public bool IsOnFloor => this.Character.IsOnFloor();
+	public bool IsOnCeiling => this.Character.IsOnCeiling();
+	public bool IsOnWall => this.Character.IsOnWall();
 
+	public double TimeAwayFromFloorSec => this.TimeOnFloorSec * -1;
+	public double TimeAwayFromCeilingSec => this.TimeOnCeilingSec * -1;
+	public double TimeAwayFromWallSec => this.TimeOnWallSec * -1;
+	
 	//==================================================================================================================
 	// SIGNALS
 	//==================================================================================================================
@@ -113,37 +126,44 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	public enum CameraModeEnum {
 		/// <summary>
 		/// In this mode, the camera angle will be considered at every frame. This means
-		/// <see cref="GlobalMovementInput"/> will be updated every frame according to the currently active camera, even
-		/// if the camera moves, rotates, or another camera becomes active, the input direction will be updated every
-		/// frame based to the new camera parameters.
+		/// <see cref="GlobalMovementInput"/> will be updated every frame according to the currently active
+		/// camera, even if the camera moves, rotates, or another camera becomes active, the input direction
+		/// will be updated every frame based to the new camera parameters.
 		///
-		/// For example, if the player is pressing input Forward while the camera rotates, the input will point to the
-		/// forward direction of the camera at every frame as it rotates. Likewise, if a camera cut happens, the input
-		/// will point toward the forward direction of the new active camera.
+		/// For example, if the player is pressing input Forward while the camera rotates, the input will
+		/// point to the forward direction of the camera at every frame as it rotates, meaning the character
+		/// will rotate along with the camera
 		///
-		/// This mode is best suited for games where the camera moves during gameplay, specially if the player is able
-		/// to control the camera.
+		/// Likewise, if a camera cut happens, the input will point toward the forward direction of the new
+		/// active camera, meaning the character will turn to the new camera direction even though the player
+		/// has not changed the input.
 		///
-		/// For games that feature dynamic cameras and also performs camera cuts, see <see cref="DynamicCameraCut"/>.
+		/// This mode is best suited for games where the camera moves during gameplay, specially if the player
+		/// is able to control the camera.
+		///
+		/// For games that feature dynamic cameras and also performs camera cuts, see
+		/// <see cref="DynamicCameraCut"/>.
 		/// </summary>
 		DynamicCamera,
+
 		/// <summary>
-		/// In this mode, the InputController will remember the angle of the camera when the player starts a directional
-		/// input and will update <see cref="GlobalMovementInput"/> every frame according to that fixed camera angle,
-		/// even if the camera moves, rotates, or another camera becomes active while the player enters directional
-		/// input.
+		/// In this mode, the InputController will remember the angle of the camera when the player starts a
+		/// directional input and will update <see cref="GlobalMovementInput"/> every frame according to that
+		/// fixed camera angle, even if the camera moves, rotates, or another camera becomes active while the
+		/// player enters directional input.
 		///
 		/// This mode allows the player to keep their input direction even after a camera cut.
 		///
 		/// This mode is best suited for games that performs camera cuts between several static camera angles.
 		/// </summary>
 		StaticCamera,
+
 		/// <summary>
 		/// This mode behaves like StaticCamera, but the InputController will change this camera mode to
 		/// <see cref="DynamicCamera"/> automatically when the player releases the directional input.
 		///
-		/// This mode is intended to be used when the game performs a camera cut to a dynamic camera. If this is is the
-		/// case, change the camera mode to this mode every time a camera cut is performed.
+		/// This mode is intended to be used when the game performs a camera cut to a dynamic camera. If this
+		/// is the case, change the camera mode to this mode every time a camera cut is performed.
 		/// </summary>
 		DynamicCameraCut,
 	}
@@ -152,17 +172,17 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 	// OVERRIDES
 	//==================================================================================================================
 
-	SuperconStateMachine ISuperconStateMachineOwner.StateMachine => this.StateMachine;
-	Node ISuperconStateMachineOwner.AsNode() => this;
-
 	public override string[] _GetConfigurationWarnings()
 		=> new List<string>()
+			.AppendIf(this.GetParent() is not CharacterBody3D, $"The {nameof(FreakController3D)} node must be a direct child of a {nameof(CharacterBody3D)} node.")
 			.AppendIf(this.RestState == null, $"Mandatory field {nameof(this.RestState)} is not set.")
 			.ToArray();
 
 	public override void _Ready()
 	{
 		base._Ready();
+		if (Engine.IsEditorHint())
+			return;
 		this.AsStateMachineOwner().ResetState();
 	}
 
@@ -187,7 +207,7 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		}
 		base._PhysicsProcess(delta);
 		this.UpdateContactTrackers(delta);
-		this.CallDeferred(CharacterBody3D.MethodName.MoveAndSlide);
+		this.Character.CallDeferred(CharacterBody3D.MethodName.MoveAndSlide);
 	}
 
 	//==================================================================================================================
@@ -196,15 +216,15 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 
 	private void UpdateContactTrackers(double delta)
 	{
-		this.TimeOnFloorSec = this.IsOnFloor()
-			? this.TimeOnFloorSec.AtLeast(0) + (float) delta
-			: this.TimeOnFloorSec.AtMost(0) - (float) delta;
-		this.TimeOnCeilingSec = this.IsOnCeiling()
-			? this.TimeOnCeilingSec.AtLeast(0) + (float) delta
-			: this.TimeOnCeilingSec.AtMost(0) - (float) delta;
-		this.TimeOnWallSec = this.IsOnWall()
-			? this.TimeOnWallSec.AtLeast(0) + (float) delta
-			: this.TimeOnWallSec.AtMost(0) - (float) delta;
+		this.TimeOnFloorSec = this.IsOnFloor
+			? this.TimeOnFloorSec.AtLeast(0) + delta
+			: this.TimeOnFloorSec.AtMost(0) - delta;
+		this.TimeOnCeilingSec = this.IsOnCeiling
+			? this.TimeOnCeilingSec.AtLeast(0) + delta
+			: this.TimeOnCeilingSec.AtMost(0) - delta;
+		this.TimeOnWallSec = this.IsOnWall
+			? this.TimeOnWallSec.AtLeast(0) + delta
+			: this.TimeOnWallSec.AtMost(0) - delta;
 	}
 
 	private void DebugDraw()
@@ -212,8 +232,8 @@ public partial class SuperconBody3D : CharacterBody3D, ISuperconStateMachineOwne
 		if (this.DebugDrawInput)
 			Draw3D.AddText(nameof(this.InputController.RawDirectionalInput), this.InputController?.RawDirectionalInput ?? Variant.NULL);
 		if (this.DebugDrawVelocity)
-			Draw3D.DrawArrow(this.GlobalPosition, this.GlobalPosition + this.Velocity, Colors.Green);
-		if (this.DebugDrawCollisions && this.GetLastSlideCollision() is KinematicCollision3D collision)
+			Draw3D.DrawArrow(this.Character.GlobalPosition, this.Character.GlobalPosition + this.Velocity, Colors.Green);
+		if (this.DebugDrawCollisions && this.Character.GetLastSlideCollision() is KinematicCollision3D collision)
 			Draw3D.DrawArrow(collision.GetPosition(), collision.GetPosition() + collision.GetNormal(), Colors.Red);
 	}
 

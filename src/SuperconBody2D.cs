@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Raele.Supercon;
 
-[Tool][GlobalClass]
+[Tool][GlobalClass][Obsolete("Use a combination of CharacterBody2D and FreakController2D instead.")]
 public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwner, ISuperconBody
 {
 	//==================================================================================================================
@@ -159,7 +159,7 @@ public partial class SuperconBody2D : CharacterBody2D, ISuperconStateMachineOwne
 			return;
 		}
 		base._PhysicsProcess(delta);
-		this.CallDeferred(MethodName.MoveAndSlide);
+		this.CallDeferred(CharacterBody2D.MethodName.MoveAndSlide);
 	}
 
 	public override string[] _GetConfigurationWarnings()

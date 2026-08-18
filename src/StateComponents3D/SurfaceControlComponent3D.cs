@@ -272,7 +272,7 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		float currentSpeed = projectedVelocity.Length();
 		bool isMoving = currentSpeed > Mathf.Epsilon;
 		Vector3 currentDirection = projectedVelocity.Normalized();
-		Vector2 normalizedInput = this.Character3D.InputController?.NormalizedDirectionalInput ?? Vector2.Zero;
+		Vector2 normalizedInput = this.Controller?.InputController.NormalizedDirectionalInput ?? Vector2.Zero;
 		float inputStrength = normalizedInput.Length();
 		bool hasInput = inputStrength > Mathf.Epsilon;
 		Vector3 inputDirection = normalizedInput.IsZeroApprox()
@@ -397,17 +397,17 @@ public partial class SurfaceControlComponent3D : SuperconStateComponent3D
 		=> this.Character3D != null && this.Surface switch
 		{
 			SurfaceTypeEnum.Floor =>
-				this.Character3D.TimeAwayFromFloorSec >= 0
-				&& this.Character3D.TimeAwayFromFloorSec
-					< this.Character3D.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
+				this.Controller?.TimeAwayFromFloorSec >= 0
+				&& this.Controller.TimeAwayFromFloorSec
+					< this.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
 			SurfaceTypeEnum.Wall =>
-				this.Character3D.TimeAwayFromWallSec >= 0
-				&& this.Character3D.TimeAwayFromWallSec
-					< this.Character3D.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
+				this.Controller?.TimeAwayFromWallSec >= 0
+				&& this.Controller.TimeAwayFromWallSec
+					< this.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
 			SurfaceTypeEnum.Ceiling =>
-				this.Character3D.TimeAwayFromCeilingSec >= 0
-				&& this.Character3D.TimeAwayFromCeilingSec
-					< this.Character3D.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
+				this.Controller?.TimeAwayFromCeilingSec >= 0
+				&& this.Controller.TimeAwayFromCeilingSec
+					< this.GetPhysicsProcessDeltaTime() + Mathf.Epsilon,
 			_ => false,
 		};
 
