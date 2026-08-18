@@ -34,12 +34,14 @@ public partial class ForceComponent3D : SuperconStateComponent3D
 	// COMPUTED FIELDS
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public Vector3 GlobalDirection => this.ForceType switch
+	public Vector3 GlobalDirection
+		=> (this.ForceType switch
 		{
-			ForceTypeEnum.LocalDirection => ((this.Character3D?.GlobalBasis ?? Basis.Identity) * this.Direction).Normalized(),
-			ForceTypeEnum.Drag => this.Character3D?.Velocity.Normalized() * -1 ?? Vector3.Zero,
-			ForceTypeEnum.GlobalDirection or _ => this.Direction.Normalized(),
-		};
+			ForceTypeEnum.LocalDirection
+				=> (this.Character3D?.GlobalBasis ?? Basis.Identity) * this.Direction,
+			ForceTypeEnum.Drag => this.Character3D?.Velocity * -1 ?? Vector3.Zero,
+			ForceTypeEnum.GlobalDirection or _ => this.Direction,
+		}).Normalized();
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// LOCAL TYPES
@@ -47,8 +49,17 @@ public partial class ForceComponent3D : SuperconStateComponent3D
 
 	public enum ForceTypeEnum
 	{
+		/// <summary>
+		/// Applies the force in a fixed global direction.
+		/// </summary>
 		GlobalDirection = 16,
+		/// <summary>
+		/// Applies the force in a direction relative to the character's orientation.
+		/// </summary>
 		LocalDirection = 32,
+		/// <summary>
+		/// Applies a force opposite to the character's current velocity, simulating drag or friction.
+		/// </summary>
 		Drag = 48,
 		// Expression = 64, // TODO
 	}
@@ -63,7 +74,8 @@ public partial class ForceComponent3D : SuperconStateComponent3D
 		switch (property["name"].AsString())
 		{
 			case nameof(this.ForceType):
-				property["usage"] = (long) (PropertyUsageFlags.Default | PropertyUsageFlags.UpdateAllIfModified);
+				property["usage"] = (long) PropertyUsageFlags.Default
+					| (long) PropertyUsageFlags.UpdateAllIfModified;
 				break;
 			case nameof(this.Direction):
 				if (this.ForceType == ForceTypeEnum.Drag)
@@ -74,12 +86,18 @@ public partial class ForceComponent3D : SuperconStateComponent3D
 
 	public override string[] _GetConfigurationWarnings()
 		=> (base._GetConfigurationWarnings() ?? [])
-			.AppendIf(this.ForceType != ForceTypeEnum.Drag && this.Direction == Vector3.Zero, $"The {nameof(this.Direction)} property should not be a zero vector.")
+			.AppendIf(
+				this.ForceType != ForceTypeEnum.Drag && this.Direction == Vector3.Zero,
+				$"The {nameof(this.Direction)} property should not be a zero vector."
+			)
 			.ToArray();
 
 	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
 		base._ActivityPhysicsProcessActive(delta);
-		this.Character3D?.ApplyForceAndLimitSpeed(this.GlobalDirection * this.Acceleration * (float) delta, this.MaxSpeed);
+		this.Character3D?.ApplyForceAndLimitSpeed(
+			this.GlobalDirection * this.Acceleration * (float) delta,
+			this.MaxSpeed
+		);
 	}
 }

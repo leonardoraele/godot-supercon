@@ -1,15 +1,22 @@
 using Godot;
+using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon.StateComponents3D;
 
+[Tool][GlobalClass]
 public partial class GravityComponent3D : SuperconStateComponent3D
 {
 	// -----------------------------------------------------------------------------------------------------------------
 	// EXPORTS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	[Export] public float Mass
+
+		{ get; set { field = value.AtLeast(0); } }
+		= 1f;
+
+	[ExportGroup("Options")]
 	[Export(PropertyHint.None, "suffix:px/s")] public float MaxFallSpeed = float.PositiveInfinity;
-	[Export] public float Mass = 1f;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// FIELDS
