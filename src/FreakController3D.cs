@@ -35,6 +35,9 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	[Export] public CameraModeEnum CameraMode = CameraModeEnum.DynamicCamera;
 
+	[ExportGroup("Custom Attributes")]
+	[Export] public FreakCustomDataInterface? AttributeProfile;
+
 	[ExportGroup("Debug", "Debug")]
 	[Export] public bool DebugPrintStateChanges
 	{
@@ -69,6 +72,8 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// the character has left the wall.
 	/// </summary>
 	public double TimeOnWallSec = double.NegativeInfinity;
+
+	private AttributeContainer Attributes => field ??= new() { Prototype = this.AttributeProfile };
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
@@ -112,7 +117,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	public double TimeAwayFromFloorSec => this.TimeOnFloorSec * -1;
 	public double TimeAwayFromCeilingSec => this.TimeOnCeilingSec * -1;
 	public double TimeAwayFromWallSec => this.TimeOnWallSec * -1;
-	
+
 	//==================================================================================================================
 	// SIGNALS
 	//==================================================================================================================
@@ -177,6 +182,40 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 			.AppendIf(this.GetParent() is not CharacterBody3D, $"The {nameof(FreakController3D)} node must be a direct child of a {nameof(CharacterBody3D)} node.")
 			.AppendIf(this.RestState == null, $"Mandatory field {nameof(this.RestState)} is not set.")
 			.ToArray();
+
+	public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetPropertyList()
+		=> (base._GetPropertyList() ?? [])
+			.Concat(
+				this.AttributeProfile?.GetAttributeDefinitions()
+					.Select(attr => attr.ToPropertyInfo().ToGodotDictionary())
+					.Through(property => property["name"] = $"attributes/{property["name"].AsString()}")
+					?? []
+			)
+			.ToGodotArrayT();
+
+	public override Variant _Get(StringName property)
+		=> property.ToString().StartsWith("attributes/")
+			? this.Attributes.GetAttributeValue(property)
+			: base._Get(property);
+
+	public override bool _Set(StringName property, Variant value)
+	{
+		if (property.ToString().StartsWith("attributes/"))
+		{
+			this.Attributes.SetAttributeValue(property, value);
+			return true;
+		}
+		return false;
+	}
+
+	public override Variant _PropertyGetRevert(StringName property)
+		=> property.ToString().StartsWith("attributes/") && this.AttributeProfile != null
+			? this.AttributeProfile.GetAttributeValue(property)
+			: new Variant();
+
+	public override bool _PropertyCanRevert(StringName property)
+		=> property.ToString().StartsWith("attributes/")
+			&& !this.Get(property).Equals(this._PropertyGetRevert(property));
 
 	public override void _Ready()
 	{

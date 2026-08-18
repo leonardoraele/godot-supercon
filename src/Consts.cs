@@ -5,6 +5,7 @@ namespace Raele.Supercon;
 public static class Consts
 {
 	public const string IconsDir = $"addons/{nameof(Supercon)}/icons";
+	public const int MAX_SINGLE_LINE_COMMENT_LENGTH = 20;
 
 	public static class FacingDirection
 	{
