@@ -1,6 +1,7 @@
 using System.Linq;
 using Godot;
 using Raele.GodotUtils.Extensions;
+using Raele.GodotUtils.Input;
 
 namespace Raele.Supercon;
 
@@ -40,6 +41,11 @@ public partial class TransitionComponent : SuperconStateComponent
 		{ get => field ?? (this.ExpressionEnabled ? this.Owner : null); set; }
 	[Export] public Godot.Collections.Dictionary<string, Variant> ExpressionVariables = [];
 	[Export(PropertyHint.Expression)] public string Expression = "";
+
+	[ExportGroup("Test Input")]
+	[Export(PropertyHint.GroupEnable)] public bool InputEnabled = false;
+	[Export(PropertyHint.InputName)] public string InputName = "";
+	[Export] public InputTestEnum InputAction = InputTestEnum.InputIsJustPressed;
 
 	//==================================================================================================================
 	// FIELDS
@@ -85,9 +91,10 @@ public partial class TransitionComponent : SuperconStateComponent
 	// VIRTUALS & OVERRIDES
 	//==================================================================================================================
 
-	// public override string[] _GetConfigurationWarnings()
-	// 	=> (base._GetConfigurationWarnings() ?? [])
-	// 		.ToArray();
+	public override string[] _GetConfigurationWarnings()
+		=> (base._GetConfigurationWarnings() ?? [])
+			.AppendIf(this.NextState == null, $"Mandatory property {nameof(this.NextState)} is not set.")
+			.ToArray();
 
 	public override void _ValidateProperty(Godot.Collections.Dictionary property)
 	{
@@ -136,8 +143,9 @@ public partial class TransitionComponent : SuperconStateComponent
 		if (Engine.IsEditorHint())
 			return;
 		if (
-			this.BooleanParameterEnabled && this.TestBooleanParameter()
-			|| this.ExpressionEnabled && this.TestExpression()
+			(!this.BooleanParameterEnabled || this.TestBooleanParameter())
+			&& (!this.ExpressionEnabled || this.TestExpression())
+			&& (!this.InputEnabled || this.TestInput())
 		)
 			this.NextState?.QueueTransition();
 	}
@@ -184,5 +192,12 @@ public partial class TransitionComponent : SuperconStateComponent
 			return false;
 		}
 		return result.AsBool();
+	}
+
+	private bool TestInput()
+	{
+		if (string.IsNullOrEmpty(this.InputName))
+			return false;
+		return this.InputAction.Test(this.InputName);
 	}
 }
