@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Godot;
 using Raele.GodotUtils.Extensions;
@@ -19,12 +18,27 @@ public partial class TransitionComponent : SuperconStateComponent
 	//==================================================================================================================
 
 	[Export] public SuperconState? NextState;
-	[Export] public StringName Condition = "";
+
+	[ExportGroup("Test Boolean Parameter", "Boolean")]
+	[Export(PropertyHint.GroupEnable)] public bool BooleanParameterEnabled = false;
+	[Export] public StringName BooleanParameter = "";
+	[ExportSubgroup("Options", "Boolean")]
 	/// <summary>
-	/// If true, the condition attribute will automatically be reset to false after the transition is
-	/// triggered. This is useful for one-time triggers, such as a "jump" action.
+	/// If true, the transition will be triggered when the parameter is false. If false, the transition will
+	/// be triggered when the parameter is true.
 	/// </summary>
-	[Export] public bool ConditionIsTrigger = false;
+	[Export] public bool BooleanNegateParameter = false;
+	/// <summary>
+	/// If true, the parameter will automatically be reset to false after the transition is triggered. This is
+	/// useful for one-time triggers, such as a "jump" action.
+	/// </summary>
+	[Export] public bool BooleanParameterIsTrigger = false;
+
+	[ExportGroup("Test Expression", "Expression")]
+	[Export(PropertyHint.GroupEnable)] public bool ExpressionEnabled = false;
+	[Export] public Node? ExpressionContext
+		{ get => field ?? (this.ExpressionEnabled ? this.Owner : null); set; }
+	[Export] public Godot.Collections.Dictionary<string, Variant> ExpressionVariables = [];
 	[Export(PropertyHint.Expression)] public string Expression = "";
 
 	//==================================================================================================================
@@ -40,6 +54,7 @@ public partial class TransitionComponent : SuperconStateComponent
 				field = new();
 				field.Parse(this.Expression, [
 					..this.Controller3D?.Parameters.GetParameters().Select(param => param.Name) ?? [],
+					..this.ExpressionVariables.Keys,
 				]);
 			}
 			return field;
@@ -79,7 +94,7 @@ public partial class TransitionComponent : SuperconStateComponent
 		base._ValidateProperty(property);
 		switch (property["name"].AsString())
 		{
-			case nameof(this.Condition):
+			case nameof(this.BooleanParameter):
 				string[] options = this.GetFirstAncestorOrDefault<FreakController3D>()
 					?.Parameters
 					.GetParameters()
@@ -91,11 +106,6 @@ public partial class TransitionComponent : SuperconStateComponent
 				property["hint_string"] = string.Join(",", options);
 				property["usage"] = (long) PropertyUsageFlags.Default
 					| (long) PropertyUsageFlags.UpdateAllIfModified;
-				break;
-			case nameof(this.ConditionIsTrigger):
-				property["usage"] = !string.IsNullOrEmpty(this.Condition)
-					? (long) PropertyUsageFlags.Default
-					: (long) PropertyUsageFlags.None;
 				break;
 		}
 	}
@@ -120,10 +130,15 @@ public partial class TransitionComponent : SuperconStateComponent
 	// 	base._Process(delta);
 	// }
 
-	public override void _PhysicsProcess(double delta)
+	protected override void _ActivityPhysicsProcessActive(double delta)
 	{
-		base._PhysicsProcess(delta);
-		if (this.TestCondition() || this.TestExpression())
+		base._ActivityPhysicsProcessActive(delta);
+		if (Engine.IsEditorHint())
+			return;
+		if (
+			this.BooleanParameterEnabled && this.TestBooleanParameter()
+			|| this.ExpressionEnabled && this.TestExpression()
+		)
 			this.NextState?.QueueTransition();
 	}
 
@@ -131,14 +146,20 @@ public partial class TransitionComponent : SuperconStateComponent
 	// METHODS
 	//==================================================================================================================
 
-	private bool TestCondition()
+	private bool TestBooleanParameter()
 	{
-		if (string.IsNullOrEmpty(this.Condition))
+		if (string.IsNullOrEmpty(this.BooleanParameter))
 			return false;
-		if (this.Controller3D?.Parameters.GetParameterValue(this.Condition).AsBool() != true)
+		if (
+			this.Controller3D?.ParameterContainer.GetParameterValue(this.BooleanParameter).AsBool()
+				== this.BooleanNegateParameter
+		)
 			return false;
-		if (this.ConditionIsTrigger)
-			this.Controller3D?.ParameterContainer.SetParameterValue(this.Condition, false);
+		if (this.BooleanParameterIsTrigger)
+			this.Controller3D?.ParameterContainer.SetParameterValue(
+				this.BooleanParameter,
+				this.BooleanNegateParameter
+			);
 		return true;
 	}
 
@@ -146,10 +167,11 @@ public partial class TransitionComponent : SuperconStateComponent
 	{
 		if (string.IsNullOrWhiteSpace(this.Expression))
 			return false;
-		Godot.Collections.Array argumnets = (this.Controller3D?.Parameters.GetParameters() ?? [])
-			.Select(param => this.Controller3D!.Parameters.GetParameterValue(param.Name))
-			.ToGodotArray()
-			?? [];
+		Godot.Collections.Array argumnets = [
+			..(this.Controller3D?.Parameters.GetParameters() ?? [])
+				.Select(param => this.Controller3D!.Parameters.GetParameterValue(param.Name)),
+			..this.ExpressionVariables.Values,
+		];
 		Variant result = this.Interpreter.Execute(argumnets, this.Character3D);
 		if (this.Interpreter.HasExecuteFailed())
 		{
