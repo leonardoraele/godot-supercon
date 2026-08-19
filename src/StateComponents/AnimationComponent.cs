@@ -113,21 +113,24 @@ public partial class AnimationComponent : SuperconStateComponent
 	public override void _EnterTree()
 	{
 		base._EnterTree();
-		if (this.PlayerOrTree == null)
+		if (Engine.IsEditorHint())
 			return;
-		this.PlayerOrTree.AnimationFinished += this.OnAnimationFinished;
-		this.PlayerOrTree.AnimationStarted += this.OnAnimationStarted;
-		if (this.AnimationPlayer != null)
-		{
-			this.AnimationPlayer.AnimationChanged += this.OnAnimationChanged;
-			this.AnimationPlayer.CurrentAnimationChanged += this.OnCurrentAnimationChanged;
-		}
+		this.PlayerOrTree?.AnimationFinished += this.OnAnimationFinished;
+		this.PlayerOrTree?.AnimationStarted += this.OnAnimationStarted;
+		this.AnimationPlayer?.AnimationChanged += this.OnAnimationChanged;
+		this.AnimationPlayer?.CurrentAnimationChanged += this.OnCurrentAnimationChanged;
 	}
 
-	// public override void _ExitTree()
-	// {
-	// 	base._ExitTree();
-	// }
+	public override void _ExitTree()
+	{
+		base._ExitTree();
+		if (Engine.IsEditorHint())
+			return;
+		this.PlayerOrTree?.AnimationFinished -= this.OnAnimationFinished;
+		this.PlayerOrTree?.AnimationStarted -= this.OnAnimationStarted;
+		this.AnimationPlayer?.AnimationChanged -= this.OnAnimationChanged;
+		this.AnimationPlayer?.CurrentAnimationChanged -= this.OnCurrentAnimationChanged;
+	}
 
 	// public override void _Ready()
 	// {
@@ -208,7 +211,7 @@ public partial class AnimationComponent : SuperconStateComponent
 		if (this.PlayAnimations == null || this.PlayAnimations.Length == 0)
 			return;
 		player.Stop();
-		player.Play("REST");
+		player.Play("RESET");
 		player.Advance(0);
 		player.Play(this.PlayAnimations[0]);
 		foreach (string animation in this.PlayAnimations.Skip(1))
