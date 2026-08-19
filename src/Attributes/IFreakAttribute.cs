@@ -8,7 +8,7 @@ namespace Raele.Supercon;
 /// An attribute definition is an object that defines an attribute in an attribute profile, including its name, type,
 /// and any associated getter or setter logic.
 /// </summary>
-public interface IAttribute
+public interface IFreakAttribute
 {
 	public string Name { get; }
 	public Variant.Type Type { get; }
@@ -28,20 +28,20 @@ public interface IAttribute
 	/// <summary>
 	/// A mapping function that should be called whenever the attribute is read from a container.
 	/// </summary>
-	public Variant RunGetter(IReadOnlyAttributeContainer container, Variant rawValue)
+	public Variant RunGetter(IReadOnlyFreakAttributeContainer container, Variant rawValue)
 		=> rawValue;
 
 	/// <summary>
 	/// A mapping function that should be called whenever the attribute is stored in a container.
 	/// </summary>
-	public Variant RunSetter(IReadOnlyAttributeContainer container, Variant input)
+	public Variant RunSetter(IReadOnlyFreakAttributeContainer container, Variant input)
 		=> throw new NotSupportedException($"Attribute \"{this.Name}\" is read-only and cannot be set.");
 }
 
 public static class IAttributeExtensions
 {
-	extension (IAttribute self)
+	extension (IFreakAttribute self)
 	{
-		public IAttribute AsAttributeDefinition() => self;
+		public IFreakAttribute AsAttributeDefinition() => self;
 	}
 }

@@ -5,7 +5,7 @@ using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon;
 
-public interface IReadOnlyAttributeContainer
+public interface IReadOnlyFreakAttributeContainer
 {
 	//==================================================================================================================
 	// ABSTRACTS
@@ -13,8 +13,8 @@ public interface IReadOnlyAttributeContainer
 
 	public bool HasAttribute(string name);
 	public Variant GetAttributeValue(string name);
-	public IAttribute GetAttributeDefinition(string name);
-	public IEnumerable<IAttribute> GetAttributeDefinitions();
+	public IFreakAttribute GetAttributeDefinition(string name);
+	public IEnumerable<IFreakAttribute> GetAttributeDefinitions();
 
 	//==================================================================================================================
 	// CONCRETES
@@ -30,5 +30,5 @@ public interface IReadOnlyAttributeContainer
 
 public static class IReadOnlyAttributeContainerExtensions
 {
-	public static IReadOnlyAttributeContainer AsReadOnlyAttributeContainer(this IReadOnlyAttributeContainer source) => source;
+	public static IReadOnlyFreakAttributeContainer AsReadOnlyAttributeContainer(this IReadOnlyFreakAttributeContainer source) => source;
 }

@@ -4,14 +4,14 @@ using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon;
 
-public class AttributeContainer : IReadOnlyAttributeContainer
+public class FreakAttributeContainer : IReadOnlyFreakAttributeContainer
 {
-	public static AttributeContainer Empty => field ??= new AttributeContainer();
+	public static FreakAttributeContainer Empty => field ??= new FreakAttributeContainer();
 
-	public IReadOnlyAttributeContainer? Prototype { get; init; }
+	public IReadOnlyFreakAttributeContainer? Prototype { get; init; }
 	private Dictionary<string, Variant> LocalValues = [];
 
-	public IEnumerable<IAttribute> GetAttributeDefinitions()
+	public IEnumerable<IFreakAttribute> GetAttributeDefinitions()
 		=> this.Prototype?.GetAttributeDefinitions() ?? [];
 
 	public void SetAttributeValue(string name, Variant value)
@@ -29,7 +29,7 @@ public class AttributeContainer : IReadOnlyAttributeContainer
 			: this.Prototype?.GetAttributeValue(name)
 				?? throw new KeyNotFoundException($"Failed to get attribute '{name}' of attribute container. Cause: Attribute does not exist. Prototype: {this.Prototype?.ToString() ?? "null"}");
 
-	public IAttribute GetAttributeDefinition(string name)
+	public IFreakAttribute GetAttributeDefinition(string name)
 		=> this.Prototype?.AsReadOnlyAttributeContainer().GetAttributeDefinition(name)
 			?? throw new KeyNotFoundException($"Failed to get attribute '{name}' of attribute container. Cause: Attribute does not exist. Prototype: {this.Prototype?.ToString() ?? "null"}");
 

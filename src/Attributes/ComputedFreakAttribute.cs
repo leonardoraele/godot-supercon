@@ -4,7 +4,7 @@ using Raele.GodotUtils.Extensions;
 namespace Raele.Supercon;
 
 [Tool][GlobalClass]
-public partial class ComputedAttribute : Resource, IAttribute
+public partial class ComputedFreakAttribute : Resource, IFreakAttribute
 {
 	//==================================================================================================================
 	// STATICS
@@ -37,8 +37,8 @@ public partial class ComputedAttribute : Resource, IAttribute
 		}
 	 } = "";
 
-	 [ExportGroup("Type Checking")]
-	 [Export] public Variant.Type ExpectedType = Variant.Type.Nil;
+	[ExportGroup("Type Checking")]
+	[Export] public Variant.Type ExpectedType = Variant.Type.Nil;
 
 	//==================================================================================================================
 	// FIELDS
@@ -55,10 +55,10 @@ public partial class ComputedAttribute : Resource, IAttribute
 	// VIRTUALS & OVERRIDES
 	//==================================================================================================================
 
-	Variant.Type IAttribute.Type => this.ExpectedType;
-	PropertyHint IAttribute.Hint => PropertyHint.None;
-	string IAttribute.HintString => "";
-	bool IAttribute.IsReadOnly => true;
+	Variant.Type IFreakAttribute.Type => this.ExpectedType;
+	PropertyHint IFreakAttribute.Hint => PropertyHint.None;
+	string IFreakAttribute.HintString => "";
+	bool IFreakAttribute.IsReadOnly => true;
 
 	public override void _ValidateProperty(Godot.Collections.Dictionary property)
 	{
@@ -81,7 +81,7 @@ public partial class ComputedAttribute : Resource, IAttribute
 		}
 	}
 
-	Variant IAttribute.RunGetter(IReadOnlyAttributeContainer container, Variant _)
+	Variant IFreakAttribute.RunGetter(IReadOnlyFreakAttributeContainer container, Variant _)
 	{
 		if (this.ProcessingValue)
 		{

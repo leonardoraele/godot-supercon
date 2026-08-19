@@ -5,7 +5,7 @@ using Raele.GodotUtils.Extensions;
 namespace Raele.Supercon;
 
 [Tool][GlobalClass]
-public partial class MutableAttribute : Resource, IAttribute
+public partial class StandardFreakAttribute : Resource, IFreakAttribute
 {
 	//------------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -70,7 +70,7 @@ public partial class MutableAttribute : Resource, IAttribute
 	// OVERRIDES
 	//------------------------------------------------------------------------------------------------------------------
 
-	bool IAttribute.IsReadOnly => false;
+	bool IFreakAttribute.IsReadOnly => false;
 
 	public override void _ValidateProperty(Godot.Collections.Dictionary property)
 	{
@@ -110,13 +110,13 @@ public partial class MutableAttribute : Resource, IAttribute
 	// public Variant ApplyConstraints(IConflexStatsSource source,	Variant value)
 	// 	=> this.Constraints.Aggregate(value, (current, constraint) => constraint.Apply(source, this, current));
 
-	Variant IAttribute.RunGetter(IReadOnlyAttributeContainer source, Variant storedValue)
-		=> storedValue.VariantType == Variant.Type.Nil ? this.DefaultValue
+	Variant IFreakAttribute.RunGetter(IReadOnlyFreakAttributeContainer source, Variant storedValue)
+		=> storedValue.VariantType == Variant.Type.Nil ? this.DefaultValue.As(this.Type)
 			: storedValue.VariantType == this.Type ? storedValue
 			: storedValue.VariantType.IsConvertibleTo(this.Type) ? storedValue.As(this.Type)
 			: this.Type.DefaultValue;
 
-	Variant IAttribute.RunSetter(IReadOnlyAttributeContainer container, Variant value)
+	Variant IFreakAttribute.RunSetter(IReadOnlyFreakAttributeContainer container, Variant value)
 	{
 		if (this.MustConvert(value.VariantType) && !this.TryConvert(ref value))
 			throw new ArgumentException(
@@ -167,7 +167,7 @@ public partial class MutableAttribute : Resource, IAttribute
 		return convertible;
 	}
 
-	private Variant ExecuteSetterExpression(IReadOnlyAttributeContainer container, Variant input)
+	private Variant ExecuteSetterExpression(IReadOnlyFreakAttributeContainer container, Variant input)
 	{
 		Godot.Collections.Dictionary<string, Variant> attributes = container.ToDictionary();
 

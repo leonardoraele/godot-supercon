@@ -10,8 +10,10 @@ namespace Raele.Supercon;
 public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 {
 	//==================================================================================================================
-	// STATICs
+	// STATICS
 	//==================================================================================================================
+
+	public const string CUSTOM_ATTRIBUTE_PREFIX = "custom_attributes/";
 
 	//==================================================================================================================
 	// EXPORTS
@@ -35,8 +37,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	[Export] public CameraModeEnum CameraMode = CameraModeEnum.DynamicCamera;
 
-	[ExportGroup("Custom Attributes")]
-	[Export] public FreakCustomDataInterface? AttributeProfile;
+	[Export] public FreakAttributeProfile CustomAttributeProfile = new();
 
 	[ExportGroup("Debug", "Debug")]
 	[Export] public bool DebugPrintStateChanges
@@ -73,7 +74,8 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	public double TimeOnWallSec = double.NegativeInfinity;
 
-	private AttributeContainer Attributes => field ??= new() { Prototype = this.AttributeProfile };
+	private FreakAttributeContainer CustomAttributes
+		=> field ??= new() { Prototype = this.CustomAttributeProfile };
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
@@ -186,36 +188,56 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetPropertyList()
 		=> (base._GetPropertyList() ?? [])
 			.Concat(
-				this.AttributeProfile?.GetAttributeDefinitions()
-					.Select(attr => attr.ToPropertyInfo().ToGodotDictionary())
-					.Through(property => property["name"] = $"attributes/{property["name"].AsString()}")
+				this.CustomAttributeProfile?.GetAttributeDefinitions()
+					.Select(attr => new Godot.Collections.Dictionary()
+					{
+						["name"] = CUSTOM_ATTRIBUTE_PREFIX + attr.Name,
+						["type"] = (long) attr.Type,
+						["hint"] = (long) attr.Hint,
+						["hint_string"] = attr.HintString,
+						["usage"] = (long) PropertyUsageFlags.Default,
+					})
 					?? []
 			)
 			.ToGodotArrayT();
 
 	public override Variant _Get(StringName property)
-		=> property.ToString().StartsWith("attributes/")
-			? this.Attributes.GetAttributeValue(property)
-			: base._Get(property);
+	{
+		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
+		{
+			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
+			return this.CustomAttributes.GetAttributeValue(attributeName);
+		}
+		return new Variant();
+	}
 
 	public override bool _Set(StringName property, Variant value)
 	{
-		if (property.ToString().StartsWith("attributes/"))
+		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
 		{
-			this.Attributes.SetAttributeValue(property, value);
+			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
+			this.CustomAttributes.SetAttributeValue(attributeName, value);
 			return true;
 		}
 		return false;
 	}
 
 	public override Variant _PropertyGetRevert(StringName property)
-		=> property.ToString().StartsWith("attributes/") && this.AttributeProfile != null
-			? this.AttributeProfile.GetAttributeValue(property)
-			: new Variant();
+	{
+		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX) && this.CustomAttributeProfile != null)
+		{
+			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
+			return this.CustomAttributeProfile.GetAttributeValue(attributeName);
+		}
+		return base._PropertyGetRevert(property);
+	}
 
 	public override bool _PropertyCanRevert(StringName property)
-		=> property.ToString().StartsWith("attributes/")
-			&& !this.Get(property).Equals(this._PropertyGetRevert(property));
+	{
+		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
+			return !this.Get(property).Equals(this.PropertyGetRevert(property));
+		return false;
+	}
 
 	public override void _Ready()
 	{
