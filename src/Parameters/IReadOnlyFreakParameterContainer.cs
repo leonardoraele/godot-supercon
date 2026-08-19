@@ -5,30 +5,30 @@ using Raele.GodotUtils.Extensions;
 
 namespace Raele.Supercon;
 
-public interface IReadOnlyFreakAttributeContainer
+public interface IReadOnlyFreakParameterContainer
 {
 	//==================================================================================================================
 	// ABSTRACTS
 	//==================================================================================================================
 
-	public bool HasAttribute(string name);
-	public Variant GetAttributeValue(string name);
-	public IFreakAttribute GetAttributeDefinition(string name);
-	public IEnumerable<IFreakAttribute> GetAttributeDefinitions();
+	public bool HasParameter(string name);
+	public Variant GetParameterValue(string name);
+	public IFreakParameter GetParameter(string name);
+	public IEnumerable<IFreakParameter> GetParameters();
 
 	//==================================================================================================================
 	// CONCRETES
 	//==================================================================================================================
 
-	public IEnumerable<string> GetAttributeNames()
-		=> this.GetAttributeDefinitions().Select(definition => definition.Name);
+	public IEnumerable<string> GetParameterNames()
+		=> this.GetParameters().Select(definition => definition.Name);
 	public Godot.Collections.Dictionary<string, Variant> ToDictionary()
-		=> this.GetAttributeNames()
-			.ToDictionary(name => name, this.GetAttributeValue)
+		=> this.GetParameterNames()
+			.ToDictionary(name => name, this.GetParameterValue)
 			.ToGodotDictionaryT();
 }
 
-public static class IReadOnlyAttributeContainerExtensions
+public static class IReadOnlyFreakParameterContainerExtensions
 {
-	public static IReadOnlyFreakAttributeContainer AsReadOnlyAttributeContainer(this IReadOnlyFreakAttributeContainer source) => source;
+	public static IReadOnlyFreakParameterContainer AsReadOnlyParameterContainer(this IReadOnlyFreakParameterContainer source) => source;
 }

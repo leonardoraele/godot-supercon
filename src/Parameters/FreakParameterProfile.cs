@@ -5,7 +5,7 @@ using Godot;
 namespace Raele.Supercon;
 
 [Tool][GlobalClass]
-public partial class FreakAttributeProfile : Resource, IReadOnlyFreakAttributeContainer
+public partial class FreakParameterProfile : Resource, IReadOnlyFreakParameterContainer
 {
 	//------------------------------------------------------------------------------------------------------------------
 	// STATICS
@@ -17,8 +17,8 @@ public partial class FreakAttributeProfile : Resource, IReadOnlyFreakAttributeCo
 	// EXPORTS
 	//------------------------------------------------------------------------------------------------------------------
 
-	[Export(PropertyHint.ResourceType, $"{nameof(StandardFreakAttribute)},{nameof(ComputedFreakAttribute)}")]
-	public Resource[] CustomAttributes = [];
+	[Export(PropertyHint.ResourceType, $"{nameof(StandardFreakParameter)},{nameof(ComputedFreakParameter)}")]
+	public Resource[] CustomParameters = [];
 
 	//------------------------------------------------------------------------------------------------------------------
 	// FIELDS
@@ -28,13 +28,13 @@ public partial class FreakAttributeProfile : Resource, IReadOnlyFreakAttributeCo
 	// COMPUTED PROPERTIES
 	//------------------------------------------------------------------------------------------------------------------
 
-	public Dictionary<string, IFreakAttribute> AggregatedDefinitions
+	public Dictionary<string, IFreakParameter> ParameterDict
 	{
 		get
 		{
 			if (field != null)
 				return field;
-			Dictionary<string, IFreakAttribute> result = this.CustomAttributes.OfType<IFreakAttribute>()
+			Dictionary<string, IFreakParameter> result = this.CustomParameters.OfType<IFreakParameter>()
 				.ToDictionary(def => def.Name);
 			if (!Engine.IsEditorHint())
 				field = result;
@@ -60,17 +60,17 @@ public partial class FreakAttributeProfile : Resource, IReadOnlyFreakAttributeCo
 	// METHODS
 	//------------------------------------------------------------------------------------------------------------------
 
-	public IEnumerable<IFreakAttribute> GetAttributeDefinitions()
-		=> this.AggregatedDefinitions.Values;
+	public IEnumerable<IFreakParameter> GetParameters()
+		=> this.ParameterDict.Values;
 
-	public bool HasAttribute(string name)
-		=> this.AggregatedDefinitions.ContainsKey(name);
+	public bool HasParameter(string name)
+		=> this.ParameterDict.ContainsKey(name);
 
-	public Variant GetAttributeValue(string name)
-		=> this.GetAttributeDefinition(name).RunGetter(this, new Variant());
+	public Variant GetParameterValue(string name)
+		=> this.GetParameter(name).RunGetter(this, new Variant());
 
-	public IFreakAttribute GetAttributeDefinition(string name)
-		=> this.AggregatedDefinitions.TryGetValue(name, out IFreakAttribute? definition)
+	public IFreakParameter GetParameter(string name)
+		=> this.ParameterDict.TryGetValue(name, out IFreakParameter? definition)
 			? definition
 			: throw new KeyNotFoundException($"Failed to get definition of attribute \"{name}\" in attribute profile \"{this.ResourcePath}\". Cause: Attribute does not exist in the profile.");
 }

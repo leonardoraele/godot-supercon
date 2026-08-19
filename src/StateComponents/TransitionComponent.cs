@@ -67,8 +67,8 @@ public partial class TransitionComponent : SuperconStateComponent
 		{
 			case nameof(this.Condition):
 				string[] options = this.GetFirstAncestorOrDefault<FreakController3D>()
-					?.CustomAttributeProfile
-					.GetAttributeDefinitions()
+					?.CustomParameters
+					.GetParameters()
 					.Where(attr => attr.Type == Variant.Type.Bool)
 					.Select(attr => attr.Name)
 					.ToArray()
