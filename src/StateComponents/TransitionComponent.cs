@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Godot;
 using Raele.GodotUtils.Extensions;
@@ -30,7 +31,20 @@ public partial class TransitionComponent : SuperconStateComponent
 	// FIELDS
 	//==================================================================================================================
 
-
+	private Expression Interpreter
+	{
+		get
+		{
+			if (field == null || Engine.IsEditorHint())
+			{
+				field = new();
+				field.Parse(this.Expression, [
+					..this.Controller3D?.Parameters.GetParameters().Select(param => param.Name) ?? [],
+				]);
+			}
+			return field;
+		}
+	}
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
@@ -67,7 +81,7 @@ public partial class TransitionComponent : SuperconStateComponent
 		{
 			case nameof(this.Condition):
 				string[] options = this.GetFirstAncestorOrDefault<FreakController3D>()
-					?.CustomParameters
+					?.Parameters
 					.GetParameters()
 					.Where(attr => attr.Type == Variant.Type.Bool)
 					.Select(attr => attr.Name)
@@ -106,14 +120,47 @@ public partial class TransitionComponent : SuperconStateComponent
 	// 	base._Process(delta);
 	// }
 
-	// public override void _PhysicsProcess(double delta)
-	// {
-	// 	base._PhysicsProcess(delta);
-	// }
+	public override void _PhysicsProcess(double delta)
+	{
+		base._PhysicsProcess(delta);
+		if (this.TestCondition() || this.TestExpression())
+			this.NextState?.QueueTransition();
+	}
 
 	//==================================================================================================================
 	// METHODS
 	//==================================================================================================================
 
+	private bool TestCondition()
+	{
+		if (string.IsNullOrEmpty(this.Condition))
+			return false;
+		if (this.Controller3D?.Parameters.GetParameterValue(this.Condition).AsBool() != true)
+			return false;
+		if (this.ConditionIsTrigger)
+			this.Controller3D?.ParameterContainer.SetParameterValue(this.Condition, false);
+		return true;
+	}
 
+	private bool TestExpression()
+	{
+		if (string.IsNullOrWhiteSpace(this.Expression))
+			return false;
+		Godot.Collections.Array argumnets = (this.Controller3D?.Parameters.GetParameters() ?? [])
+			.Select(param => this.Controller3D!.Parameters.GetParameterValue(param.Name))
+			.ToGodotArray()
+			?? [];
+		Variant result = this.Interpreter.Execute(argumnets, this.Character3D);
+		if (this.Interpreter.HasExecuteFailed())
+		{
+			GD.PrintErr($"Expression execution failed: {this.Interpreter.GetErrorText()}");
+			return false;
+		}
+		if (!result.IsConvertibleTo(Variant.Type.Bool))
+		{
+			GD.PrintErr($"Expression result is not a boolean: {result} (type {result.VariantType})");
+			return false;
+		}
+		return result.AsBool();
+	}
 }

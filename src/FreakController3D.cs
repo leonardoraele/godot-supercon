@@ -13,7 +13,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	// STATICS
 	//==================================================================================================================
 
-	public const string CUSTOM_ATTRIBUTE_PREFIX = "custom_attributes/";
+	public const string CUSTOM_ATTRIBUTE_PREFIX = "parameters/";
 
 	//==================================================================================================================
 	// EXPORTS
@@ -37,7 +37,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	[Export] public CameraModeEnum CameraMode = CameraModeEnum.DynamicCamera;
 
-	[Export] public FreakParameterProfile CustomParameters = new();
+	[Export] public FreakParameterProfile Parameters = new();
 
 	[ExportGroup("Debug", "Debug")]
 	[Export] public bool DebugPrintStateChanges
@@ -74,8 +74,8 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	public double TimeOnWallSec = double.NegativeInfinity;
 
-	private FreakParameterContainer CustomParameterContainer
-		=> field ??= new() { Prototype = this.CustomParameters };
+	public FreakParameterContainer ParameterContainer
+		=> field ??= new() { Prototype = this.Parameters };
 
 	//==================================================================================================================
 	// COMPUTED PROPERTIES
@@ -188,7 +188,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetPropertyList()
 		=> (base._GetPropertyList() ?? [])
 			.Concat(
-				this.CustomParameters?.GetParameters()
+				this.Parameters?.GetParameters()
 					.Select(attr => new Godot.Collections.Dictionary()
 					{
 						["name"] = CUSTOM_ATTRIBUTE_PREFIX + attr.Name,
@@ -206,7 +206,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
 		{
 			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
-			return this.CustomParameterContainer.GetParameterValue(attributeName);
+			return this.ParameterContainer.GetParameterValue(attributeName);
 		}
 		return new Variant();
 	}
@@ -216,7 +216,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
 		{
 			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
-			this.CustomParameterContainer.SetAttributeValue(attributeName, value);
+			this.ParameterContainer.SetParameterValue(attributeName, value);
 			return true;
 		}
 		return false;
@@ -224,10 +224,10 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 
 	public override Variant _PropertyGetRevert(StringName property)
 	{
-		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX) && this.CustomParameters != null)
+		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX) && this.Parameters != null)
 		{
 			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
-			return this.CustomParameters.GetParameterValue(attributeName);
+			return this.Parameters.GetParameterValue(attributeName);
 		}
 		return base._PropertyGetRevert(property);
 	}

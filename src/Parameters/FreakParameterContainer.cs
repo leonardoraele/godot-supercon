@@ -14,7 +14,7 @@ public class FreakParameterContainer : IReadOnlyFreakParameterContainer
 	public IEnumerable<IFreakParameter> GetParameters()
 		=> this.Prototype?.GetParameters() ?? [];
 
-	public void SetAttributeValue(string name, Variant value)
+	public void SetParameterValue(string name, Variant value)
 		=> this.LocalValues[name] = this.GetParameter(name).RunSetter(this, value);
 
 	public void Clear()
@@ -40,5 +40,5 @@ public class FreakParameterContainer : IReadOnlyFreakParameterContainer
 	public void Refresh()
 		=> this.AsReadOnlyParameterContainer()
 			.GetParameterNames()
-			.ForEach(name => this.SetAttributeValue(name, this.GetParameterValue(name)));
+			.ForEach(name => this.SetParameterValue(name, this.GetParameterValue(name)));
 }
