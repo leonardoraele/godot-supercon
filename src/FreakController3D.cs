@@ -9,15 +9,15 @@ namespace Raele.Supercon;
 [Tool][GlobalClass][Icon($"res://{Consts.IconsDir}/character_body_neutral.png")]
 public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 {
-	//==================================================================================================================
+	//========================================================================================================
 	// STATICS
-	//==================================================================================================================
+	//========================================================================================================
 
 	public const string CUSTOM_ATTRIBUTE_PREFIX = "parameters/";
 
-	//==================================================================================================================
+	//========================================================================================================
 	// EXPORTS
-	//==================================================================================================================
+	//========================================================================================================
 
 	[Export] public SuperconState? RestState
 		{ get; set { field = value; this.UpdateConfigurationWarnings(); } }
@@ -37,7 +37,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	[Export] public CameraModeEnum CameraMode = CameraModeEnum.DynamicCamera;
 
-	[Export] public FreakParameterProfile Parameters = new();
+	[Export] public Godot.Collections.Dictionary<string, Variant> CustomParameters = [];
 
 	[ExportGroup("Debug", "Debug")]
 	[Export] public bool DebugPrintStateChanges
@@ -50,9 +50,9 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	[Export] public bool DebugDrawVelocity = false;
 	[Export] public bool DebugDrawCollisions = false;
 
-	//==================================================================================================================
+	//========================================================================================================
 	// FIELDS
-	//==================================================================================================================
+	//========================================================================================================
 
 	public SuperconStateMachine StateMachine { get; } = new();
 
@@ -74,12 +74,9 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	/// </summary>
 	public double TimeOnWallSec = double.NegativeInfinity;
 
-	public FreakParameterContainer ParameterContainer
-		=> field ??= new() { Prototype = this.Parameters };
-
-	//==================================================================================================================
+	//========================================================================================================
 	// COMPUTED PROPERTIES
-	//==================================================================================================================
+	//========================================================================================================
 
 	public CharacterBody3D Character => this.GetParent<CharacterBody3D>();
 
@@ -120,15 +117,15 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	public double TimeAwayFromCeilingSec => this.TimeOnCeilingSec * -1;
 	public double TimeAwayFromWallSec => this.TimeOnWallSec * -1;
 
-	//==================================================================================================================
+	//========================================================================================================
 	// SIGNALS
-	//==================================================================================================================
+	//========================================================================================================
 
 	// [Signal] public delegate void StateChangedEventHandler(SuperconState? newState, SuperconState? oldState);
 
-	//==================================================================================================================
+	//========================================================================================================
 	// INTERNAL TYPES
-	//==================================================================================================================
+	//========================================================================================================
 
 	public enum CameraModeEnum {
 		/// <summary>
@@ -175,9 +172,9 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 		DynamicCameraCut,
 	}
 
-	//==================================================================================================================
+	//========================================================================================================
 	// OVERRIDES
-	//==================================================================================================================
+	//========================================================================================================
 
 	public override string[] _GetConfigurationWarnings()
 		=> new List<string>()
@@ -188,14 +185,11 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 	public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetPropertyList()
 		=> (base._GetPropertyList() ?? [])
 			.Concat(
-				this.Parameters?.GetParameters()
-					.Select(attr => new Godot.Collections.Dictionary()
+				this.CustomParameters.Select(pair => new Godot.Collections.Dictionary()
 					{
-						["name"] = CUSTOM_ATTRIBUTE_PREFIX + attr.Name,
-						["type"] = (long) attr.Type,
-						["hint"] = (long) attr.Hint,
-						["hint_string"] = attr.HintString,
-						["usage"] = (long) PropertyUsageFlags.Default,
+						["name"] = CUSTOM_ATTRIBUTE_PREFIX + pair.Key,
+						["type"] = (long) pair.Value.VariantType,
+						["usage"] = (long) PropertyUsageFlags.None,
 					})
 					?? []
 			)
@@ -206,7 +200,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
 		{
 			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
-			return this.ParameterContainer.GetParameterValue(attributeName);
+			return this.CustomParameters.GetValueOrDefault(attributeName, new Variant());
 		}
 		return new Variant();
 	}
@@ -216,7 +210,7 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
 		{
 			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
-			this.ParameterContainer.SetParameterValue(attributeName, value);
+			this.CustomParameters[attributeName] = value;
 			return true;
 		}
 		return false;
@@ -224,11 +218,8 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 
 	public override Variant _PropertyGetRevert(StringName property)
 	{
-		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX) && this.Parameters != null)
-		{
-			string attributeName = property.ToString().Substring(CUSTOM_ATTRIBUTE_PREFIX.Length);
-			return this.Parameters.GetParameterValue(attributeName);
-		}
+		if (property.ToString().StartsWith(CUSTOM_ATTRIBUTE_PREFIX))
+			return this.Get(property).VariantType.DefaultValue;
 		return base._PropertyGetRevert(property);
 	}
 
@@ -271,9 +262,9 @@ public partial class FreakController3D : Node3D, ISuperconStateMachineOwner
 		this.Character.CallDeferred(CharacterBody3D.MethodName.MoveAndSlide);
 	}
 
-	//==================================================================================================================
+	//========================================================================================================
 	// METHODS
-	//==================================================================================================================
+	//========================================================================================================
 
 	private void UpdateContactTrackers(double delta)
 	{

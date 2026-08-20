@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Raele.GodotUtils.Extensions;
@@ -39,7 +40,7 @@ public partial class TransitionComponent : SuperconStateComponent
 	[Export(PropertyHint.GroupEnable)] public bool ExpressionEnabled = false;
 	[Export] public Node? ExpressionContext
 		{ get => field ?? (this.ExpressionEnabled ? this.Owner : null); set; }
-	[Export] public Godot.Collections.Dictionary<string, Variant> ExpressionVariables = [];
+	[Export] public Godot.Collections.Dictionary<string, Variant> ExpressionParemeters = [];
 	[Export(PropertyHint.Expression)] public string Expression = "";
 
 	[ExportGroup("Test Input")]
@@ -59,8 +60,8 @@ public partial class TransitionComponent : SuperconStateComponent
 			{
 				field = new();
 				field.Parse(this.Expression, [
-					..this.Controller3D?.Parameters.GetParameters().Select(param => param.Name) ?? [],
-					..this.ExpressionVariables.Keys,
+					..this.Controller3D?.CustomParameters.Keys.Select(key => key) ?? [],
+					..this.ExpressionParemeters.Keys,
 				]);
 			}
 			return field;
@@ -102,11 +103,9 @@ public partial class TransitionComponent : SuperconStateComponent
 		switch (property["name"].AsString())
 		{
 			case nameof(this.BooleanParameter):
-				string[] options = this.GetFirstAncestorOrDefault<FreakController3D>()
-					?.Parameters
-					.GetParameters()
-					.Where(attr => attr.Type == Variant.Type.Bool)
-					.Select(attr => attr.Name)
+				string[] options = this.Controller3D?.CustomParameters
+					.Where(pair => pair.Value.VariantType == Variant.Type.Bool)
+					.Select(pair => pair.Key)
 					.ToArray()
 					?? [];
 				property["hint"] = (long) PropertyHint.Enum;
@@ -159,15 +158,12 @@ public partial class TransitionComponent : SuperconStateComponent
 		if (string.IsNullOrEmpty(this.BooleanParameter))
 			return false;
 		if (
-			this.Controller3D?.ParameterContainer.GetParameterValue(this.BooleanParameter).AsBool()
+			this.Controller3D?.CustomParameters.GetValueOrDefault(this.BooleanParameter).IsTruthy()
 				== this.BooleanNegateParameter
 		)
 			return false;
 		if (this.BooleanParameterIsTrigger)
-			this.Controller3D?.ParameterContainer.SetParameterValue(
-				this.BooleanParameter,
-				this.BooleanNegateParameter
-			);
+			this.Controller3D?.CustomParameters[this.BooleanParameter] = this.BooleanNegateParameter;
 		return true;
 	}
 
@@ -176,9 +172,8 @@ public partial class TransitionComponent : SuperconStateComponent
 		if (string.IsNullOrWhiteSpace(this.Expression))
 			return false;
 		Godot.Collections.Array argumnets = [
-			..(this.Controller3D?.Parameters.GetParameters() ?? [])
-				.Select(param => this.Controller3D!.Parameters.GetParameterValue(param.Name)),
-			..this.ExpressionVariables.Values,
+			..this.Controller3D?.CustomParameters.Values ?? [],
+			..this.ExpressionParemeters.Values,
 		];
 		Variant result = this.Interpreter.Execute(argumnets, this.Character3D);
 		if (this.Interpreter.HasExecuteFailed())
